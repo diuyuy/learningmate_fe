@@ -1,4 +1,4 @@
-import type { Keyword } from "@/features/keywords/types/types";
+import type { Keyword } from '@/features/keywords/types/types';
 
 export type Article = {
   id: number;

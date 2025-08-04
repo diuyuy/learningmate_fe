@@ -1,5 +1,5 @@
-import type { Keyword } from "@/features/keywords/types/types";
-import type { User } from "@/features/users/types/types";
+import type { Keyword } from '@/features/keywords/types/types';
+import type { User } from '@/features/users/types/types';
 
 export type Study = {
   id: number;

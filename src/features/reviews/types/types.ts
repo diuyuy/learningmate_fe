@@ -1,5 +1,5 @@
-import type { Article } from "@/features/articles/types/types";
-import type { User } from "@/features/users/types/types";
+import type { Article } from '@/features/articles/types/types';
+import type { User } from '@/features/users/types/types';
 
 export type Review = {
   id: number;
