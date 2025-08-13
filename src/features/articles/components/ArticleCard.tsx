@@ -17,7 +17,7 @@ export default function ArticleCard() {
         </figure>
         <section className='flex-9/10'>
           <CardHeader>
-            <CardTitle className='text-2xl'>
+            <CardTitle className='text-base sm:text-2xl'>
               <h1>십센치, ‘더시즌즈’ 박보검 뒤 잇는다…MC 발탁</h1>
             </CardTitle>
             <CardDescription className='flex justify-between'>

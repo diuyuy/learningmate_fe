@@ -3,9 +3,9 @@ import ArticleReview from '@/features/articles/components/ArticleReview';
 
 export default function ReviewListInLearning() {
   return (
-    <article className='w-4/5'>
+    <article className='w-full'>
       <aside className='mt-5 mb-2'>
-        <h1 className='text-2xl font-bold'>최신 리뷰</h1>
+        <h1 className='text-base lg:text-2xl font-extrabold'>최신 리뷰</h1>
       </aside>
       <section className='flex flex-col gap-5'>
         <ArticleReview />
