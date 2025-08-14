@@ -1,8 +1,12 @@
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { RiRobot2Line } from 'react-icons/ri';
 import { FaRegBookmark } from 'react-icons/fa6';
+import { useState } from 'react';
+import { ArticleModal } from './ArticleModal';
 
 export default function ArticleDetail() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <article className='flex flex-col gap-5 w-full mt-5'>
       <header className='mx-auto'>
@@ -28,7 +32,10 @@ export default function ArticleDetail() {
         <div className='w-1/5'>
           <div className='flex gap-5 justify-center items-center'>
             <div>
-              <RiRobot2Line className='text-3xl' />
+              <RiRobot2Line
+                className='text-3xl cursor-pointer'
+                onClick={() => setIsModalOpen(true)}
+              />
             </div>
             <div>
               <FaRegBookmark className='text-3xl' />
@@ -36,6 +43,11 @@ export default function ArticleDetail() {
           </div>
         </div>
       </section>
+
+      <ArticleModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </article>
   );
 }
