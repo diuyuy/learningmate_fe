@@ -5,18 +5,18 @@ import VideoPlayer from '@/features/videos/components/VideoPlayer';
 
 export default function LearningPage() {
   return (
-    <div className='max-w-full mx-auto px-8'>
+    <div className='max-w-full mx-auto px-4 sm:px-6 lg:px-8'>
       <div className='flex flex-col items-center gap-10'>
         <TodaysKeywordCard />
-        <div className='flex flex-row gap-4 w-full'>
-          <section className='flex flex-col gap-4 w-2/3'>
+        <article className='flex flex-col lg:flex-row gap-10 lg:gap-20 w-full'>
+          <section className='flex flex-col gap-4 w-full lg:w-1/2'>
             <VideoPlayer />
             <ReviewListInLearning />
           </section>
-          <aside className='w-1/3'>
+          <aside className='w-full lg:w-1/2'>
             <ArticleList />
           </aside>
-        </div>
+        </article>
       </div>
     </div>
   );
