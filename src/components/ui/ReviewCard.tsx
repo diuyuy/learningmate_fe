@@ -13,15 +13,17 @@ export default function ArticleReview() {
   return (
     <article className='w-full'>
       <Card className='flex flex-row min-h-30'>
-        <figure className='flex-1/10'>
+        <figure className='w-1/10'>
           <Avatar className='w-15 h-15 ml-5'>
             <AvatarImage src='https://github.com/shadcn.png' />
           </Avatar>
         </figure>
-        <section className='flex-9/10'>
+        <section className='w-9/10 ml-2'>
           <CardHeader>
-            <CardTitle className='text-2xl'>Card Title</CardTitle>
-            <CardDescription className='my-1'>
+            <CardTitle className='text-xl lg:text-2xl font-extrabold'>
+              Card Title
+            </CardTitle>
+            <CardDescription className='mb-2 text-sm lg:text-md'>
               {new Date().toLocaleDateString('ko-KR', {
                 year: 'numeric',
                 month: 'long',
@@ -31,7 +33,7 @@ export default function ArticleReview() {
               {new Date().toLocaleTimeString()}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className='text-sm lg:text-md'>
             <p>
               Lorem, ipsum dolor sit amet consectetur adipisicing elit. Pariatur
               eos eaque illum hic quod amet perferendis minima vero! Ut ad
