@@ -1,9 +1,12 @@
-import ArticleReview from '@/features/articles/components/ArticleReview';
+import ReviewCard from '@/components/ui/ReviewCard';
 
 export default function ReviewListInArticle() {
   return (
     <div className='w-full'>
-      <ArticleReview />
+      <ReviewCard />
+      <ReviewCard />
+      <ReviewCard />
+      <ReviewCard />
     </div>
   );
 }
