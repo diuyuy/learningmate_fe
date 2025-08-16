@@ -5,8 +5,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import type { ArticlePreview } from '../types/types';
 
-export default function ArticleCard() {
+type Props = {
+  articlePreview: ArticlePreview;
+};
+
+export default function ArticleCard({ articlePreview }: Props) {
   return (
     <article className='w-full'>
       <Card className='flex flex-row min-h-10'>
@@ -17,12 +22,12 @@ export default function ArticleCard() {
         </figure>
         <section className='w-9/10 ml-3'>
           <CardHeader>
-            <CardTitle className='text-base font-extrabold mb-3 lg:text-2xl'>
-              <h1>십센치, ‘더시즌즈’ 박보검 뒤 잇는다…MC 발탁</h1>
+            <CardTitle className='text-base sm:text-2xl'>
+              <h1>{articlePreview.title}</h1>
             </CardTitle>
-            <CardDescription className='flex justify-between item'>
-              <h4>스포츠경향</h4>
-              <h4>2일 전</h4>
+            <CardDescription className='flex justify-between'>
+              <h4>{articlePreview.press}</h4>
+              <h4>{articlePreview.publishedAt}</h4>
             </CardDescription>
           </CardHeader>
         </section>

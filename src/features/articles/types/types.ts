@@ -15,3 +15,8 @@ export type Article = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type ArticlePreview = Pick<
+  Article,
+  'id' | 'title' | 'content' | 'publishedAt' | 'press'
+>;
