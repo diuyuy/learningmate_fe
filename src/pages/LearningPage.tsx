@@ -11,10 +11,10 @@ export default function LearningPage() {
         <article className='flex flex-col lg:flex-row gap-10 lg:gap-20 w-full'>
           <section className='flex flex-col gap-4 w-full lg:w-1/2'>
             <VideoPlayer />
-            <ReviewListInLearning />
+            <ArticleList />
           </section>
           <aside className='w-full lg:w-1/2'>
-            <ArticleList />
+            <ReviewListInLearning />
           </aside>
         </article>
       </div>

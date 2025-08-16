@@ -8,48 +8,45 @@ export default function ReviewForm() {
       <header>
         <h2 className='font-bold'>기사 제목 : ABCDEFGHIJKLMNOPQRSTUVWXYZ</h2>
       </header>
-      <section className='flex flex-col gap-10'>
+
+      <section className='flex flex-col gap-10 w-full'>
         <div className='grid w-full gap-3'>
-          <Label htmlFor='message'>
+          <Label htmlFor='thoughts'>
             <span>기사에 대한 내 생각</span>
             <span className='text-[10px]'>(300 / 1000)</span>
           </Label>
           <Textarea
+            id='thoughts'
             placeholder='Type your message here.'
-            id='message'
-            rows={20}
-            cols={70}
-            className='resize-none h-40'
+            className='resize-none h-40 w-full'
           />
         </div>
+
         <div className='grid w-full gap-3'>
-          <Label htmlFor='message'>
+          <Label htmlFor='terms'>
             <span>어려웠던 용어 정리</span>
             <span className='text-[10px]'>(300 / 1000)</span>
           </Label>
           <Textarea
+            id='terms'
             placeholder='Type your message here.'
-            id='message'
-            rows={20}
-            cols={70}
-            className='resize-none h-40'
+            className='resize-none h-40 w-full'
           />
         </div>
+
         <div className='grid w-full gap-3'>
-          <Label htmlFor='message'>
-            <span>개인적으로 더 공부한 내용</span>{' '}
+          <Label htmlFor='study'>
+            <span>개인적으로 더 공부한 내용</span>
             <span className='text-[10px]'>(300 / 1000)</span>
           </Label>
           <Textarea
+            id='study'
             placeholder='Type your message here.'
-            id='message'
-            rows={20}
-            cols={70}
-            className='resize-none h-40'
+            className='resize-none h-40 w-full'
           />
         </div>
         <div className='flex justify-end'>
-          <Button>작성</Button>
+          <Button className='w-full sm:w-auto'>작성</Button>
         </div>
       </section>
     </article>
