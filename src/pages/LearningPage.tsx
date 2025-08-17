@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import ArticleList from '@/features/articles/components/AriticleList';
 import TodaysKeywordCard from '@/features/keywords/components/TodaysKeywordCard';
 import { useTodaysKeywordQuery } from '@/features/keywords/hooks/useTodaysKeywordQuery';
@@ -12,22 +13,29 @@ export default function LearningPage() {
     error,
   } = useTodaysKeywordQuery();
 
-  if (isPending) {
-    return <div>로딩 중...</div>;
-  }
-
   if (isError) {
+    //TODO: 에러 페이지 구성 필요
     return <div>에러가 발생했습니다.{error.message}</div>;
   }
 
   return (
     <div className='max-w-full mx-auto px-4 sm:px-6 lg:px-8'>
       <div className='flex flex-col items-center gap-10'>
-        <TodaysKeywordCard />
+        {isPending ? (
+          <div className='w-[90vw] sm:w-full max-w-3xl mx-auto my-5 border-2 px-4 sm:px-6 lg:px-8'>
+            <Skeleton className='w-full aspect-video' />
+          </div>
+        ) : (
+          <TodaysKeywordCard />
+        )}
         <article className='flex flex-col lg:flex-row gap-10 lg:gap-20 w-full'>
           <section className='flex flex-col gap-4 w-full lg:w-1/2'>
             <VideoPlayer />
-            <ArticleList keywordId={todaysKeyword.keyword.id} />
+            {isPending ? (
+              <Skeleton className='w-full' />
+            ) : (
+              <ArticleList keywordId={todaysKeyword.keyword.id} />
+            )}
           </section>
           <aside className='w-full lg:w-1/2'>
             <ReviewListInLearning />
