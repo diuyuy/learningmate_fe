@@ -1,8 +1,17 @@
 import { useArticlePreviewsQuery } from '../hooks/useArticlePreviewsQuery';
 import ArticleCard from './ArticleCard';
 
-export default function ArticleList() {
-  const { isPending, isError, data, error } = useArticlePreviewsQuery(4);
+type Props = {
+  keywordId: number;
+};
+
+export default function ArticleList({ keywordId }: Props) {
+  const {
+    isPending,
+    isError,
+    data: articlePreivews,
+    error,
+  } = useArticlePreviewsQuery(keywordId);
 
   if (isPending) {
     return <div>로딩</div>;
@@ -18,7 +27,7 @@ export default function ArticleList() {
         <h1 className='lg:text-2xl font-bold'>키워드 관련 기사 목록</h1>
       </aside>
       <section className='flex flex-col gap-3'>
-        {data.map((articlePreview) => {
+        {articlePreivews.map((articlePreview) => {
           return (
             <ArticleCard
               key={articlePreview.id}
