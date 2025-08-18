@@ -10,4 +10,5 @@ export const QUERY_KEYS = {
   STUDIES: 'studies',
   USER: 'user',
   VIDEOS: 'videos',
+  REVIEW: 'review'
 };

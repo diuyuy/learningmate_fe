@@ -1,5 +1,5 @@
 import { api } from '@/lib/axios';
-import type { Review, ReviewProps } from '../types/types';
+import type {  Review, ReviewForm, ReviewProps, ReviewResponse } from '../types/types';
 
 const SIZE = 10;
 
@@ -12,4 +12,18 @@ export const fetchReviews = async ({
   );
 
   return res.data.result;
+}
+
+export const postReview = async (payload: ReviewForm, articleId: number) => {
+
+  const response = await api.post<ReviewForm>(`/articles/${articleId}/reviews`, payload);
+  return response.data;
+};
+
+// TODO: memberId 수정
+export const fetchReview = async (articleId: number, memberId: number) => {
+  const response = await api.get(`/articles/${articleId}/reviews/${memberId}`);
+
+  return response.data.result as ReviewResponse;
+
 };
