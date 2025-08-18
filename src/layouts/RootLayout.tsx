@@ -1,6 +1,6 @@
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
-import { Outlet } from 'react-router';
+import { Outlet, ScrollRestoration } from 'react-router';
 
 function RootLayout() {
   return (
@@ -8,6 +8,7 @@ function RootLayout() {
       <div className='container mx-auto'>
         <Header />
         <Outlet />
+        <ScrollRestoration />
         <hr className='my-4' />
         <Footer />
       </div>
