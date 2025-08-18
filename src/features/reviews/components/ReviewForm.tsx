@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 import { Textarea } from '@/components/ui/textarea';
 import { z } from "zod";
+import { AxiosError } from 'axios';
 
 const ReviewSchema = z.object({
   articleId: z.number().int().positive(),
@@ -25,14 +26,21 @@ export default function ReviewForm() {
       // TODO: staleTime 고려
       queryClient.invalidateQueries({ queryKey: ['review'] })
     },
-    onError: (error) => {
-      console.error(error);
-      alert('리뷰 작성 실패');
-    },
+    onError: (error: unknown) => {
+      if (error instanceof AxiosError) {
+        const msg = (error.response?.data as any)?.message ?? error.message;
+        alert(msg);
+      } else if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("알 수 없는 오류");
+      }
+    }
+
   });
 
   // TODO: 로그인 구현 시 수정
-  const memberId = 1;
+  const memberId = 5;
 
   const handleCreateReview = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // 리뷰 작성 후 새로고침 방지
@@ -56,6 +64,7 @@ export default function ReviewForm() {
 
     mutation.mutate({ memberId, ...parsed.data});
   };
+
   return (
       <article className="flex flex-col gap-5 w-full mt-5 border p-3">
       <header>
@@ -97,7 +106,7 @@ export default function ReviewForm() {
           <Button 
             type="submit" 
             disabled={mutation.isPending}>
-              작성
+              {mutation.isPending ? "작성 중..." : "작성"}
           </Button>
         </div>
       </form>
