@@ -26,8 +26,8 @@ export default function ArticleList({ keywordId }: Props) {
       </aside>
       <section className='flex flex-col gap-3'>
         {isPending
-          ? Array.from({ length: 7 }).map(() => (
-              <article className='w-full'>
+          ? Array.from({ length: 7 }).map((_, idx) => (
+              <article key={idx} className='w-full'>
                 <Card className='flex flex-row justify-between min-h-10'>
                   <figure className='w-1/10'>
                     <div className='flex flex-col justify-center items-start gap-2 ml-5'>

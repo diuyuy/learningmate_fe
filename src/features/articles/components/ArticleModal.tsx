@@ -1,19 +1,20 @@
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { RiRobot2Line } from 'react-icons/ri';
 
 type Props = {
+  summary: string;
   isOpen: boolean;
   onClose: () => void;
 };
 
-export function ArticleModal({ isOpen, onClose }: Props) {
+export function ArticleModal({ summary, isOpen, onClose }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={(val) => !val && onClose()}>
       <DialogContent className='w-[90vw] max-w-4xl sm:w-[80vw] md:w-[70vw] lg:w-[60vw] max-h-[80vh] overflow-auto'>
@@ -26,24 +27,7 @@ export function ArticleModal({ isOpen, onClose }: Props) {
           </DialogTitle>
           <hr className='border-gray-700 border-1' />
           <DialogDescription className='flex flex-col gap-3 my-5'>
-            <p>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolore
-              reprehenderit eius quas soluta tempore facilis animi, facere
-              dolores dolorem, doloremque nesciunt? Ullam nesciunt odit numquam
-              consequuntur pariatur aperiam assumenda culpa?
-            </p>
-            <p>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolore
-              reprehenderit eius quas soluta tempore facilis animi, facere
-              dolores dolorem, doloremque nesciunt? Ullam nesciunt odit numquam
-              consequuntur pariatur aperiam assumenda culpa?
-            </p>
-            <p>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolore
-              reprehenderit eius quas soluta tempore facilis animi, facere
-              dolores dolorem, doloremque nesciunt? Ullam nesciunt odit numquam
-              consequuntur pariatur aperiam assumenda culpa?
-            </p>
+            <p>{summary}</p>
           </DialogDescription>
         </DialogHeader>
         <Button onClick={onClose} className='cursor-pointer'>
