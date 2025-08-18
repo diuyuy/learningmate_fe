@@ -17,3 +17,10 @@ export type LikeReview = {
   review: Review;
   user: User;
 };
+
+export type ReviewProps = {
+  articleId: number;
+  page: number;
+  size: number;
+  sort?: string;
+};
