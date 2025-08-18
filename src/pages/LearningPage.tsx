@@ -26,7 +26,10 @@ export default function LearningPage() {
             <Skeleton className='w-full aspect-video' />
           </div>
         ) : (
-          <TodaysKeywordCard />
+          <TodaysKeywordCard
+            keywordName={todaysKeyword.keyword.name}
+            keywordDesc={todaysKeyword.keyword.description}
+          />
         )}
         <article className='flex flex-col lg:flex-row gap-10 lg:gap-20 w-full'>
           <section className='flex flex-col gap-4 w-full lg:w-1/2'>
