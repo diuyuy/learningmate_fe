@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useFormattedDate } from '@/features/reviews/hooks/useFormattedDate';
 import type { Review } from '@/features/reviews/types/types';
 import { FaRegHeart } from 'react-icons/fa';
 
@@ -26,10 +27,18 @@ export default function ReviewCard({ review }: Props) {
         <section className='w-9/10 ml-2'>
           <CardHeader>
             <CardTitle className='text-xl lg:text-2xl font-extrabold'>
-              {review.user?.nickname || '알 수 없는 사용자'}
+              {review.id} {review.user?.nickname || '알 수 없는 사용자'}
             </CardTitle>
             <CardDescription className='mb-2 text-sm lg:text-md'>
-              {review.updatedAt}
+              {useFormattedDate(review.updatedAt, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className='text-sm lg:text-md'>

@@ -19,8 +19,7 @@ export type LikeReview = {
 };
 
 export type ReviewProps = {
-  articleId: number;
+  keywordId: number;
   page: number;
-  size: number;
   sort?: string;
 };

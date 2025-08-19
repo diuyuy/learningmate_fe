@@ -1,48 +1,70 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useRef, useState } from 'react';
+import { useInfiniteReviews } from '../hooks/useInfiniteReviewsQuery';
 import ReviewCard from '@/components/ui/ReviewCard';
-import { useReviewQuery } from '../hooks/useReviewQuery';
-import type { ReviewProps } from '../types/types';
+import { Button } from '@/components/ui/button';
+import type { Review, ReviewProps } from '../types/types';
 
-export default function ReviewListInLearning({
-  articleId,
-  page: initialPage = 0,
-  size,
-}: ReviewProps) {
-  const [page, setPage] = useState(initialPage);
-  const [allReviews, setAllReviews] = useState<any[]>([]);
-  const [hasMore, setHasMore] = useState(true);
+const MOBILE_BREAKPOINT = 768; // px 기준
+const THROTTLE_DELAY = 500; // ms
 
+export default function ReviewListFinal({ keywordId }: ReviewProps) {
   const {
-    isPending,
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
     isError,
-    data: reviews,
     error,
-  } = useReviewQuery({ articleId, page, size });
+  } = useInfiniteReviews(keywordId);
 
-  // 새 데이터가 들어오면 중복 없이 누적
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const throttleRef = useRef(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  // 화면 크기에 따라 모바일/PC 여부 판단
   useEffect(() => {
-    if (reviews) {
-      if (reviews.length < size) {
-        setHasMore(false); // 더 가져올 리뷰가 없음
-      }
+    const checkMobile = () =>
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-      setAllReviews((prev) => {
-        const newReviews = reviews.filter(
-          (r) => !prev.some((prevR) => prevR.id === r.id)
-        );
-        return [...prev, ...newReviews];
-      });
-    }
-  }, [reviews, size]);
+  // 모바일이면 IntersectionObserver로 자동 무한스크롤 (throttle 적용)
+  useEffect(() => {
+    if (!isMobile || !loadMoreRef.current) return;
 
-  if (isError) return <div>{error.message}</div>;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          !throttleRef.current
+        ) {
+          throttleRef.current = true;
 
-  const handleLoadMore = () => {
-    if (!isPending && hasMore) {
-      setPage((prev) => prev + 1);
-    }
-  };
+          fetchNextPage().finally(() => {
+            setTimeout(() => {
+              throttleRef.current = false;
+            }, THROTTLE_DELAY);
+          });
+        }
+      },
+      { threshold: 1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => {
+      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+    };
+  }, [isMobile, fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const allReviews: Review[] = data?.pages.flat() || [];
+  const isPending = isLoading || isFetchingNextPage;
+
+  if (isError) return <div>Error: {(error as Error).message}</div>;
 
   return (
     <article className='w-full'>
@@ -54,22 +76,36 @@ export default function ReviewListInLearning({
         {allReviews.length === 0 && isPending ? (
           <div>Loading...</div>
         ) : (
-          allReviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
-          ))
+          data?.pages.map((page, pageIndex) =>
+            page.map((review) => (
+              <ReviewCard key={`${pageIndex}-${review.id}`} review={review} />
+            ))
+          )
         )}
 
-        {hasMore && (
-          <div className='my-3 flex justify-center'>
+        {/* 마지막 sentinel / 로딩 & 버튼 영역 */}
+        <div
+          ref={loadMoreRef}
+          className='my-3 flex justify-center items-center'
+        >
+          {isPending && <span className='mr-2'>Loading...</span>}
+
+          {/* PC: 버튼 클릭으로 다음 페이지 로드 */}
+          {!isMobile && hasNextPage && (
             <Button
               className='w-30 cursor-pointer'
-              onClick={handleLoadMore}
+              onClick={() => fetchNextPage()}
               disabled={isPending}
             >
-              {isPending ? 'Loading...' : '더보기'}
+              더보기
             </Button>
-          </div>
-        )}
+          )}
+
+          {/* 마지막 페이지 표시 */}
+          {!hasNextPage && allReviews.length > 0 && (
+            <span className='text-gray-400 ml-2'>마지막 리뷰입니다.</span>
+          )}
+        </div>
       </section>
     </article>
   );
