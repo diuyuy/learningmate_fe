@@ -4,9 +4,10 @@ import { fetchReview } from '../api/api';
 
 export const useReviewQuery = (articleId: number, memberId: number) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.REVIEW],
+    queryKey: [QUERY_KEYS.REVIEW, articleId, memberId],
     queryFn: async () => {
-      return await fetchReview(articleId, memberId);
+      const data = await fetchReview(articleId, memberId);
+      return data ?? null;
     },
   });
 };

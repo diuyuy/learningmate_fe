@@ -32,5 +32,5 @@ export type ReviewForm = {
 
 export type ReviewResponse = Pick<
   Review,
-  'content1' | 'content2' | 'content3'
+  'id' | 'content1' | 'content2' | 'content3'
 >;
