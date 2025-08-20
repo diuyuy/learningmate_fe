@@ -7,9 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useFormattedDate } from '@/features/reviews/hooks/useFormattedDate';
+import type { Review } from '@/features/reviews/types/types';
 import { FaRegHeart } from 'react-icons/fa';
 
-export default function ArticleReview() {
+type Props = {
+  review: Review;
+};
+
+export default function ReviewCard({ review }: Props) {
   return (
     <article className='w-full'>
       <Card className='flex flex-row min-h-30'>
@@ -21,25 +27,22 @@ export default function ArticleReview() {
         <section className='w-9/10 ml-2'>
           <CardHeader>
             <CardTitle className='text-xl lg:text-2xl font-extrabold'>
-              Card Title
+              {review.id} {review.user?.nickname || '알 수 없는 사용자'}
             </CardTitle>
             <CardDescription className='mb-2 text-sm lg:text-md'>
-              {new Date().toLocaleDateString('ko-KR', {
+              {useFormattedDate(review.updatedAt, {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
               })}
-              &nbsp;&nbsp;
-              {new Date().toLocaleTimeString()}
             </CardDescription>
           </CardHeader>
           <CardContent className='text-sm lg:text-md'>
-            <p>
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Pariatur
-              eos eaque illum hic quod amet perferendis minima vero! Ut ad
-              tempora voluptatum atque consequuntur ullam rem deleniti, modi cum
-              nisi.
-            </p>
+            <p>{review.content1}</p>
           </CardContent>
           <CardFooter>
             <div className='w-full border-t-2 mt-5 py-3 flex items-center'>

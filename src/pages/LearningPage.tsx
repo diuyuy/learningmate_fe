@@ -41,7 +41,7 @@ export default function LearningPage() {
             )}
           </section>
           <aside className='w-full lg:w-1/2'>
-            <ReviewListInLearning />
+            <ReviewListInLearning articleId={1} page={0} size={10} />
           </aside>
         </article>
       </div>

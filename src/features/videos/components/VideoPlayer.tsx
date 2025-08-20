@@ -2,7 +2,7 @@ export default function VideoPlayer() {
   const src = 'https://www.youtube.com/embed/vbjLJnlB2kg';
 
   return (
-    <article className='w-full h-full'>
+    <article className='w-full'>
       <figure className='aspect-video'>
         <iframe
           src={src}
