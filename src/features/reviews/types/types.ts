@@ -17,9 +17,20 @@ export type LikeReview = {
   review: Review;
   user: User;
 };
-
 export type ReviewProps = {
   keywordId: number;
   page: number;
   sort?: string;
 };
+
+export type ReviewForm = {
+  memberId :number;
+  content1: string;
+  content2: string;
+  content3: string;
+};
+
+export type ReviewResponse = Pick<
+  Review,
+  'id' | 'content1' | 'content2' | 'content3'
+>;
