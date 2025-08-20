@@ -1,16 +1,18 @@
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { postReview } from '../api/api';
-import type { ReviewForm } from '../types/types';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { postReview } from "../api/api";
+import type { ReviewForm } from "../types/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
-import { AxiosError } from 'axios';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
+import { useForm } from "react-hook-form";
 
 type Props = {
   articleId: number;
-  memberId: number
-}
+  memberId: number;
+};
 
 const ReviewSchema = z.object({
   articleId: z.number().int().positive(),
@@ -19,93 +21,87 @@ const ReviewSchema = z.object({
   content3: z.string().trim().min(10, "개인적으로 공부한 내용을 최소 10자 이상 입력하세요.").max(2000, "2000자 이내로 입력하세요."),
 });
 
-export default function ReviewCreateFrom({articleId, memberId}:Props) {
-  const queryClient = useQueryClient()
+type FormValues = z.infer<typeof ReviewSchema>;
 
-  // 리뷰 작성
-  const mutation = useMutation({
-    mutationFn: (payload: ReviewForm) => postReview(payload, Number(articleId)),
+export default function ReviewCreateFrom({ articleId, memberId }: Props) {
+  const queryClient = useQueryClient();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(ReviewSchema), // Zod 스키마를 유효성 검사기로 사용
+    defaultValues: {
+      articleId,
+      content1: "",
+      content2: "",
+      content3: "",
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (payload: ReviewForm) => postReview(payload, +articleId),
     onSuccess: () => {
-      // TODO: staleTime 고려
-      queryClient.invalidateQueries({ queryKey: ['review'] })
+      alert("작성이 완료되었습니다.");
+      // 리뷰 쿼리 무효화하여 최신 데이터를 다시 불러옴
+      queryClient.invalidateQueries({ queryKey: ["review", articleId, memberId] });
     },
     onError: (error: unknown) => {
       if (error instanceof AxiosError) {
-        const msg = (error.response?.data as any)?.message ?? error.message;
-        alert(msg);
+        alert(error.response?.data?.message ?? error.message);
       } else if (error instanceof Error) {
         alert(error.message);
       } else {
         alert("알 수 없는 오류");
       }
-    }
-
+    },
   });
-  const handleCreateReview = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // 리뷰 작성 후 새로고침 방지
-    const formData = new FormData(e.currentTarget);
 
-    const content1 = formData.get("content1")?.toString();
-    const content2 = formData.get("content2")?.toString();
-    const content3 = formData.get("content3")?.toString();
-
-    const parsed = ReviewSchema.safeParse({
-      articleId: +articleId,
-      content1,
-      content2,
-      content3,
-    });
-
-    if (!parsed.success) {
-      alert(parsed.error.issues[0].message);
-      return;
-    }
-
-    mutation.mutate({ memberId, ...parsed.data});
+  // handleSubmit이 유효성 검사를 통과시킨 데이터로 mutate 함수를 호출합니다.
+  const onSubmit = (data: FormValues) => {
+    createMutation.mutate({ memberId, ...data });
   };
 
   return (
-      <article className="flex flex-col gap-5 w-full mt-5 border p-3">
-      <header>
-        <h2 className="font-bold">기사 제목 : ABCDEFGHIJKLMNOPQRSTUVWXYZ</h2>
-      </header>
-
-      <form onSubmit={handleCreateReview} className="flex flex-col gap-6 w-full">
+    <article className="flex flex-col gap-5 w-full mt-5 border p-3">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 w-full">
         <div className="grid w-full gap-2">
           <Label htmlFor="content1">기사에 대한 내 생각</Label>
           <Textarea
             id="content1"
-            name="content1"
-            className='resize-none h-40 w-full'
+            {...register("content1")}
+            className="resize-none h-40 w-full"
             placeholder="기사에 대한 내 생각을 입력해주세요"
           />
+          {errors.content1 && <p className="text-sm text-red-500">{errors.content1.message}</p>}
         </div>
 
         <div className="grid w-full gap-2">
           <Label htmlFor="content2">어려웠던 용어 정리</Label>
           <Textarea
             id="content2"
-            name="content2"
-            className='resize-none h-40 w-full'
+            {...register("content2")}
+            className="resize-none h-40 w-full"
             placeholder="어려웠던 용어를 입력해주세요"
           />
+          {errors.content2 && <p className="text-sm text-red-500">{errors.content2.message}</p>}
         </div>
 
         <div className="grid w-full gap-2">
           <Label htmlFor="content3">개인적으로 더 공부한 내용</Label>
           <Textarea
             id="content3"
-            name="content3"
-            className='resize-none h-40 w-full'
+            {...register("content3")}
+            className="resize-none h-40 w-full"
             placeholder="더 공부한 내용을 입력해주세요"
           />
+          {errors.content3 && <p className="text-sm text-red-500">{errors.content3.message}</p>}
         </div>
 
         <div className="flex justify-end">
-          <Button 
-            type="submit" 
-            disabled={mutation.isPending}>
-              {mutation.isPending ? "작성 중..." : "작성"}
+          <Button type="submit" disabled={createMutation.isPending}>
+            {createMutation.isPending ? "작성 중..." : "작성"}
           </Button>
         </div>
       </form>
