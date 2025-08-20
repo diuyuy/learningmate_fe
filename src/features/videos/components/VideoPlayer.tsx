@@ -1,10 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import {
-  getLastTime,
-  getPlayerInstance,
-  setLastTime,
-  setPlayerInstance,
-} from '../hooks/singtonePlayer';
+// components/VideoPlayer.tsx
+import { useEffect, useRef } from 'react';
+import { useVideoStore } from '../store/useVideoStore';
 
 declare global {
   interface Window {
@@ -15,63 +11,65 @@ declare global {
 
 export default function VideoPlayer() {
   const videoId = 'vbjLJnlB2kg';
-  const playerRef = useRef<HTMLDivElement | null>(null);
-  const [status, setStatus] = useState('초기화 대기 중...');
-  const [watchedSeconds, setWatchedSeconds] = useState(0);
-  const [duration, setDuration] = useState(0);
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const playerRef = useRef<any>(null);
   const startTimeRef = useRef<number | null>(null);
 
+  const {
+    watchedSeconds,
+    duration,
+    lastTime,
+    isCompleted,
+    setWatchedSeconds,
+    setLastTime,
+    setDuration,
+    setIsCompleted,
+  } = useVideoStore();
+
   const initPlayer = () => {
-    if (!playerRef.current) return;
+    if (!containerRef.current) return;
 
-    const existingPlayer = getPlayerInstance();
-    if (existingPlayer) {
-      const iframe = existingPlayer.getIframe();
-      if (iframe.parentElement !== playerRef.current) {
+    if (
+      playerRef.current &&
+      typeof playerRef.current.getDuration === 'function'
+    ) {
+      const iframe = playerRef.current.getIframe();
+      if (iframe.parentElement !== containerRef.current) {
         iframe.parentElement?.removeChild(iframe);
-        playerRef.current.appendChild(iframe);
+        containerRef.current.appendChild(iframe);
       }
-      const lastTime = getLastTime();
-      if (lastTime > 0) existingPlayer.seekTo(lastTime, true);
+      if (lastTime > 0) playerRef.current.seekTo(lastTime, true);
 
-      setStatus('플레이어 준비 완료');
-      setDuration(existingPlayer.getDuration());
+      setDuration(playerRef.current.getDuration());
       return;
     }
 
-    const instance = new window.YT.Player(playerRef.current, {
+    playerRef.current = new window.YT.Player(containerRef.current, {
       videoId,
       playerVars: { playsinline: 1 },
       events: {
         onReady: (event: any) => {
-          setStatus('플레이어 준비 완료');
           setDuration(event.target.getDuration());
 
-          const lastTime = getLastTime();
           if (lastTime > 0) event.target.seekTo(lastTime, true);
         },
         onStateChange: (event: any) => {
           switch (event.data) {
             case window.YT.PlayerState.PLAYING:
-              setStatus('▶️ 재생 중');
               startTimeRef.current = Date.now();
               break;
             case window.YT.PlayerState.PAUSED:
             case window.YT.PlayerState.ENDED:
               if (startTimeRef.current) {
                 const diff = Date.now() - startTimeRef.current;
-                setWatchedSeconds((prev) => prev + Math.floor(diff / 1000));
+                setWatchedSeconds(Math.floor(diff / 1000));
 
-                const current = getPlayerInstance()?.getCurrentTime() || 0;
+                const current = playerRef.current?.getCurrentTime() || 0;
                 setLastTime(current);
 
                 startTimeRef.current = null;
               }
-              setStatus(
-                event.data === window.YT.PlayerState.PAUSED
-                  ? '⏸️ 일시정지'
-                  : '⏹️ 종료됨'
-              );
               break;
             default:
               break;
@@ -79,41 +77,58 @@ export default function VideoPlayer() {
         },
       },
     });
-
-    setPlayerInstance(instance);
   };
 
   useEffect(() => {
     if (window.YT && window.YT.Player) {
       initPlayer();
     } else {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      document.body.appendChild(tag);
+      if (
+        !document.querySelector(
+          'script[src="https://www.youtube.com/iframe_api"]'
+        )
+      ) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.body.appendChild(tag);
+      }
       window.onYouTubeIframeAPIReady = initPlayer;
     }
 
     return () => {
       if (startTimeRef.current) {
         const diff = Date.now() - startTimeRef.current;
-        setWatchedSeconds((prev) => prev + Math.floor(diff / 1000));
+        setWatchedSeconds(Math.floor(diff / 1000));
         startTimeRef.current = null;
       }
     };
   }, [videoId]);
 
-  const minutes = Math.floor(duration / 60);
-  const seconds = Math.floor(duration % 60);
+  useEffect(() => {
+    if (watchedSeconds >= 60 && !isCompleted) {
+      alert('오늘의 영상 시청 미션을 성공하셨습니다');
+      setIsCompleted(true);
+      // Todo : db에 상태 변경 저장
+    }
+  }, [watchedSeconds, isCompleted]);
+
+  const minutes = duration ? Math.floor(duration / 60) : 0;
+  const seconds = duration ? Math.floor(duration % 60) : 0;
 
   return (
     <article className='w-full'>
       <figure className='aspect-video'>
-        <div ref={playerRef} className='w-full h-full rounded-2xl shadow-md' />
+        <div
+          ref={containerRef}
+          className='w-full h-full rounded-2xl shadow-md'
+        />
       </figure>
       <div>
-        <p>{status}</p>
         <p>
           누적 시청 시간: {watchedSeconds}초 / {minutes}분 {seconds}초
+        </p>
+        <p>
+          오늘의 미션 : {isCompleted ? <span>성공</span> : <span>실패</span>}
         </p>
       </div>
     </article>
