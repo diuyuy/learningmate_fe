@@ -36,6 +36,8 @@ export default function ReviewUpdateForm({ articleId, memberId, initial }: Props
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(ReviewSchema),
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
     defaultValues: {
       articleId,
       reviewId,

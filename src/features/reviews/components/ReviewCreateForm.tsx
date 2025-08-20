@@ -32,6 +32,8 @@ export default function ReviewCreateFrom({ articleId, memberId }: Props) {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(ReviewSchema), // Zod 스키마를 유효성 검사기로 사용
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
     defaultValues: {
       articleId,
       content1: "",
