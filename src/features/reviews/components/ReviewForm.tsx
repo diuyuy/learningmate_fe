@@ -1,5 +1,5 @@
 import type { AxiosError } from "axios";
-import { useReviewQuery } from "../hooks/useReview";
+import { useReviewQuery } from "../hooks/useReviewQuery";
 import ReviewUpdateForm from "./ReviewUpateForm";
 import { useParams } from 'react-router';
 import ReviewCreateFrom from "./ReviewCreateForm";

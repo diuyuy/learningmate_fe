@@ -9,5 +9,7 @@ export const useReviewQuery = (articleId: number, memberId: number) => {
       const data = await fetchReview(articleId, memberId);
       return data ?? null;
     },
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
   });
 };
