@@ -1,5 +1,6 @@
 import { ROUTE_PATHS } from '@/constants/routepaths';
 import { Link } from 'react-router';
+import HeaderDropDown from './HeaderDropdown';
 
 export default function Header() {
   return (
@@ -15,7 +16,9 @@ export default function Header() {
         </div>
       </div>
       <Link to={ROUTE_PATHS.MAIN}>LearningMate</Link>
-      <div className='flex-1' />
+      <div className='flex-1 flex justify-end'>
+        <HeaderDropDown />
+      </div>
     </header>
   );
 }
