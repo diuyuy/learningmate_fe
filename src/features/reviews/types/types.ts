@@ -1,5 +1,5 @@
 import type { Article } from '@/features/articles/types/types';
-import type { User } from '@/features/users/types/types';
+import type { User } from '@/features/members/types/types';
 
 export type Review = {
   id: number;
@@ -24,7 +24,7 @@ export type ReviewProps = {
 };
 
 export type ReviewForm = {
-  memberId :number;
+  memberId: number;
   content1: string;
   content2: string;
   content3: string;
