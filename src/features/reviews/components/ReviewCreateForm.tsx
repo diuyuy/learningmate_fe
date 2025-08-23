@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
+import { QUERY_KEYS } from "@/constants/querykeys";
 
 type Props = {
   articleId: number;
@@ -47,7 +48,7 @@ export default function ReviewCreateFrom({ articleId, memberId }: Props) {
     onSuccess: () => {
       alert("작성이 완료되었습니다.");
       // 리뷰 쿼리 무효화하여 최신 데이터를 다시 불러옴
-      queryClient.invalidateQueries({ queryKey: ["review", articleId, memberId] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEW, articleId, memberId] });
     },
     onError: (error: unknown) => {
       if (error instanceof AxiosError) {
