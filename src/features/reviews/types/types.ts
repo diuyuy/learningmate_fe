@@ -18,9 +18,15 @@ export type LikeReview = {
   user: Member;
 };
 
-export type ReviewProps = {
+export type TodaysKeywordReviewsProp = {
   keywordId: number;
-  page: number;
+  page?: number;
+  sort?: string;
+};
+
+export type ArticleReviewsProp = {
+  articleId: number;
+  page?: number;
   sort?: string;
 };
 
