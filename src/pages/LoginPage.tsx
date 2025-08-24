@@ -1,13 +1,7 @@
 import { GoogleLoginButton } from '@/components/GoogleLoginButton';
 import LoginForm from '@/features/auth/components/LoginForm';
-import { useSession } from '@/features/auth/context/useSession';
 
 export default function LoginPage() {
-  const { isLoggedIn } = useSession();
-
-  console.log('sdfsdfd');
-  console.log(isLoggedIn);
-
   return (
     <>
       <header className='bg-primary p-2 mb-2 text-primary-foreground text-center'>
