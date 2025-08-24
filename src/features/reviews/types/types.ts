@@ -1,10 +1,10 @@
 import type { Article } from '@/features/articles/types/types';
-import type { User } from '@/features/members/types/types';
+import type { Member } from '@/features/members/types/types';
 
 export type Review = {
   id: number;
   article: Article;
-  user: User;
+  user: Member;
   content1: string;
   content2: string;
   content3: string;
@@ -15,8 +15,9 @@ export type Review = {
 export type LikeReview = {
   id: number;
   review: Review;
-  user: User;
+  user: Member;
 };
+
 export type ReviewProps = {
   keywordId: number;
   page: number;
