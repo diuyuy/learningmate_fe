@@ -48,7 +48,11 @@ export default function LoginForm() {
             <FormItem>
               <FormLabel className='font-semibold'>이메일</FormLabel>
               <FormControl>
-                <Input placeholder='이메일을 입력하세요...' {...field} />
+                <Input
+                  autoComplete='email'
+                  placeholder='이메일을 입력하세요...'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
