@@ -9,5 +9,7 @@ export default function AuthCodeTimer({ seconds }: Props) {
     remainingSeconds
   ).padStart(2, '0')}`;
 
-  return <div className='text-sm text-gray-500'>{formattedTime}</div>;
+  return (
+    <div className='text-sm text-gray-500'>{`유효시간: ${formattedTime}`}</div>
+  );
 }
