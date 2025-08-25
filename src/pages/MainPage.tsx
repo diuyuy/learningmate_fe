@@ -1,12 +1,18 @@
+import Calendar from '@/features/calendar/components/Calendar';
+import { useReviewStore } from '@/features/calendar/store/calendarStore';
+
 export default function MainPage() {
+  const { setSelectedDate } = useReviewStore();
   return (
     <>
       <div className='p-6 space-y-4'>
-        Main page
-        <p className='font-nanum font-light'>나눔스퀘어 Light</p>
-        <p className='font-nanum font-normal'>나눔스퀘어 Regular</p>
-        <p className='font-nanum font-bold'>나눔스퀘어 Bold</p>
-        <p className='font-nanum font-extrabold'>나눔스퀘어 Extra Bold</p>
+        <div className='flex justify-start my-20'>
+          <Calendar
+            size={350}
+            selected={useReviewStore.getState().selectedDate}
+            onSelect={(d) => setSelectedDate(d)}
+          />
+        </div>
       </div>
     </>
   );
