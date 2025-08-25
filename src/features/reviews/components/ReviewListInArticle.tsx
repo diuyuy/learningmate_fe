@@ -1,12 +1,12 @@
-import ReviewCard from '@/components/ui/ReviewCard';
+import { useInfiniteArticleReviews } from '../hooks/useInfiniteReviewsQuery';
+import ReviewList from './ReviewList';
 
-export default function ReviewListInArticle() {
-  return (
-    <div className='w-full'>
-      {/* <ReviewCard />
-      <ReviewCard />
-      <ReviewCard />
-      <ReviewCard /> */}
-    </div>
-  );
+type Props = {
+  articleId: number;
+  title?: string;
+};
+
+export default function ReviewListInArticle({ articleId, title }: Props) {
+  const query = useInfiniteArticleReviews(articleId);
+  return <ReviewList query={query} title='기사 리뷰 목록' />;
 }

@@ -1,21 +1,41 @@
 import { api } from '@/lib/axios';
-import type {  Review, ReviewForm, ReviewProps, ReviewResponse } from '../types/types';
+import type {
+  ArticleReviewsProp,
+  Review,
+  ReviewForm,
+  ReviewResponse,
+  TodaysKeywordReviewsProp,
+} from '../types/types';
 
 const SIZE = 10;
 
-export const fetchReviews = async ({
-  keywordId = 340,
+export const fetchReviewsByTodaysKeyword = async ({
+  keywordId,
   page = 0,
-}: ReviewProps): Promise<Review[]> => {
+}: TodaysKeywordReviewsProp): Promise<Review[]> => {
   const res = await api.get(
-    `/keywords/${keywordId}/reviews?page=${page}&size=${SIZE}&sort=id`
+    `/keywords/${keywordId}/reviews?page=${page}&size=${SIZE}&sort=id,desc`
   );
 
-  return res.data.result;
-}
+  return res.data.result as Review[];
+};
+
+export const fetchReviewsByArticle = async ({
+  articleId,
+  page = 0,
+}: ArticleReviewsProp): Promise<Review[]> => {
+  const res = await api.get(
+    `/articles/${articleId}/reviews?page=${page}&size=${SIZE}&ssort=id,desc`
+  );
+
+  return res.data.result as Review[];
+};
 
 export const postReview = async (payload: ReviewForm, articleId: number) => {
-  const response = await api.post<ReviewForm>(`/articles/${articleId}/reviews`, payload);
+  const response = await api.post<ReviewForm>(
+    `/articles/${articleId}/reviews`,
+    payload
+  );
   return response.data;
 };
 
@@ -23,18 +43,25 @@ export const postReview = async (payload: ReviewForm, articleId: number) => {
 export const fetchReview = async (articleId: number, memberId: number) => {
   const response = await api.get(`/articles/${articleId}/reviews/${memberId}`);
   return response.data.result as ReviewResponse;
-
 };
 
 // TODO: memberId 수정
-export const updateReview = async (payload: ReviewForm, articleId: number, reviewId: number) => {
-  const response = await api.patch(`/articles/${articleId}/reviews/${reviewId}`, payload);
+export const updateReview = async (
+  payload: ReviewForm,
+  articleId: number,
+  reviewId: number
+) => {
+  const response = await api.patch(
+    `/articles/${articleId}/reviews/${reviewId}`,
+    payload
+  );
   return response.data.result as ReviewResponse;
 };
 
 // TODO: memberId 수정
 export const deleteReview = async (articleId: number, reviewId: number) => {
-  const response = await api.delete(`/articles/${articleId}/reviews/${reviewId}`);
+  const response = await api.delete(
+    `/articles/${articleId}/reviews/${reviewId}`
+  );
   return response.data;
 };
-

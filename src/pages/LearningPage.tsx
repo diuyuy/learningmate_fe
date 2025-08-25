@@ -2,6 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ArticleList from '@/features/articles/components/AriticleList';
 import TodaysKeywordCard from '@/features/keywords/components/TodaysKeywordCard';
 import { useTodaysKeywordQuery } from '@/features/keywords/hooks/useTodaysKeywordQuery';
+import ReviewList from '@/features/reviews/components/ReviewList';
 import ReviewListInLearning from '@/features/reviews/components/ReviewListInLearning';
 import VideoPlayer from '@/features/videos/components/VideoPlayer';
 
@@ -41,7 +42,11 @@ export default function LearningPage() {
             )}
           </section>
           <aside className='w-full lg:w-1/2'>
-            <ReviewListInLearning articleId={1} page={0} size={10} />
+            {isPending ? (
+              <Skeleton className='w-full' />
+            ) : (
+              <ReviewListInLearning keywordId={todaysKeyword.keyword.id} />
+            )}
           </aside>
         </article>
       </div>
