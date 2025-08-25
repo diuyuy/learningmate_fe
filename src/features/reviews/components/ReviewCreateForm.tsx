@@ -1,14 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { postReview } from "../api/api";
-import type { ReviewForm } from "../types/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
-import { QUERY_KEYS } from "@/constants/querykeys";
+import { useCreateReviewMutation } from "../hooks/useReviewMutation";
 
 type Props = {
   articleId: number;
@@ -16,52 +12,32 @@ type Props = {
 };
 
 const ReviewSchema = z.object({
-  articleId: z.number().int().positive(),
-  content1: z.string().trim().min(10, "기사에 대한 내 생각을 최소 10자 이상 입력하세요.").max(2000, "2000자 이내로 입력하세요."),
-  content2: z.string().trim().min(10, "어려웠던 용어 정리를 최소 10자 이상 입력하세요.").max(2000, "2000자 이내로 입력하세요."),
-  content3: z.string().trim().min(10, "개인적으로 공부한 내용을 최소 10자 이상 입력하세요.").max(2000, "2000자 이내로 입력하세요."),
+  content1: z.string().min(10, "기사에 대한 내 생각을 최소 10자 이상 입력하세요.").max(2000, "2000자 이내로 입력하세요."),
+  content2: z.string().min(10, "어려웠던 용어 정리를 최소 10자 이상 입력하세요.").max(2000, "2000자 이내로 입력하세요."),
+  content3: z.string().min(10, "개인적으로 공부한 내용을 최소 10자 이상 입력하세요.").max(2000, "2000자 이내로 입력하세요."),
 });
 
 type FormValues = z.infer<typeof ReviewSchema>;
 
-export default function ReviewCreateFrom({ articleId, memberId }: Props) {
-  const queryClient = useQueryClient();
+export default function ReviewCreateForm({ articleId, memberId }: Props) {
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(ReviewSchema), // Zod 스키마를 유효성 검사기로 사용
+    resolver: zodResolver(ReviewSchema), 
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
     defaultValues: {
-      articleId,
       content1: "",
       content2: "",
       content3: "",
     },
   });
 
-  const createMutation = useMutation({
-    mutationFn: (payload: ReviewForm) => postReview(payload, +articleId),
-    onSuccess: () => {
-      alert("작성이 완료되었습니다.");
-      // 리뷰 쿼리 무효화하여 최신 데이터를 다시 불러옴
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEW, articleId] });
-    },
-    onError: (error: unknown) => {
-      if (error instanceof AxiosError) {
-        alert(error.response?.data?.message ?? error.message);
-      } else if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert("알 수 없는 오류");
-      }
-    },
-  });
+  const createMutation = useCreateReviewMutation(articleId);
 
-  // handleSubmit이 유효성 검사를 통과시킨 데이터로 mutate 함수를 호출합니다.
   const onSubmit = (data: FormValues) => {
     createMutation.mutate({ memberId, ...data });
   };
@@ -76,6 +52,7 @@ export default function ReviewCreateFrom({ articleId, memberId }: Props) {
             {...register("content1")}
             className="resize-none h-40 w-full"
             placeholder="기사에 대한 내 생각을 입력해주세요"
+            maxLength={2000}
           />
           {errors.content1 && <p className="text-sm text-red-500">{errors.content1.message}</p>}
         </div>
@@ -87,6 +64,7 @@ export default function ReviewCreateFrom({ articleId, memberId }: Props) {
             {...register("content2")}
             className="resize-none h-40 w-full"
             placeholder="어려웠던 용어를 입력해주세요"
+            maxLength={2000}
           />
           {errors.content2 && <p className="text-sm text-red-500">{errors.content2.message}</p>}
         </div>
@@ -98,6 +76,7 @@ export default function ReviewCreateFrom({ articleId, memberId }: Props) {
             {...register("content3")}
             className="resize-none h-40 w-full"
             placeholder="더 공부한 내용을 입력해주세요"
+            maxLength={2000}
           />
           {errors.content3 && <p className="text-sm text-red-500">{errors.content3.message}</p>}
         </div>
