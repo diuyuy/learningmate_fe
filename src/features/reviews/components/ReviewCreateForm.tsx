@@ -48,7 +48,7 @@ export default function ReviewCreateFrom({ articleId, memberId }: Props) {
     onSuccess: () => {
       alert("작성이 완료되었습니다.");
       // 리뷰 쿼리 무효화하여 최신 데이터를 다시 불러옴
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEW, articleId, memberId] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEW, articleId] });
     },
     onError: (error: unknown) => {
       if (error instanceof AxiosError) {

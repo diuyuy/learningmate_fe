@@ -3,17 +3,17 @@ import { useReviewQuery } from "../hooks/useReviewQuery";
 import ReviewUpdateForm from "./ReviewUpateForm";
 import { useParams } from 'react-router';
 import ReviewCreateFrom from "./ReviewCreateForm";
+import { useSession } from "@/features/auth/context/useSession";
 
 export default function ReviewForm() {
-  // TODO : 로그인 구현 후 수정
-  const memberId = 10;
   const { articleId } = useParams();
+  const  memberId = useSession();
   
   if (!articleId) {
     return <div>ArticleID Error</div>;
   }
 
-  const { data, isPending, isError, error } = useReviewQuery(+articleId, memberId);
+  const { data, isPending, isError, error } = useReviewQuery(+articleId);
 
   if (isPending) return <div>로딩 중…</div>;
 
@@ -24,8 +24,8 @@ export default function ReviewForm() {
   }
 
   return data ? (
-  <ReviewUpdateForm articleId={+articleId} memberId={memberId} initial={data} />
+  <ReviewUpdateForm articleId={+articleId} memberId={+memberId} initial={data} />
   ) : (
-    <ReviewCreateFrom articleId={+articleId} memberId={memberId} />
+    <ReviewCreateFrom articleId={+articleId} memberId={+memberId} />
   );
 };

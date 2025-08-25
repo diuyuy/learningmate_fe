@@ -8,6 +8,7 @@ import { AxiosError } from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { QUERY_KEYS } from "@/constants/querykeys";
 
 type Props = {
   articleId: number;
@@ -51,7 +52,7 @@ export default function ReviewUpdateForm({ articleId, memberId, initial }: Props
     mutationFn: (payload: ReviewForm) => updateReview(payload, articleId, reviewId),
     onSuccess: () => {
       alert("수정이 완료되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ["review", articleId, memberId] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEW, articleId] });
     },
     onError: (error: unknown) => {
       if (error instanceof AxiosError) {
@@ -75,7 +76,7 @@ export default function ReviewUpdateForm({ articleId, memberId, initial }: Props
         content2: "",
         content3: "",
       });
-      queryClient.invalidateQueries({ queryKey: ["review", articleId, memberId] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEW, articleId] });
     },
   });
 
