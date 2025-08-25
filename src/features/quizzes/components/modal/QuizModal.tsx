@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { solveQuiz } from "../../api/api";
 import { CheckIcon, XIcon } from "lucide-react";
 import type { AxiosError } from "axios";
+import { useSession } from "@/features/auth/context/useSession";
 
 type Props = {
     isOpen: boolean;
@@ -15,9 +16,8 @@ type Props = {
 }
 
 export default function QuizModal({ isOpen, onClose }: Props){
-    const memberId = 10;
+    const memberId = useSession();
     const {articleId} = useParams();
-    const queryClient = useQueryClient();
     const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
     const [finished, setFinished] = useState(false);
     const [currentResult, setCurrentResult] = useState<QuizSolveResponse | null>();
@@ -64,12 +64,11 @@ export default function QuizModal({ isOpen, onClose }: Props){
         setCurrentResult(null);
     };
 
-    // TODO : memberId 수정
     const solveMutation = useMutation({
         mutationFn: (choiceIdx: number) =>
         solveQuiz(
             {                  
-                memberId,                              
+                memberId: +memberId,                              
                 memberAnswer: (choiceIdx + 1).toString() 
             },
             +articleId,                           
