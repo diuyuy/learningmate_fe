@@ -35,10 +35,6 @@ export const router = createBrowserRouter([
             path: 'my',
             element: <MyPage />,
           },
-          {
-            path: 'signup',
-            element: <SignupPage />,
-          },
         ],
       },
     ],
@@ -50,6 +46,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/signup',
+    element: <SignupPage />,
   },
   {
     path: '/oauth-redirect',

@@ -77,7 +77,9 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button className='mt-2'>로그인</Button>
+        <Button type='submit' className='mt-2'>
+          로그인
+        </Button>
       </form>
     </Form>
   );
