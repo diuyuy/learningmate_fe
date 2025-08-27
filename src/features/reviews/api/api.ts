@@ -1,34 +1,42 @@
 import { api } from '@/lib/axios';
 import type {
   ArticleReviewsProp,
-  Review,
   ReviewForm,
+  ReviewListPageResponse,
   ReviewResponse,
   TodaysKeywordReviewsProp,
 } from '../types/types';
 
 const SIZE = 10;
 
+// 공통 언래핑: { result: {...} } 또는 { data: {...} } 또는 바로 페이지
+function unwrapPage(data: any): ReviewListPageResponse {
+  const page = data?.result ?? data?.data ?? data;
+  // items가 없으면 경고 한번
+  if (!page || !Array.isArray(page.items)) {
+    console.warn('Unexpected review page shape:', data);
+  }
+  return page as ReviewListPageResponse;
+}
+
 export const fetchReviewsByTodaysKeyword = async ({
   keywordId,
   page = 0,
-}: TodaysKeywordReviewsProp): Promise<Review[]> => {
-  const res = await api.get(
+}: TodaysKeywordReviewsProp): Promise<ReviewListPageResponse> => {
+  const response = await api.get(
     `/keywords/${keywordId}/reviews?page=${page}&size=${SIZE}&sort=id,desc`
   );
-
-  return res.data.result as Review[];
+  return unwrapPage(response.data);
 };
 
 export const fetchReviewsByArticle = async ({
   articleId,
   page = 0,
-}: ArticleReviewsProp): Promise<Review[]> => {
-  const res = await api.get(
-    `/articles/${articleId}/reviews?page=${page}&size=${SIZE}&ssort=id,desc`
+}: ArticleReviewsProp): Promise<ReviewListPageResponse> => {
+  const response = await api.get(
+    `/articles/${articleId}/reviews?page=${page}&size=${SIZE}&sort=id,desc`
   );
-
-  return res.data.result as Review[];
+  return unwrapPage(response.data);
 };
 
 export const postReview = async (payload: ReviewForm, articleId: number) => {
