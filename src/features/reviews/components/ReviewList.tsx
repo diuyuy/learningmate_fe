@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   InfiniteData,
   UseInfiniteQueryResult,
+  QueryKey,
 } from '@tanstack/react-query';
 import ReviewCard from '@/components/ui/ReviewCard';
 import { Button } from '@/components/ui/button';
-import type { ReviewListItem, ReviewListPageResponse } from '../types/types';
+import { useToggleReviewLike } from '@/features/reviews/hooks/useToggleReviewLike';
+import type {
+  ReviewListItem,
+  ReviewListPageResponse,
+} from '@/features/reviews/types/types';
 
 const MOBILE_BREAKPOINT = 768;
 const THROTTLE_DELAY = 500;
@@ -18,9 +23,16 @@ type ReviewListQuery = UseInfiniteQueryResult<
 type ReviewListProps = {
   title?: string;
   query: ReviewListQuery;
+  queryKey: QueryKey;
+  extraKeys?: QueryKey[];
 };
 
-export default function ReviewList({ title, query }: ReviewListProps) {
+export default function ReviewList({
+  title,
+  query,
+  queryKey,
+  extraKeys = [],
+}: ReviewListProps) {
   const {
     data,
     fetchNextPage,
@@ -31,9 +43,14 @@ export default function ReviewList({ title, query }: ReviewListProps) {
     error,
   } = query;
 
+  const keys = useMemo(() => [queryKey, ...extraKeys], [queryKey, extraKeys]);
+  const toggleLike = useToggleReviewLike(keys);
+
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const throttleRef = useRef(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const [pendingId, setPendingId] = useState<number | null>(null);
 
   useEffect(() => {
     const checkMobile = () =>
@@ -45,6 +62,7 @@ export default function ReviewList({ title, query }: ReviewListProps) {
 
   useEffect(() => {
     if (!isMobile || !loadMoreRef.current) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (
@@ -61,6 +79,7 @@ export default function ReviewList({ title, query }: ReviewListProps) {
       },
       { threshold: 1 }
     );
+
     observer.observe(loadMoreRef.current);
     return () => {
       if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
@@ -74,20 +93,39 @@ export default function ReviewList({ title, query }: ReviewListProps) {
   );
 
   const isPending = isLoading || isFetchingNextPage;
+
+  const handleToggle = useCallback(
+    (r: ReviewListItem) => {
+      setPendingId(r.id);
+      toggleLike.mutate(
+        { reviewId: r.id, currentLiked: r.likedByMe },
+        { onSettled: () => setPendingId(null) }
+      );
+    },
+    [toggleLike]
+  );
+
   if (isError) return <div>Error: {error.message}</div>;
 
   return (
     <article className='w-full'>
-      <aside className='mb-2'>
-        <h1 className='text-base lg:text-2xl font-bold'>{title}</h1>
-      </aside>
+      {!!title && (
+        <aside className='mb-2'>
+          <h1 className='text-base lg:text-2xl font-bold'>{title}</h1>
+        </aside>
+      )}
 
-      <section className='flex flex-col gap-5'>
+      <section className='flex flex-col gap-4'>
         {allReviews.length === 0 && isPending ? (
           <div>Loading...</div>
         ) : (
           allReviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+            <ReviewCard
+              key={review.id}
+              review={review}
+              onToggleLike={() => handleToggle(review)}
+              likeIsLoading={pendingId === review.id && toggleLike.isPending}
+            />
           ))
         )}
 
@@ -96,6 +134,7 @@ export default function ReviewList({ title, query }: ReviewListProps) {
           className='my-3 flex justify-center items-center'
         >
           {isPending && <span className='mr-2'>Loading...</span>}
+
           {!isMobile && hasNextPage && (
             <Button
               className='w-30 cursor-pointer'
@@ -105,6 +144,7 @@ export default function ReviewList({ title, query }: ReviewListProps) {
               더보기
             </Button>
           )}
+
           {!hasNextPage && allReviews.length > 0 && (
             <span className='text-gray-400 ml-2'>마지막 리뷰입니다.</span>
           )}

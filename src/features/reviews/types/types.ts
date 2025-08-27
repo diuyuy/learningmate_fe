@@ -6,8 +6,8 @@ export type Review = {
   article: Article;
   user: Member;
   content1: string;
-  content2: string;
-  content3: string;
+  content2?: string;
+  content3?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -22,7 +22,6 @@ export type ReviewListItem = {
   likedByMe: boolean;
 };
 
-// 페이지 응답 (items + hasNext + page)
 export type ReviewListPageResponse = {
   items: ReviewListItem[];
   page: number;
@@ -34,8 +33,10 @@ export type ReviewListPageResponse = {
 
 export type LikeReview = {
   id: number;
-  review: Review;
-  user: Member;
+  review?: Review;
+  user?: Member;
+  likeCount: number;
+  likedByMe: boolean;
 };
 
 export type TodaysKeywordReviewsProp = {
