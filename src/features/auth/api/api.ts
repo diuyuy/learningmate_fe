@@ -1,6 +1,6 @@
 import type { Member } from '@/features/members/types/types';
 import { api } from '@/lib/axios';
-import type { LoginForm, SignUpForm } from '../types/types';
+import type { LoginForm, PasswdResetRequest, SignUpForm } from '../types/types';
 
 export const login = async (loginForm: LoginForm) => {
   const response = await api.post('/auth/sign-in', loginForm);
@@ -41,4 +41,16 @@ export const validateAuthCode = async (email: string, authCode: string) => {
     console.error(error);
     return false;
   }
+};
+
+export const requestResetLink = async (email: string) => {
+  await api.post('/auth/passwd-resets', {
+    email,
+  });
+};
+
+export const resetPassword = async (
+  passwordResetRequest: PasswdResetRequest
+) => {
+  await api.patch('/auth/passwd-resets', passwordResetRequest);
 };

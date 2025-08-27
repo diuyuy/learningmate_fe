@@ -13,6 +13,7 @@ import { useAuthCodeTimer } from '../hooks/useAuthCodeTimer';
 import { useSignUpActions } from '../hooks/useSignUpActions';
 import { useSignUpForm } from '../hooks/useSignUpForm';
 import AuthCodeTimer from './AuthCodeTimer';
+import PasswordInput from './PasswordInput';
 
 export default function SignUpForm() {
   const form = useSignUpForm();
@@ -79,11 +80,9 @@ export default function SignUpForm() {
             <FormItem>
               <FormLabel className='font-semibold'>비밀번호</FormLabel>
               <FormControl>
-                <Input
-                  type='password'
+                <PasswordInput
                   placeholder='비밀번호를 입력하세요...'
                   autoComplete='current-password'
-                  className='font-sans'
                   {...field}
                 />
               </FormControl>
@@ -98,11 +97,9 @@ export default function SignUpForm() {
             <FormItem>
               <FormLabel className='font-semibold'>비밀번호 확인</FormLabel>
               <FormControl>
-                <Input
-                  type='password'
+                <PasswordInput
                   placeholder='비밀번호를 입력하세요...'
-                  autoComplete='current-password'
-                  className='font-sans'
+                  autoComplete='current-password2'
                   {...field}
                 />
               </FormControl>
