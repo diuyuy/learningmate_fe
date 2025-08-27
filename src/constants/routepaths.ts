@@ -6,4 +6,5 @@ export const ROUTE_PATHS = {
   LOGIN: '/login',
   SIGNUP: '/signup',
   LANDING: '/landing',
+  PASSWORD_RESETS: '/password-resets',
 } as const;

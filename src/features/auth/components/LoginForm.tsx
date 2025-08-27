@@ -14,6 +14,7 @@ import { login } from '../api/api';
 import { useSession } from '../context/useSession';
 import { useLoginForm } from '../hooks/useLoginForm';
 import type { LoginForm } from '../types/types';
+import PasswordInput from './PasswordInput';
 
 export default function LoginForm() {
   const form = useLoginForm();
@@ -65,11 +66,9 @@ export default function LoginForm() {
             <FormItem>
               <FormLabel className='font-semibold'>비밀번호</FormLabel>
               <FormControl>
-                <Input
-                  type='password'
+                <PasswordInput
                   placeholder='비밀번호를 입력하세요...'
                   autoComplete='current-password'
-                  className='font-sans'
                   {...field}
                 />
               </FormControl>

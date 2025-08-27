@@ -1,5 +1,5 @@
 import { ROUTE_PATHS } from '@/constants/routepaths';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   checkEmailExists,
@@ -45,10 +45,7 @@ export const useSignUpActions = (
     isPending: false,
   });
   const [hasRequestedCode, setHasRequestedCode] = useState(false);
-
-  const [, startTransition] = useTransition();
-  const [isRequesting, startRequestTransition] = useTransition();
-  const [, startValidateTransition] = useTransition();
+  const [isRequesting, setIsRequesting] = useState(false);
 
   const checkEmailValidate = async () => {
     return form.trigger('email');
@@ -56,17 +53,16 @@ export const useSignUpActions = (
 
   const checkEmailExistsAction = async () => {
     if (!(await checkEmailValidate())) return;
-    startTransition(async () => {
-      setCheckEmail({ isPending: true });
-      try {
-        const isExist = await checkEmailExists(form.getValues().email);
-        if (isExist) {
-          setCheckEmail({ isExist: true, unknown: false, isPending: false });
-        } else {
-          setCheckEmail({ isExist: false, unknown: false, isPending: false });
-        }
-      } catch (error) {}
-    });
+
+    setCheckEmail({ isPending: true });
+    try {
+      const isExist = await checkEmailExists(form.getValues().email);
+      if (isExist) {
+        setCheckEmail({ isExist: true, unknown: false, isPending: false });
+      } else {
+        setCheckEmail({ isExist: false, unknown: false, isPending: false });
+      }
+    } catch (error) {}
   };
 
   const requestAuthCodeAction = async () => {
@@ -79,15 +75,16 @@ export const useSignUpActions = (
       return;
     }
 
-    startRequestTransition(async () => {
-      try {
-        await requestAuthCode(form.getValues().email);
-        setHasRequestedCode(true);
-        startTimer();
-      } catch (error) {
-        console.error(error);
-      }
-    });
+    setIsRequesting(true);
+
+    try {
+      await requestAuthCode(form.getValues().email);
+      setHasRequestedCode(true);
+      setIsRequesting(false);
+      startTimer();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const validateAuthCodeAction = async () => {
@@ -100,14 +97,12 @@ export const useSignUpActions = (
       return;
     }
 
-    startValidateTransition(async () => {
-      const isValid = await validateAuthCode(
-        form.getValues().email,
-        form.getValues().authCode
-      );
+    const isValid = await validateAuthCode(
+      form.getValues().email,
+      form.getValues().authCode
+    );
 
-      setValidateCode({ isValid, unknown: false, isPending: false });
-    });
+    setValidateCode({ isValid, unknown: false, isPending: false });
   };
 
   const onSubmit = async (data: SignUpForm) => {

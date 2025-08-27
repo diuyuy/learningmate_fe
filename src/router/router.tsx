@@ -1,3 +1,4 @@
+import AuthLayout from '@/layouts/AuthLayout';
 import ProtectedRoute from '@/layouts/ProtectedRoute';
 import RootLayout from '@/layouts/RootLayout';
 import ArticleDetailPage from '@/pages/ArticleDetailPage';
@@ -8,6 +9,8 @@ import LoginPage from '@/pages/LoginPage';
 import MainPage from '@/pages/MainPage';
 import MyPage from '@/pages/MyPage';
 import OauthRedirectPage from '@/pages/OauthRedirectPage';
+import PasswordResetsPage from '@/pages/PasswordResetsPage';
+import RequestPasswdResetsPage from '@/pages/RequestPasswdResetsPage';
 import SignupPage from '@/pages/SignupPage';
 import { createBrowserRouter } from 'react-router';
 
@@ -44,12 +47,25 @@ export const router = createBrowserRouter([
     element: <LandingPage />,
   },
   {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/signup',
-    element: <SignupPage />,
+    element: <AuthLayout />,
+    children: [
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/signup',
+        element: <SignupPage />,
+      },
+      {
+        path: '/password-resets',
+        element: <RequestPasswdResetsPage />,
+      },
+      {
+        path: '/password-resets/update',
+        element: <PasswordResetsPage />,
+      },
+    ],
   },
   {
     path: '/oauth-redirect',
