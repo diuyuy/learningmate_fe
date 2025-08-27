@@ -6,16 +6,37 @@ export type Review = {
   article: Article;
   user: Member;
   content1: string;
-  content2: string;
-  content3: string;
+  content2?: string;
+  content3?: string;
   createdAt: string;
   updatedAt: string;
 };
 
+export type ReviewListItem = {
+  id: number;
+  createdAt: string;
+  content1: string;
+  nickname: string;
+  title: string;
+  likeCount: number;
+  likedByMe: boolean;
+};
+
+export type ReviewListPageResponse = {
+  items: ReviewListItem[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+};
+
 export type LikeReview = {
   id: number;
-  review: Review;
-  user: Member;
+  review?: Review;
+  user?: Member;
+  likeCount: number;
+  likedByMe: boolean;
 };
 
 export type TodaysKeywordReviewsProp = {

@@ -1,27 +1,38 @@
-// components/reviews/ReviewList.tsx
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   InfiniteData,
   UseInfiniteQueryResult,
+  QueryKey,
 } from '@tanstack/react-query';
 import ReviewCard from '@/components/ui/ReviewCard';
 import { Button } from '@/components/ui/button';
-import type { Review } from '../types/types';
+import { useToggleReviewLike } from '@/features/reviews/hooks/useToggleReviewLike';
+import type {
+  ReviewListItem,
+  ReviewListPageResponse,
+} from '@/features/reviews/types/types';
 
 const MOBILE_BREAKPOINT = 768;
 const THROTTLE_DELAY = 500;
 
 type ReviewListQuery = UseInfiniteQueryResult<
-  InfiniteData<Review[], number>,
+  InfiniteData<ReviewListPageResponse, number>,
   Error
 >;
 
 type ReviewListProps = {
   title?: string;
   query: ReviewListQuery;
+  queryKey: QueryKey;
+  extraKeys?: QueryKey[];
 };
 
-export default function ReviewList({ title, query }: ReviewListProps) {
+export default function ReviewList({
+  title,
+  query,
+  queryKey,
+  extraKeys = [],
+}: ReviewListProps) {
   const {
     data,
     fetchNextPage,
@@ -32,9 +43,14 @@ export default function ReviewList({ title, query }: ReviewListProps) {
     error,
   } = query;
 
+  const keys = useMemo(() => [queryKey, ...extraKeys], [queryKey, extraKeys]);
+  const toggleLike = useToggleReviewLike(keys);
+
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const throttleRef = useRef(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const [pendingId, setPendingId] = useState<number | null>(null);
 
   useEffect(() => {
     const checkMobile = () =>
@@ -70,30 +86,47 @@ export default function ReviewList({ title, query }: ReviewListProps) {
     };
   }, [isMobile, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const pages = data?.pages ?? [];
-  const allReviews: Review[] = useMemo(() => pages.flat(), [pages]);
+  const pages = Array.isArray(data?.pages) ? data!.pages : [];
+  const allReviews: ReviewListItem[] = useMemo(
+    () => pages.flatMap((pg) => (Array.isArray(pg?.items) ? pg.items : [])),
+    [pages]
+  );
+
   const isPending = isLoading || isFetchingNextPage;
+
+  const handleToggle = useCallback(
+    (r: ReviewListItem) => {
+      setPendingId(r.id);
+      toggleLike.mutate(
+        { reviewId: r.id, currentLiked: r.likedByMe },
+        { onSettled: () => setPendingId(null) }
+      );
+    },
+    [toggleLike]
+  );
 
   if (isError) return <div>Error: {error.message}</div>;
 
   return (
     <article className='w-full'>
-      <aside className='mb-2'>
-        <h1 className='text-base lg:text-2xl font-bold'>{title}</h1>
-      </aside>
+      {!!title && (
+        <aside className='mb-2'>
+          <h1 className='text-base lg:text-2xl font-bold'>{title}</h1>
+        </aside>
+      )}
 
-      <section className='flex flex-col gap-5'>
+      <section className='flex flex-col gap-4'>
         {allReviews.length === 0 && isPending ? (
           <div>Loading...</div>
         ) : (
-          pages.map((page, pageIndex) =>
-            page.map((review) => (
-              <ReviewCard
-                key={review.id ?? `${pageIndex}-${review.id}`}
-                review={review}
-              />
-            ))
-          )
+          allReviews.map((review) => (
+            <ReviewCard
+              key={review.id}
+              review={review}
+              onToggleLike={() => handleToggle(review)}
+              likeIsLoading={pendingId === review.id && toggleLike.isPending}
+            />
+          ))
         )}
 
         <div
