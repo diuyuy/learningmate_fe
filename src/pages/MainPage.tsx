@@ -8,7 +8,7 @@ export default function MainPage() {
       <div className='p-6 space-y-4'>
         <div className='flex justify-start my-20'>
           <Calendar
-            size={350}
+            size={450}
             selected={useReviewStore.getState().selectedDate}
             onSelect={(d) => setSelectedDate(d)}
           />

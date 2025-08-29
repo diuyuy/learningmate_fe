@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { format, isSameDay, getDay, isToday } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -9,6 +10,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useReviewStore } from '../store/calendarStore';
+
+type Holiday = { date: string; localName: string; name: string };
 
 export default function Calendar({
   onSelect,
@@ -30,6 +33,28 @@ export default function Calendar({
   const trailing =
     days.length > 0 ? (7 - ((leading + days.length) % 7)) % 7 : 0;
 
+  const [holidays, setHolidays] = useState<Map<string, Holiday>>(new Map());
+  useEffect(() => {
+    const year = Number(format(cursorMonth, 'yyyy'));
+    (async () => {
+      try {
+        const res = await fetch(
+          `https://date.nager.at/api/v3/PublicHolidays/${year}/KR`
+        );
+        if (!res.ok) throw new Error('holiday fetch failed');
+        const json: Holiday[] = await res.json();
+        const map = new Map<string, Holiday>();
+        json.forEach((h) => map.set(h.date, h));
+        setHolidays(map);
+      } catch (e) {
+        console.error(e);
+        setHolidays(new Map());
+      }
+    })();
+  }, [cursorMonth]);
+
+  const holidayByDate = useMemo(() => holidays, [holidays]);
+
   return (
     <div
       className={[
@@ -40,6 +65,7 @@ export default function Calendar({
       role='group'
       aria-label={`${title} 캘린더`}
     >
+      {/* 헤더 */}
       <div className='mb-4 flex items-center justify-between'>
         <h3 className='text-xl font-semibold'>{title}</h3>
         <div className='flex gap-2'>
@@ -48,7 +74,6 @@ export default function Calendar({
             size='icon'
             onClick={gotoPrevMonth}
             aria-label='이전 달'
-            className='cursor-pointer'
           >
             <ChevronLeft className='h-5 w-5' />
           </Button>
@@ -57,7 +82,6 @@ export default function Calendar({
             size='icon'
             onClick={gotoNextMonth}
             aria-label='다음 달'
-            className='cursor-pointer'
           >
             <ChevronRight className='h-5 w-5' />
           </Button>
@@ -73,7 +97,6 @@ export default function Calendar({
               idx === 0 ? 'text-red-600' : '',
               idx === 6 ? 'text-blue-600' : '',
             ].join(' ')}
-            aria-hidden
           >
             {d}
           </div>
@@ -84,7 +107,6 @@ export default function Calendar({
         {Array.from({ length: leading }).map((_, i) => (
           <div
             key={`lead-${i}`}
-            aria-hidden
             className='aspect-square border-r border-b bg-muted/50'
           />
         ))}
@@ -94,37 +116,47 @@ export default function Calendar({
           const today = isToday(date);
           const weekday = getDay(date);
 
-          const dayColorClass =
-            weekday === 0
-              ? 'text-red-600'
-              : weekday === 6
-                ? 'text-blue-600'
-                : 'text-foreground';
-
           const dateISO = format(date, 'yyyy-MM-dd');
-          const label = format(date, 'yyyy년 M월 d일 (EEE)', { locale: ko });
+          const holiday = holidayByDate.get(dateISO);
+          const isHoliday = !!holiday;
+
+          const dayColorClass = isHoliday
+            ? 'text-red-600'
+            : weekday === 6
+              ? 'text-blue-600'
+              : weekday === 0
+                ? 'text-red-600'
+                : 'text-foreground';
 
           return (
             <button
               key={dateISO}
-              onClick={() => {
-                if (!hasData) return;
-                onSelect(date);
-              }}
-              aria-disabled={!hasData}
+              onClick={() => hasData && onSelect(date)}
               disabled={!hasData}
-              aria-pressed={selectedDay}
-              aria-label={`${label}${hasData ? '' : ' (데이터 없음)'}`}
               className={[
-                'relative aspect-square border-r border-b transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70',
+                'relative aspect-square border-r border-b transition-colors cursor-pointer',
                 !hasData
                   ? 'opacity-60 bg-muted/60 cursor-not-allowed'
                   : selectedDay
-                    ? 'bg-primary/40 cursor-pointer'
-                    : 'bg-card hover:bg-accent cursor-pointer',
+                    ? 'bg-primary/40'
+                    : 'bg-card hover:bg-accent',
               ].join(' ')}
+              aria-label={`${format(date, 'yyyy년 M월 d일 (EEE)', {
+                locale: ko,
+              })}${isHoliday ? `, ${holiday?.localName}` : ''}${
+                hasData ? '' : ' (데이터 없음)'
+              }`}
             >
-              <div className='flex h-full flex-col items-center justify-center'>
+              {isHoliday && (
+                <span
+                  className='absolute top-1 left-1/2 -translate-x-1/2 px-0.5 text-[8px] leading-none text-red-600 max-w-[95%] truncate pointer-events-none'
+                  title={holiday.localName}
+                >
+                  {holiday.localName}
+                </span>
+              )}
+
+              <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
                 <span
                   className={[
                     'text-sm md:text-base',
@@ -138,9 +170,9 @@ export default function Calendar({
               </div>
 
               {missionBits !== null && missionBits !== undefined && (
-                <div className='absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5'>
+                <div className='absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 pointer-events-none'>
                   {Array.from({ length: 3 }).map((_, idx) => {
-                    const bit = (missionBits >> (2 - idx)) & 1; // 왼쪽부터 4,2,1
+                    const bit = (missionBits >> (2 - idx)) & 1;
                     const colorClass = bit ? 'bg-green-500' : 'bg-red-500';
                     return (
                       <span
@@ -159,7 +191,6 @@ export default function Calendar({
         {Array.from({ length: trailing }).map((_, i) => (
           <div
             key={`trail-${i}`}
-            aria-hidden
             className='aspect-square border-r border-b bg-muted/50'
           />
         ))}
