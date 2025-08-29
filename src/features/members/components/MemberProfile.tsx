@@ -1,15 +1,19 @@
+import ProfileAvartarImage from '@/components/ProfileAvartarImage';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/features/auth/context/useSession';
-import { AvatarImage } from '@radix-ui/react-avatar';
 
 export default function MemberProfile() {
   const { member } = useSession();
 
+  if (!member) {
+    return null;
+  }
+
   return (
     <div className='w-full flex justify-start gap-3 items-center'>
       <Avatar className='w-12 h-12'>
-        <AvatarImage src='https://github.com/shadcn.png' alt='@shadcn' />
+        <ProfileAvartarImage imgUrl={member.imageUrl} />
         <AvatarFallback>
           <Skeleton className='rounded-full' />
         </AvatarFallback>
