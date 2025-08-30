@@ -21,10 +21,15 @@ jobs:
           node-version: "22"
           cache: "yarn"
 
+      #
+      - name: Set Yarn version
+        run: |
+          corepack enable
+          yarn set version 4.9.2
       # 3. 의존성 설치 및 React 앱 빌드
       - name: Install dependencies and build
         run: |
-          yarn install
+          yarn
           yarn build
         env:
           CI: false
@@ -37,7 +42,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           source: "build/*" # build 디렉토리 안의 모든 파일을 전송
-          target: "/var/www/html" # EC2의 웹 서버 루트 디렉토리
+          target: "/var/www/ysh33" # EC2의 웹 서버 루트 디렉토리
 
       # 5. EC2에 접속하여 웹 서버 재시작
       - name: Restart web server
