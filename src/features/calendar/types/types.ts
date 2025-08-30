@@ -2,6 +2,7 @@ export type MissionLevel = 0 | 1 | 2 | 3;
 
 export type DailyData = {
   date: Date;
-  missionLevel: MissionLevel | null;
+  missionLevel: number | null;
   hasData: boolean;
+  missionBits?: number | null;
 };
