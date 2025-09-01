@@ -1,4 +1,4 @@
-import { BookOpen, Home, Member } from 'lucide-react';
+import { BookOpen, Home, User } from 'lucide-react';
 import { Link } from 'react-router';
 import { Separator } from './ui/separator';
 
@@ -27,7 +27,7 @@ export default function Footer() {
             to='/my'
             className='flex items-center gap-1 hover:text-primary transition'
           >
-            <Member className='w-4 h-4' /> 마이페이지
+            <User className='w-4 h-4' /> 마이페이지
           </Link>
         </section>
       </article>
