@@ -6,6 +6,7 @@ type SessionContextProps = {
   member: Member | null;
   logout: () => void;
   provideSession: (member: Member) => void;
+  updateMember: (member: Member) => void;
 };
 
 export const SessionContext = createContext<SessionContextProps>({
@@ -13,4 +14,5 @@ export const SessionContext = createContext<SessionContextProps>({
   member: null,
   logout: () => {},
   provideSession: () => {},
+  updateMember: () => {},
 });

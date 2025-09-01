@@ -14,6 +14,14 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     setMember(null);
   };
 
+  const updateMember = (updated: Member) => {
+    try {
+      setMember(updated);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const provideSession = (member: Member) => {
     setIsLoggedIn(true);
     setMember(member);
@@ -46,6 +54,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
         member,
         logout,
         provideSession,
+        updateMember,
       }}
     >
       {children}
