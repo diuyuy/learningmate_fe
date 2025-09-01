@@ -62,3 +62,9 @@ export type ReviewResponse = Pick<
   Review,
   'id' | 'content1' | 'content2' | 'content3'
 >;
+
+export type HotReviewsResponse = {
+  status: number;
+  message: string;
+  result: ReviewListItem[];
+};
