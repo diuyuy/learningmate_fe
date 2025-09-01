@@ -26,7 +26,7 @@ const processQueue = (error: unknown) => {
   failedQueue = [];
 };
 
-export const setInterceptor = (logout: () => void) => {
+export const setInterceptors = (logout: () => void) => {
   api.interceptors.response.use(
     (response) => {
       // 2xx 범위에 있는 상태 코드는 이 함수를 트리거 합니다.

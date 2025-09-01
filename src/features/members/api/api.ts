@@ -34,3 +34,7 @@ export const updateProfileImage = async (image: FormData) => {
 
   return response.data.result as Member;
 };
+
+export const deleteMember = async () => {
+  await api.delete('/members/me');
+};
