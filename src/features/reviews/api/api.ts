@@ -1,7 +1,9 @@
 import { api } from '@/lib/axios';
 import type {
   ArticleReviewsProp,
+  HotReviewsResponse,
   ReviewForm,
+  ReviewListItem,
   ReviewListPageResponse,
   ReviewResponse,
   TodaysKeywordReviewsProp,
@@ -79,3 +81,10 @@ export const deleteReview = async (articleId: number, reviewId: number) => {
   );
   return response.data;
 };
+
+export async function fetchHotReviewsByDate(
+  dateISO: string
+): Promise<ReviewListItem[]> {
+  const res = await api.get<HotReviewsResponse>(`/hot-reviews?date=${dateISO}`);
+  return res.data.result ?? [];
+}
