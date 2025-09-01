@@ -8,7 +8,7 @@ export const QUERY_KEYS = {
   REVIEWS: 'reviews',
   STATISTICS: 'statistics',
   STUDIES: 'studies',
-  USER: 'user',
+  MEMBER: 'members',
   VIDEOS: 'videos',
-  REVIEW: 'review'
+  REVIEW: 'review',
 };

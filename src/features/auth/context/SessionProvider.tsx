@@ -7,10 +7,20 @@ import { SessionContext } from './SessionContext';
 
 export default function SessionProvider({ children }: PropsWithChildren) {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [toLoginPage, setToLoginPage] = useState(true);
   const [member, setMember] = useState<Member | null>(null);
+
+  console.log('****************');
 
   const logout = () => {
     setIsLoggedIn(false);
+    setToLoginPage(true);
+    setMember(null);
+  };
+
+  const onAccountDeleted = () => {
+    setIsLoggedIn(false);
+    setToLoginPage(false);
     setMember(null);
   };
 
@@ -24,10 +34,12 @@ export default function SessionProvider({ children }: PropsWithChildren) {
 
   const provideSession = (member: Member) => {
     setIsLoggedIn(true);
+    setToLoginPage(true);
     setMember(member);
   };
 
   useEffect(() => {
+    console.log('Interceptor Set');
     setInterceptor(logout);
   }, []);
 
@@ -52,9 +64,11 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       value={{
         isLoggedIn,
         member,
+        toLoginPage,
         logout,
         provideSession,
         updateMember,
+        onAccountDeleted,
       }}
     >
       {children}
