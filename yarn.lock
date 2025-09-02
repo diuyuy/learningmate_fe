@@ -370,6 +370,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@date-fns/tz@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@date-fns/tz@npm:1.4.1"
+  checksum: 10c0/9033fdc4682fe3d4d147625ce04fa88a8792653594e2de8d5a438c8f3bfc0990ee28fe773f91cac6810b06d818b5b281ae0608752ba8337257d0279ded3f019a
+  languageName: node
+  linkType: hard
+
 "@emnapi/core@npm:^1.4.3":
   version: 1.4.5
   resolution: "@emnapi/core@npm:1.4.5"
@@ -4662,6 +4669,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "learningmate_fe@workspace:."
   dependencies:
+    "@date-fns/tz": "npm:^1.4.1"
     "@eslint/js": "npm:^9.30.1"
     "@hookform/resolvers": "npm:^5.2.1"
     "@radix-ui/react-avatar": "npm:^1.1.10"

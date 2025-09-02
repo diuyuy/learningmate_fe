@@ -1,6 +1,6 @@
 // src/calendar/components/Calendar.tsx
 import { useEffect, useMemo, useState } from 'react';
-import { format, isSameDay, getDay, isToday } from 'date-fns';
+import { format, getDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
   BookOpen,
@@ -14,6 +14,16 @@ import { Button } from '@/components/ui/button';
 import { useReviewStore } from '../store/calendarStore';
 import { useStudyStatusByMonth } from '../hooks/useStudyStatus';
 import { QUIZ, REVIEW, VIDEO } from '../types/types';
+
+import { tz } from '@date-fns/tz';
+import {
+  kstDateKey,
+  isTodayKST,
+  isSameKSTDay,
+  formatKST,
+} from '@/lib/timezone';
+
+const KST = tz('Asia/Seoul');
 
 type Holiday = { date: string; localName: string; name: string };
 
@@ -36,9 +46,10 @@ export default function Calendar({
     isError,
   } = useStudyStatusByMonth(cursorMonth);
 
-  const title = format(cursorMonth, 'yyyy년 M월', { locale: ko });
+  // ✅ 달 제목도 KST 기준으로
+  const title = format(cursorMonth, 'yyyy년 M월', { in: KST, locale: ko });
 
-  // 스켈레톤 + 응답 맵 머지
+  // 스켈레톤 + 응답 맵 머지 (키는 KST 'yyyy-MM-dd')
   const days = useMemo(() => {
     if (!missionMap)
       return monthData.map((d) => ({
@@ -47,8 +58,8 @@ export default function Calendar({
         missionBits: null,
       }));
     return monthData.map((d) => {
-      const iso = format(d.date, 'yyyy-MM-dd');
-      const bits = missionMap.get(iso);
+      const key = kstDateKey(d.date); // ← KST 기준 키
+      const bits = missionMap.get(key);
       return {
         ...d,
         hasData: bits !== undefined,
@@ -66,7 +77,7 @@ export default function Calendar({
   // 공휴일 fetch (연도별 1회)
   const [holidays, setHolidays] = useState<Map<string, Holiday>>(new Map());
   useEffect(() => {
-    const year = Number(format(cursorMonth, 'yyyy'));
+    const year = Number(format(cursorMonth, 'yyyy', { in: KST }));
     (async () => {
       try {
         const res = await fetch(
@@ -75,7 +86,7 @@ export default function Calendar({
         if (!res.ok) throw new Error('holiday fetch failed');
         const json: Holiday[] = await res.json();
         const map = new Map<string, Holiday>();
-        json.forEach((h) => map.set(h.date, h));
+        json.forEach((h) => map.set(h.date, h)); // 'YYYY-MM-DD'
         setHolidays(map);
       } catch (e) {
         console.error(e);
@@ -145,11 +156,11 @@ export default function Calendar({
         ))}
 
         {days.map(({ date, hasData, missionBits }) => {
-          const selectedDay = isSameDay(date, selected);
-          const today = isToday(date);
+          const selectedDay = isSameKSTDay(date, selected); // ← isSameDay 대신
+          const today = isTodayKST(date);
           const weekday = getDay(date);
 
-          const dateISO = format(date, 'yyyy-MM-dd');
+          const dateISO = kstDateKey(date); // ← KST 기준 'YYYY-MM-DD'
           const holiday = holidayByDate.get(dateISO);
           const isHoliday = !!holiday;
 
@@ -174,7 +185,7 @@ export default function Calendar({
                     ? 'bg-primary/40'
                     : 'bg-card hover:bg-accent',
               ].join(' ')}
-              aria-label={`${format(date, 'yyyy년 M월 d일 (EEE)', { locale: ko })}${isHoliday ? `, ${holiday?.localName}` : ''}${hasData ? '' : ' (데이터 없음)'}`}
+              aria-label={`${formatKST(date, 'yyyy년 M월 d일 (EEE)', { locale: ko })}${isHoliday ? `, ${holiday?.localName}` : ''}${hasData ? '' : ' (데이터 없음)'}`}
             >
               {isHoliday && (
                 <span
