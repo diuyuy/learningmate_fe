@@ -57,3 +57,15 @@ export function todayKSTLocalDate(): Date {
   const nowKST = new TZDate(new Date(), KST_TZ_ID);
   return new Date(nowKST.getFullYear(), nowKST.getMonth(), nowKST.getDate());
 }
+
+export function nowKstDateKey(): string {
+  return format(new Date(), 'yyyy-MM-dd', { in: KST });
+}
+
+export function toKstDateKeyFromBackendLocalDateTime(naiveIso: string): string {
+  // 서버 LocalDateTime(타임존 없음) → UTC로 간주해 파싱 → KST 'yyyy-MM-dd'
+  const d = /[Zz]|[+\-]\d{2}:\d{2}$/.test(naiveIso)
+    ? new Date(naiveIso)
+    : new Date(naiveIso + 'Z');
+  return format(d, 'yyyy-MM-dd', { in: KST });
+}

@@ -1,7 +1,10 @@
+import { nowKstDateKey } from '@/lib/timezone';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 type VideoState = {
+  // 기준 키: 'YYYY-MM-DD' (KST)
+  kstDateKey: string;
   todaysKeywordId: number | null;
 
   watchedSeconds: number;
@@ -9,18 +12,25 @@ type VideoState = {
   duration: number | null;
   isCompleted: boolean;
 
+  /** KST '오늘' 기준을 보정 (자정 지나면 자동 초기화) */
+  ensureKstDay: () => void;
+
+  /** 오늘의 keywordId 세팅 (키/키워드 변경 시 초기화) */
   setTodaysKeywordId: (id: number) => void;
+
   setWatchedSeconds: (inc: number) => void;
   setLastTime: (time: number) => void;
   setDuration: (dur: number) => void;
   setIsCompleted: (result?: boolean) => void;
 
+  /** 스토어 전체 초기화(키는 현재 KST 로 새로 설정) */
   resetAll: () => void;
 };
 
 export const useVideoStore = create<VideoState>()(
   persist(
     (set, get) => ({
+      kstDateKey: nowKstDateKey(),
       todaysKeywordId: null,
 
       watchedSeconds: 0,
@@ -28,17 +38,39 @@ export const useVideoStore = create<VideoState>()(
       duration: null,
       isCompleted: false,
 
-      setTodaysKeywordId: (id) =>
-        set((state) => {
-          if (state.todaysKeywordId === id) return { todaysKeywordId: id };
-          return {
+      ensureKstDay: () => {
+        const nowKey = nowKstDateKey();
+        if (get().kstDateKey !== nowKey) {
+          // KST 하루 바뀜 → 초기화
+          set({
+            kstDateKey: nowKey,
+            todaysKeywordId: null,
+            watchedSeconds: 0,
+            lastTime: 0,
+            duration: null,
+            isCompleted: false,
+          });
+        }
+      },
+
+      setTodaysKeywordId: (id) => {
+        const nowKey = nowKstDateKey();
+        const s = get();
+        // 날짜가 바뀌었거나 키워드가 바뀌면 초기화
+        if (s.kstDateKey !== nowKey || s.todaysKeywordId !== id) {
+          set({
+            kstDateKey: nowKey,
             todaysKeywordId: id,
             watchedSeconds: 0,
             lastTime: 0,
             duration: null,
             isCompleted: false,
-          };
-        }),
+          });
+          return;
+        }
+        // 동일 날짜/동일 키워드라면 유지
+        set({ todaysKeywordId: id });
+      },
 
       setWatchedSeconds: (inc) => {
         const { isCompleted } = get();
@@ -60,6 +92,8 @@ export const useVideoStore = create<VideoState>()(
 
       resetAll: () =>
         set({
+          kstDateKey: nowKstDateKey(),
+          todaysKeywordId: null,
           watchedSeconds: 0,
           lastTime: 0,
           duration: null,
@@ -68,7 +102,8 @@ export const useVideoStore = create<VideoState>()(
     }),
     {
       name: 'watchVideoStatus',
-      version: 1,
+      version: 2, // ← 버전 올려 stale 상태 초기화 유도 (기존 v1 -> v2)
+      // 필요시 migrate 로직도 추가 가능
     }
   )
 );

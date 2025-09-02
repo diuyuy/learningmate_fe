@@ -1,6 +1,7 @@
+// src/features/videos/components/VideoPlayer.tsx
 import { useEffect, useRef } from 'react';
 import { useVideoStore } from '../store/useVideoStore';
-import { useSaveVideoMission } from '@/hooks/useSaveVideoMission';
+import { useSaveVideoMission } from '../hooks/useSaveVideoMission';
 
 declare global {
   interface Window {
@@ -22,6 +23,8 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
   const startTimeRef = useRef<number | null>(null);
   // 재생 중 60초 달성 감시 타이머
   const checkTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // 매 분마다 KST 날짜 경계를 확인하는 타이머
+  const dayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const {
     watchedSeconds,
@@ -33,16 +36,32 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
     setLastTime,
     setDuration,
     setIsCompleted,
+    ensureKstDay,
   } = useVideoStore();
 
-  // 60초 달성 → DB 저장 훅 (리턴 바디 없음, status로 판단)
+  // 60초 달성 → DB 저장 훅
   const { mutate: saveMission, isPending: saving } =
     useSaveVideoMission(todaysKeywordId);
 
-  // 키워드 반영 (키워드 바뀌면 스토어가 새 미션으로 초기화됨)
+  // 키워드 반영 (항상 KST 하루 보정 후 적용)
   useEffect(() => {
+    ensureKstDay();
     setTodaysKeywordId(todaysKeywordId);
-  }, [todaysKeywordId, setTodaysKeywordId]);
+  }, [todaysKeywordId, ensureKstDay, setTodaysKeywordId]);
+
+  // 매 분 KST 날짜 확인 (자정 경계에서 자동 초기화)
+  useEffect(() => {
+    if (dayTimerRef.current) clearInterval(dayTimerRef.current);
+    dayTimerRef.current = setInterval(() => {
+      ensureKstDay();
+    }, 60_000);
+    return () => {
+      if (dayTimerRef.current) {
+        clearInterval(dayTimerRef.current);
+        dayTimerRef.current = null;
+      }
+    };
+  }, [ensureKstDay]);
 
   // 안전 호출 헬퍼
   const safeGetCurrentTime = (player: any): number => {
@@ -131,9 +150,8 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
           const YTState = window.YT.PlayerState;
 
           if (event.data === YTState.PLAYING) {
-            // 재생 시작: 구간 시작 시각 기록(이미 재생 중 재호출되는 경우도 있으니 null일 때만 갱신)
+            // 재생 시작
             if (!startTimeRef.current) startTimeRef.current = Date.now();
-            // 재생 중 60초 달성 감시 시작
             startWatchdog();
           } else if (
             event.data === YTState.PAUSED ||
@@ -189,10 +207,9 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
         checkTimerRef.current = null;
       }
     };
-    // videoId가 바뀌면 새 인스턴스를 만들도록 현재 구조 유지
-  }, [videoId, setWatchedSeconds]);
+  }, [videoId, setWatchedSeconds, setLastTime, setDuration]);
 
-  // 안전망: 혹시 일시정지하면서 총합이 60을 넘은 경우(=재생 중 경고를 못 띄운 경우)도 커버
+  // 안전망: 일시정지 등으로 총합이 60을 넘은 경우도 커버
   useEffect(() => {
     if (watchedSeconds >= 60 && !isCompleted) {
       alert('오늘의 영상 시청 미션을 성공하셨습니다');
