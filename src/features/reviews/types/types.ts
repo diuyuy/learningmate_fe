@@ -14,6 +14,7 @@ export type Review = {
 
 export type ReviewListItem = {
   id: number;
+  articleId?: number;
   createdAt: string;
   content1: string;
   nickname: string;

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaRegHeart, FaHeart } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { Link } from 'react-router';
 
 type Props = {
   review: ReviewListItem;
@@ -25,18 +26,27 @@ function HotReviewCardImpl({ review, onToggleLike, likeIsLoading }: Props) {
     <article className='w-full'>
       <Card className='relative overflow-hidden rounded-xl border shadow-sm p-0'>
         <div className='flex items-stretch'>
-          <div
+          <Link
+            to={`/article/${review.articleId}`}
             className='w-11 shrink-0 bg-amber-100 text-amber-900 flex items-center justify-center rounded-l-md cursor-pointer'
             style={{
               writingMode: 'vertical-rl',
               textOrientation: 'upright' as any,
             }}
-            aria-hidden
           >
-            <span className='text-[11px] font-semibold tracking-tight'>
-              기사보기
-            </span>
-          </div>
+            <div
+              className='w-11 shrink-0 bg-amber-100 text-amber-900 flex items-center justify-center rounded-l-md cursor-pointer'
+              style={{
+                writingMode: 'vertical-rl',
+                textOrientation: 'upright' as any,
+              }}
+              aria-hidden
+            >
+              <span className='text-[11px] font-semibold tracking-tight'>
+                기사보기
+              </span>
+            </div>
+          </Link>
 
           <div className='flex-1 min-w-0 p-3'>
             <div className='flex items-center justify-between gap-3'>
