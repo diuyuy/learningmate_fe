@@ -3,7 +3,6 @@ import { useReviewStore } from '@/features/calendar/store/calendarStore';
 import HotReviewsList from '@/features/reviews/components/HotReviewList';
 
 export default function MainPage() {
-  // ✅ 셀렉터 분리(가장 안전)
   const selectedDate = useReviewStore((s) => s.selectedDate);
   const setSelectedDate = useReviewStore((s) => s.setSelectedDate);
 

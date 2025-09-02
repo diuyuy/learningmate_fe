@@ -1,4 +1,3 @@
-// src/calendar/components/Calendar.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { format, getDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -15,15 +14,12 @@ import { useReviewStore } from '../store/calendarStore';
 import { useStudyStatusByMonth } from '../hooks/useStudyStatus';
 import { QUIZ, REVIEW, VIDEO } from '../types/types';
 
-import { tz } from '@date-fns/tz';
 import {
   kstDateKey,
   isTodayKST,
   isSameKSTDay,
   formatKST,
 } from '@/lib/timezone';
-
-const KST = tz('Asia/Seoul');
 
 type Holiday = { date: string; localName: string; name: string };
 
@@ -39,17 +35,14 @@ export default function Calendar({
   const { cursorMonth, gotoPrevMonth, gotoNextMonth, monthData } =
     useReviewStore();
 
-  // ✅ TanStack Query 훅 (import로만 사용!)
   const {
     data: missionMap,
     isLoading,
     isError,
   } = useStudyStatusByMonth(cursorMonth);
 
-  // ✅ 달 제목도 KST 기준으로
-  const title = format(cursorMonth, 'yyyy년 M월', { in: KST, locale: ko });
+  const title = formatKST(cursorMonth, 'yyyy년 M월', { locale: ko });
 
-  // 스켈레톤 + 응답 맵 머지 (키는 KST 'yyyy-MM-dd')
   const days = useMemo(() => {
     if (!missionMap)
       return monthData.map((d) => ({
@@ -58,7 +51,7 @@ export default function Calendar({
         missionBits: null,
       }));
     return monthData.map((d) => {
-      const key = kstDateKey(d.date); // ← KST 기준 키
+      const key = kstDateKey(d.date);
       const bits = missionMap.get(key);
       return {
         ...d,
@@ -68,16 +61,14 @@ export default function Calendar({
     });
   }, [monthData, missionMap]);
 
-  // 앞/뒤 빈칸 계산
-  const firstWeekday = days.length > 0 ? getDay(days[0].date) : 0; // 0=일..6=토
+  const firstWeekday = days.length > 0 ? getDay(days[0].date) : 0;
   const leading = firstWeekday;
   const trailing =
     days.length > 0 ? (7 - ((leading + days.length) % 7)) % 7 : 0;
 
-  // 공휴일 fetch (연도별 1회)
   const [holidays, setHolidays] = useState<Map<string, Holiday>>(new Map());
   useEffect(() => {
-    const year = Number(format(cursorMonth, 'yyyy', { in: KST }));
+    const year = Number(formatKST(cursorMonth, 'yyyy'));
     (async () => {
       try {
         const res = await fetch(
@@ -86,7 +77,7 @@ export default function Calendar({
         if (!res.ok) throw new Error('holiday fetch failed');
         const json: Holiday[] = await res.json();
         const map = new Map<string, Holiday>();
-        json.forEach((h) => map.set(h.date, h)); // 'YYYY-MM-DD'
+        json.forEach((h) => map.set(h.date, h));
         setHolidays(map);
       } catch (e) {
         console.error(e);
@@ -107,7 +98,6 @@ export default function Calendar({
       role='group'
       aria-label={`${title} 캘린더`}
     >
-      {/* 헤더 */}
       <div className='mb-4 flex items-center justify-between'>
         <h3 className='text-xl font-semibold'>{title}</h3>
         <div className='flex gap-2'>
@@ -130,7 +120,6 @@ export default function Calendar({
         </div>
       </div>
 
-      {/* 요일 헤더 */}
       <div className='grid grid-cols-7 text-center text-xs md:text-sm text-muted-foreground border-t border-l'>
         {'일월화수목금토'.split('').map((d, idx) => (
           <div
@@ -156,11 +145,11 @@ export default function Calendar({
         ))}
 
         {days.map(({ date, hasData, missionBits }) => {
-          const selectedDay = isSameKSTDay(date, selected); // ← isSameDay 대신
+          const selectedDay = isSameKSTDay(date, selected);
           const today = isTodayKST(date);
           const weekday = getDay(date);
 
-          const dateISO = kstDateKey(date); // ← KST 기준 'YYYY-MM-DD'
+          const dateISO = kstDateKey(date);
           const holiday = holidayByDate.get(dateISO);
           const isHoliday = !!holiday;
 
@@ -185,7 +174,9 @@ export default function Calendar({
                     ? 'bg-primary/40'
                     : 'bg-card hover:bg-accent',
               ].join(' ')}
-              aria-label={`${formatKST(date, 'yyyy년 M월 d일 (EEE)', { locale: ko })}${isHoliday ? `, ${holiday?.localName}` : ''}${hasData ? '' : ' (데이터 없음)'}`}
+              aria-label={`${formatKST(date, 'yyyy년 M월 d일 (EEE)', { locale: ko })}${
+                isHoliday ? `, ${holiday?.localName}` : ''
+              }${hasData ? '' : ' (데이터 없음)'}`}
             >
               {isHoliday && (
                 <span
@@ -211,7 +202,6 @@ export default function Calendar({
 
               {missionBits !== null && missionBits !== undefined && (
                 <div className='absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 pointer-events-none'>
-                  {/* 비디오 → 리뷰 → 퀴즈 */}
                   {[VIDEO, REVIEW, QUIZ].map((mask, idx) => {
                     const completed = (missionBits & mask) > 0;
                     const colorClass = completed

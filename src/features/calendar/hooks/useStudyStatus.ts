@@ -17,14 +17,14 @@ function toMissionBits(item: StudyStatusItem): number {
 }
 
 function getDateKey(item: StudyStatusItem): string {
-  if (item.updatedAt) return kstDateKeyFromBackend(item.updatedAt); // UTC로 간주→KST 날짜
+  if (item.updatedAt) return kstDateKeyFromBackend(item.updatedAt);
   if (item.createdAt) return kstDateKeyFromBackend(item.createdAt);
   return '';
 }
 
 export function useStudyStatusByMonth(anchorMonth: Date) {
   const year = Number(format(anchorMonth, 'yyyy', { in: KST }));
-  const month = Number(format(anchorMonth, 'M', { in: KST })); // 1..12
+  const month = Number(format(anchorMonth, 'M', { in: KST }));
 
   return useQuery({
     queryKey: ['study-status', year, month],
@@ -34,9 +34,8 @@ export function useStudyStatusByMonth(anchorMonth: Date) {
       for (const item of items) {
         const key = getDateKey(item);
         if (!key) continue;
-        const bits = toMissionBits(item);
         const prev = byDate.get(key) ?? 0;
-        byDate.set(key, (prev | bits) & 7);
+        byDate.set(key, (prev | toMissionBits(item)) & 7);
       }
       return byDate;
     },
