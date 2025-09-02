@@ -1,5 +1,6 @@
-import { useInfiniteKeywordReviews } from '../hooks/useInfiniteReviewsQuery';
+import { useInfiniteKeywordReviews } from '@/features/reviews/hooks/useInfiniteReviewsQuery';
 import ReviewList from './ReviewList';
+import type { QueryKey } from '@tanstack/react-query';
 
 export default function KeywordReviewList({
   keywordId,
@@ -9,5 +10,13 @@ export default function KeywordReviewList({
   title?: string;
 }) {
   const query = useInfiniteKeywordReviews(keywordId);
-  return <ReviewList title={title} query={query} />;
+  const queryKey: QueryKey = ['reviews', 'keyword', keywordId];
+
+  return (
+    <ReviewList
+      title={title ?? '최신 리뷰'}
+      query={query}
+      queryKey={queryKey}
+    />
+  );
 }

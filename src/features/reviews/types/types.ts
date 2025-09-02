@@ -13,9 +13,11 @@ export type Review = {
 };
 
 export type ReviewListItem = {
+  updatedAt: string;
   id: number;
   createdAt: string;
   content1: string;
+  memberId: number;
   nickname: string;
   title: string;
   likeCount: number;
