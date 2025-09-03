@@ -1,15 +1,7 @@
-// src/calendar/store/calendarStore.ts
 import { create } from 'zustand';
-import {
-  addDays,
-  startOfMonth,
-  startOfToday,
-  endOfMonth,
-  eachDayOfInterval,
-} from 'date-fns';
+import { addDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import type { DailyData } from '../types/types';
-
-const today = startOfToday();
+import { todayKSTLocalDate } from '@/lib/timezone';
 
 function buildMonthSkeleton(anchor: Date): DailyData[] {
   const start = startOfMonth(anchor);
@@ -25,7 +17,7 @@ function buildMonthSkeleton(anchor: Date): DailyData[] {
 export type StoreState = {
   cursorMonth: Date;
   selectedDate: Date;
-  monthData: DailyData[]; // 스켈레톤만 저장
+  monthData: DailyData[];
   setSelectedDate: (d: Date) => void;
   gotoPrevMonth: () => void;
   gotoNextMonth: () => void;
@@ -33,6 +25,7 @@ export type StoreState = {
 };
 
 export const useReviewStore = create<StoreState>((set, get) => {
+  const today = todayKSTLocalDate();
   const initialMonth = startOfMonth(today);
 
   return {

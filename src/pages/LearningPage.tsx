@@ -2,7 +2,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ArticleList from '@/features/articles/components/AriticleList';
 import TodaysKeywordCard from '@/features/keywords/components/TodaysKeywordCard';
 import { useTodaysKeywordQuery } from '@/features/keywords/hooks/useTodaysKeywordQuery';
-import ReviewList from '@/features/reviews/components/ReviewList';
 import ReviewListInLearning from '@/features/reviews/components/ReviewListInLearning';
 import VideoPlayer from '@/features/videos/components/VideoPlayer';
 

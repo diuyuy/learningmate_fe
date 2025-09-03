@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { nowKstDateKey } from '@/lib/timezone';
 
 type VideoState = {
+  kstDateKey: string;
   todaysKeywordId: number | null;
 
   watchedSeconds: number;
@@ -9,7 +11,9 @@ type VideoState = {
   duration: number | null;
   isCompleted: boolean;
 
+  ensureKstDay: () => void;
   setTodaysKeywordId: (id: number) => void;
+
   setWatchedSeconds: (inc: number) => void;
   setLastTime: (time: number) => void;
   setDuration: (dur: number) => void;
@@ -21,6 +25,7 @@ type VideoState = {
 export const useVideoStore = create<VideoState>()(
   persist(
     (set, get) => ({
+      kstDateKey: nowKstDateKey(),
       todaysKeywordId: null,
 
       watchedSeconds: 0,
@@ -28,17 +33,36 @@ export const useVideoStore = create<VideoState>()(
       duration: null,
       isCompleted: false,
 
-      setTodaysKeywordId: (id) =>
-        set((state) => {
-          if (state.todaysKeywordId === id) return { todaysKeywordId: id };
-          return {
+      ensureKstDay: () => {
+        const nowKey = nowKstDateKey();
+        if (get().kstDateKey !== nowKey) {
+          set({
+            kstDateKey: nowKey,
+            todaysKeywordId: null,
+            watchedSeconds: 0,
+            lastTime: 0,
+            duration: null,
+            isCompleted: false,
+          });
+        }
+      },
+
+      setTodaysKeywordId: (id) => {
+        const nowKey = nowKstDateKey();
+        const s = get();
+        if (s.kstDateKey !== nowKey || s.todaysKeywordId !== id) {
+          set({
+            kstDateKey: nowKey,
             todaysKeywordId: id,
             watchedSeconds: 0,
             lastTime: 0,
             duration: null,
             isCompleted: false,
-          };
-        }),
+          });
+          return;
+        }
+        set({ todaysKeywordId: id });
+      },
 
       setWatchedSeconds: (inc) => {
         const { isCompleted } = get();
@@ -60,6 +84,8 @@ export const useVideoStore = create<VideoState>()(
 
       resetAll: () =>
         set({
+          kstDateKey: nowKstDateKey(),
+          todaysKeywordId: null,
           watchedSeconds: 0,
           lastTime: 0,
           duration: null,
@@ -68,7 +94,7 @@ export const useVideoStore = create<VideoState>()(
     }),
     {
       name: 'watchVideoStatus',
-      version: 1,
+      version: 2,
     }
   )
 );
