@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { format, isSameDay, getDay, isToday } from 'date-fns';
+import { format, getDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
   BookOpen,
@@ -9,7 +9,17 @@ import {
   PlayCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
 import { useReviewStore } from '../store/calendarStore';
+import { useStudyStatusByMonth } from '../hooks/useStudyStatus';
+import { QUIZ, REVIEW, VIDEO } from '../types/types';
+
+import {
+  kstDateKey,
+  isTodayKST,
+  isSameKSTDay,
+  formatKST,
+} from '@/lib/timezone';
 
 type Holiday = { date: string; localName: string; name: string };
 
@@ -25,17 +35,40 @@ export default function Calendar({
   const { cursorMonth, gotoPrevMonth, gotoNextMonth, monthData } =
     useReviewStore();
 
-  const title = format(cursorMonth, 'yyyy년 M월', { locale: ko });
-  const days = monthData;
+  const {
+    data: missionMap,
+    isLoading,
+    isError,
+  } = useStudyStatusByMonth(cursorMonth);
 
-  const firstWeekday = days.length > 0 ? getDay(days[0].date) : 0; // 0=일..6=토
+  const title = formatKST(cursorMonth, 'yyyy년 M월', { locale: ko });
+
+  const days = useMemo(() => {
+    if (!missionMap)
+      return monthData.map((d) => ({
+        ...d,
+        hasData: false,
+        missionBits: null,
+      }));
+    return monthData.map((d) => {
+      const key = kstDateKey(d.date);
+      const bits = missionMap.get(key);
+      return {
+        ...d,
+        hasData: bits !== undefined,
+        missionBits: bits ?? null,
+      };
+    });
+  }, [monthData, missionMap]);
+
+  const firstWeekday = days.length > 0 ? getDay(days[0].date) : 0;
   const leading = firstWeekday;
   const trailing =
     days.length > 0 ? (7 - ((leading + days.length) % 7)) % 7 : 0;
 
   const [holidays, setHolidays] = useState<Map<string, Holiday>>(new Map());
   useEffect(() => {
-    const year = Number(format(cursorMonth, 'yyyy'));
+    const year = Number(formatKST(cursorMonth, 'yyyy'));
     (async () => {
       try {
         const res = await fetch(
@@ -65,7 +98,6 @@ export default function Calendar({
       role='group'
       aria-label={`${title} 캘린더`}
     >
-      {/* 헤더 */}
       <div className='mb-4 flex items-center justify-between'>
         <h3 className='text-xl font-semibold'>{title}</h3>
         <div className='flex gap-2'>
@@ -103,6 +135,7 @@ export default function Calendar({
         ))}
       </div>
 
+      {/* 일자 그리드 */}
       <div className='grid grid-cols-7 border-l border-t'>
         {Array.from({ length: leading }).map((_, i) => (
           <div
@@ -112,11 +145,11 @@ export default function Calendar({
         ))}
 
         {days.map(({ date, hasData, missionBits }) => {
-          const selectedDay = isSameDay(date, selected);
-          const today = isToday(date);
+          const selectedDay = isSameKSTDay(date, selected);
+          const today = isTodayKST(date);
           const weekday = getDay(date);
 
-          const dateISO = format(date, 'yyyy-MM-dd');
+          const dateISO = kstDateKey(date);
           const holiday = holidayByDate.get(dateISO);
           const isHoliday = !!holiday;
 
@@ -141,11 +174,9 @@ export default function Calendar({
                     ? 'bg-primary/40'
                     : 'bg-card hover:bg-accent',
               ].join(' ')}
-              aria-label={`${format(date, 'yyyy년 M월 d일 (EEE)', {
-                locale: ko,
-              })}${isHoliday ? `, ${holiday?.localName}` : ''}${
-                hasData ? '' : ' (데이터 없음)'
-              }`}
+              aria-label={`${formatKST(date, 'yyyy년 M월 d일 (EEE)', { locale: ko })}${
+                isHoliday ? `, ${holiday?.localName}` : ''
+              }${hasData ? '' : ' (데이터 없음)'}`}
             >
               {isHoliday && (
                 <span
@@ -171,9 +202,11 @@ export default function Calendar({
 
               {missionBits !== null && missionBits !== undefined && (
                 <div className='absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 pointer-events-none'>
-                  {Array.from({ length: 3 }).map((_, idx) => {
-                    const bit = (missionBits >> (2 - idx)) & 1;
-                    const colorClass = bit ? 'bg-green-500' : 'bg-red-500';
+                  {[VIDEO, REVIEW, QUIZ].map((mask, idx) => {
+                    const completed = (missionBits & mask) > 0;
+                    const colorClass = completed
+                      ? 'bg-green-500'
+                      : 'bg-red-500';
                     return (
                       <span
                         key={idx}
@@ -196,21 +229,22 @@ export default function Calendar({
         ))}
       </div>
 
+      {/* 하단 범례 + 로딩/에러 */}
       <div className='mt-4'>
         <div className='mx-auto max-w-sm rounded-xl border bg-muted/30 px-3 py-3'>
           <div className='flex items-center justify-center gap-4 text-[10px] md:text-xs text-muted-foreground mb-2'>
             <span className='font-medium'>순서 :</span>
             <div className='flex items-center gap-1'>
-              <HelpCircle className='h-3 w-3' />
-              <span>퀴즈</span>
+              <PlayCircle className='h-3 w-3' />
+              <span>비디오</span>
             </div>
             <div className='flex items-center gap-1'>
               <BookOpen className='h-3 w-3' />
               <span>리뷰</span>
             </div>
             <div className='flex items-center gap-1'>
-              <PlayCircle className='h-3 w-3' />
-              <span>비디오</span>
+              <HelpCircle className='h-3 w-3' />
+              <span>퀴즈</span>
             </div>
           </div>
           <div className='flex items-center justify-center gap-6 text-[10px] md:text-xs text-muted-foreground'>
@@ -223,6 +257,16 @@ export default function Calendar({
               <span>미완료</span>
             </div>
           </div>
+          {isLoading && (
+            <div className='mt-2 text-center text-[10px] md:text-xs text-muted-foreground'>
+              불러오는 중…
+            </div>
+          )}
+          {isError && (
+            <div className='mt-2 text-center text-[10px] md:text-xs text-red-600'>
+              데이터를 불러오지 못했어요. 콘솔을 확인해주세요.
+            </div>
+          )}
         </div>
       </div>
     </div>

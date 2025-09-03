@@ -1,6 +1,6 @@
 import { BookOpen, Home, User } from 'lucide-react';
-import { Separator } from './ui/separator';
 import { Link } from 'react-router';
+import { Separator } from './ui/separator';
 
 export default function Footer() {
   return (

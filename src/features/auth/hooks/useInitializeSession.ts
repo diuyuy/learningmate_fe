@@ -1,7 +1,7 @@
+import { fetchMember } from '@/features/members/api/api';
 import type { Member } from '@/features/members/types/types';
 import { setInterceptors } from '@/lib/axios';
 import { useEffect } from 'react';
-import { fetchMember } from '../api/api';
 
 export const useInitializeSessoin = (
   logout: () => void,

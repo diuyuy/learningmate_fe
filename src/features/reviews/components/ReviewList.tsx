@@ -11,6 +11,7 @@ import type {
   ReviewListItem,
   ReviewListPageResponse,
 } from '@/features/reviews/types/types';
+import { useSession } from '@/features/auth/context/useSession';
 
 const MOBILE_BREAKPOINT = 768;
 const THROTTLE_DELAY = 500;
@@ -23,8 +24,10 @@ type ReviewListQuery = UseInfiniteQueryResult<
 type ReviewListProps = {
   title?: string;
   query: ReviewListQuery;
-  queryKey: QueryKey;
+  queryKey?: QueryKey;
   extraKeys?: QueryKey[];
+  /** 내 리뷰 숨길지 여부 (기본값: true) */
+  excludeMine?: boolean;
 };
 
 export default function ReviewList({
@@ -32,24 +35,31 @@ export default function ReviewList({
   query,
   queryKey,
   extraKeys = [],
+  excludeMine = true,
 }: ReviewListProps) {
   const {
     data,
     fetchNextPage,
-    hasNextPage,
+    hasNextPage: _hasNextPage,
     isFetchingNextPage,
     isLoading,
     isError,
     error,
   } = query;
 
-  const keys = useMemo(() => [queryKey, ...extraKeys], [queryKey, extraKeys]);
+  const session = useSession();
+  const myId = session?.member?.id;
+
+  const keys = useMemo<QueryKey[]>(
+    () => (queryKey ? [queryKey, ...extraKeys] : [...extraKeys]),
+    [queryKey, extraKeys]
+  );
+
   const toggleLike = useToggleReviewLike(keys);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const throttleRef = useRef(false);
   const [isMobile, setIsMobile] = useState(false);
-
   const [pendingId, setPendingId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -60,24 +70,28 @@ export default function ReviewList({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const hasNextPage = Boolean(_hasNextPage);
+
   useEffect(() => {
     if (!isMobile || !loadMoreRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (
-          entries[0].isIntersecting &&
+          entries[0]?.isIntersecting &&
           hasNextPage &&
           !isFetchingNextPage &&
           !throttleRef.current
         ) {
           throttleRef.current = true;
           fetchNextPage().finally(() => {
-            setTimeout(() => (throttleRef.current = false), THROTTLE_DELAY);
+            setTimeout(() => {
+              throttleRef.current = false;
+            }, THROTTLE_DELAY);
           });
         }
       },
-      { threshold: 1 }
+      { threshold: 0.5 }
     );
 
     observer.observe(loadMoreRef.current);
@@ -86,17 +100,25 @@ export default function ReviewList({
     };
   }, [isMobile, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const pages = Array.isArray(data?.pages) ? data!.pages : [];
+  const pages = Array.isArray(data?.pages) ? data.pages : [];
   const allReviews: ReviewListItem[] = useMemo(
-    () => pages.flatMap((pg) => (Array.isArray(pg?.items) ? pg.items : [])),
+    () => pages.flatMap((pg) => pg.items),
     [pages]
   );
+
+  // ✅ 내 리뷰 제외: memberId === myId 인 항목 제거
+  const displayedReviews: ReviewListItem[] = useMemo(() => {
+    if (!excludeMine || typeof myId !== 'number') return allReviews;
+    // memberId가 없는 데이터가 섞여 있을 수 있으니 안전 가드
+    return allReviews.filter((r) => r.memberId == null || r.memberId !== myId);
+  }, [allReviews, excludeMine, myId]);
 
   const isPending = isLoading || isFetchingNextPage;
 
   const handleToggle = useCallback(
     (r: ReviewListItem) => {
       setPendingId(r.id);
+      // ← 당신의 훅 시그니처가 currentLiked를 요구하면 유지, 아니면 { reviewId: r.id }만 넘기세요.
       toggleLike.mutate(
         { reviewId: r.id, currentLiked: r.likedByMe },
         { onSettled: () => setPendingId(null) }
@@ -105,7 +127,10 @@ export default function ReviewList({
     [toggleLike]
   );
 
-  if (isError) return <div>Error: {error.message}</div>;
+  if (isError) {
+    const msg = error?.message ?? '알 수 없는 오류가 발생했습니다.';
+    return <div role='alert'>Error: {msg}</div>;
+  }
 
   return (
     <article className='w-full'>
@@ -116,10 +141,10 @@ export default function ReviewList({
       )}
 
       <section className='flex flex-col gap-4'>
-        {allReviews.length === 0 && isPending ? (
+        {displayedReviews.length === 0 && isPending ? (
           <div>Loading...</div>
         ) : (
-          allReviews.map((review) => (
+          displayedReviews.map((review) => (
             <ReviewCard
               key={review.id}
               review={review}
@@ -137,7 +162,7 @@ export default function ReviewList({
 
           {!isMobile && hasNextPage && (
             <Button
-              className='w-30 cursor-pointer'
+              className='w-32 cursor-pointer'
               onClick={() => fetchNextPage()}
               disabled={isPending}
             >
@@ -145,7 +170,7 @@ export default function ReviewList({
             </Button>
           )}
 
-          {!hasNextPage && allReviews.length > 0 && (
+          {!hasNextPage && displayedReviews.length > 0 && (
             <span className='text-gray-400 ml-2'>마지막 리뷰입니다.</span>
           )}
         </div>
