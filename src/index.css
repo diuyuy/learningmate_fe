@@ -110,9 +110,52 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@font-face {
+  font-family: 'NanumSquare';
+  src: url('/fonts/NanumSquareL.woff2') format('woff2');
+  font-weight: 300; /* Light */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumSquare';
+  src: url('/fonts/NanumSquareR.woff2') format('woff2');
+  font-weight: 400; /* Regular */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumSquare';
+  src: url('/fonts/NanumSquareB.woff2') format('woff2');
+  font-weight: 700; /* Bold */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NanumSquare';
+  src: url('/fonts/NanumSquareEB.woff2') format('woff2');
+  font-weight: 800; /* Extra Bold */
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-nanum: 'NanumSquare', sans-serif;
+}
+
+@utility font-nanum {
+  font-family: var(--font-nanum);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html {
+    font-family: var(--font-nanum);
   }
   body {
     @apply bg-background text-foreground;

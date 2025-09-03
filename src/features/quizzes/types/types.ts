@@ -1,5 +1,4 @@
 import type { Article } from '@/features/articles/types/types';
-import type { User } from '@/features/users/types/types';
 
 export type Quiz = {
   id: number;
@@ -13,10 +12,28 @@ export type Quiz = {
   explanation: string;
 };
 
-export type UserQuiz = {
+export type MemberQuiz = {
+  memberId: number;
+  memberAnswer: string; // '1' | '2' | '3' | '4'
+};
+
+export type QuizItemRaw = {
   id: number;
-  quiz: Quiz;
-  user: User;
-  userAnswer: string; // '1' | '2' | '3' | '4'
-  createdAt: string;
+  description: string;
+  question1: string;
+  question2: string;
+  question3: string;
+  question4: string;
+};
+
+export type QuizChoiceArr = {
+  id: number;
+  description: string;
+  choices: string[];
+};
+
+export type QuizSolveResponse = {
+  answer: string;
+  explanation?: string;
+  status: string;
 };
