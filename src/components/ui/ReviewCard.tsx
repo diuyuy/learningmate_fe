@@ -1,4 +1,3 @@
-// components/ui/ReviewCard.tsx
 import { memo } from 'react';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -22,8 +21,7 @@ type Props = {
 
 function ReviewCardImpl({ review, onToggleLike, likeIsLoading }: Props) {
   const nickname = review.nickname || '알 수 없는 사용자';
-  const dateStr = (review as any).updatedAt ?? review.createdAt ?? '';
-
+  const dateStr = review.updatedAt ?? review.createdAt ?? '';
   const formatted = useFormattedDate(dateStr, {
     year: 'numeric',
     month: 'long',
@@ -39,16 +37,12 @@ function ReviewCardImpl({ review, onToggleLike, likeIsLoading }: Props) {
 
   return (
     <article className='w-full'>
-      <Card className='flex flex-row min-h-30'>
-        <figure className='w-1/10'>
-          <Avatar className='w-15 h-15 ml-5'>
+      <Card className='grid grid-cols-[64px_1fr] gap-3 min-h-[120px]'>
+        <figure className='py-4 pl-4'>
+          <Avatar className='w-16 h-16'>
             <AvatarImage
-              src={
-                typeof (review as any)?.image_url === 'string' &&
-                (review as any).image_url.trim() !== ''
-                  ? (review as any).image_url
-                  : 'https://github.com/shadcn.png'
-              }
+              src='https://github.com/shadcn.png'
+              alt={`${nickname} 프로필 이미지`}
               onError={(e) => {
                 e.currentTarget.src = 'https://github.com/shadcn.png';
               }}
@@ -56,22 +50,22 @@ function ReviewCardImpl({ review, onToggleLike, likeIsLoading }: Props) {
           </Avatar>
         </figure>
 
-        <section className='w-9/10 ml-2'>
-          <CardHeader>
+        <section className='pr-3'>
+          <CardHeader className='pb-2'>
             <CardTitle className='text-xl lg:text-2xl font-extrabold'>
-              {review.id} {nickname}
+              {review.id} {review.title} {nickname}
             </CardTitle>
-            <CardDescription className='mb-2 text-sm lg:text-md'>
+            <CardDescription className='mb-2 text-sm lg:text-base'>
               {formatted}
             </CardDescription>
           </CardHeader>
 
-          <CardContent className='text-sm lg:text-md'>
+          <CardContent className='pt-0 text-sm lg:text-base'>
             <p>{review.content1}</p>
           </CardContent>
 
-          <CardFooter>
-            <div className='w-full border-t-2 mt-5 py-3 flex items-center'>
+          <CardFooter className='pt-2'>
+            <div className='w-full border-t mt-4 pt-3 flex items-center'>
               <span className='relative inline-grid place-items-center h-7 w-7'>
                 <AnimatePresence initial={false}>
                   {liked && (
@@ -107,7 +101,10 @@ function ReviewCardImpl({ review, onToggleLike, likeIsLoading }: Props) {
                 </motion.button>
               </span>
 
-              <span className='ml-2 text-sm select-none pointer-events-none'>
+              <span
+                className='ml-2 text-sm select-none pointer-events-none'
+                aria-live='polite'
+              >
                 {likeCount}
               </span>
             </div>
@@ -119,8 +116,8 @@ function ReviewCardImpl({ review, onToggleLike, likeIsLoading }: Props) {
 }
 
 export default memo(ReviewCardImpl, (prev, next) => {
-  const a = prev.review,
-    b = next.review;
+  const a = prev.review;
+  const b = next.review;
   return (
     a.id === b.id &&
     a.content1 === b.content1 &&

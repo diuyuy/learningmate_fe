@@ -1,5 +1,3 @@
-// LearningMateLanding.tsx (후기 캐러셀 제거, 후기 4개 고정 표시 + /login 라우팅)
-
 import { useMemo } from 'react';
 import {
   BookOpen,
@@ -125,7 +123,7 @@ export default function LearningMateLanding() {
       >
         <div className="absolute inset-0 opacity-5 bg-[url('https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1600&q=60')] bg-cover bg-center" />
         <div className='relative'>
-          <p className='text-[11px] sm:text-xs uppercase tracking-widest flex items-center justify-center gap-2'>
+          <p className='text-[11px] sm:text-xs uppercase tracking-widest flex items-center justify-center gap-2 font-semibold'>
             <Sparkles className='h-4 w-4' /> 경제 스터디를 더 쉽게
           </p>
           <h1
@@ -174,10 +172,10 @@ export default function LearningMateLanding() {
                 <div className='h-16 w-16 sm:h-20 sm:w-20 mx-auto flex flex-col items-center justify-center rounded-full bg-yellow-400 border border-yellow-300 mb-4 text-white'>
                   <Icon className='h-6 w-6 text-white' />
                 </div>
-                <h3 className='font-semibold' style={{ color: BRAND }}>
+                <h3 className='font-bold' style={{ color: BRAND }}>
                   {title}
                 </h3>
-                <p className='mt-2 text-sm leading-relaxed'>{desc}</p>
+                <p className='mt-2 text-[13px] leading-relaxed'>{desc}</p>
               </div>
             ))}
           </div>
@@ -262,10 +260,10 @@ export default function LearningMateLanding() {
                     className='h-10 w-10 rounded-full'
                   />
                   <div>
-                    <p className='font-medium' style={{ color: BRAND }}>
+                    <p className='font-extrabold' style={{ color: BRAND }}>
                       스터디원 {i}
                     </p>
-                    <p className='text-xs '>3개월 연속 학습</p>
+                    <p className='text-xs'>3개월 연속 학습</p>
                   </div>
                 </div>
                 <p className='mt-4 text-sm leading-6'>

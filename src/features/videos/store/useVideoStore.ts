@@ -1,71 +1,91 @@
-// store/useVideoStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { nowKstDateKey } from '@/lib/timezone';
 
 type VideoState = {
-  // 하루에 한 번 외부에서 바뀌는 오늘의 키워드 ID (number)
+  kstDateKey: string;
   todaysKeywordId: number | null;
 
-  // 누적/재개/완료 상태
   watchedSeconds: number;
   lastTime: number;
   duration: number | null;
   isCompleted: boolean;
 
-  // setters
-  setWatchedSeconds: (sec: number) => void;
+  ensureKstDay: () => void;
+  setTodaysKeywordId: (id: number) => void;
+
+  setWatchedSeconds: (inc: number) => void;
   setLastTime: (time: number) => void;
   setDuration: (dur: number) => void;
   setIsCompleted: (result?: boolean) => void;
 
-  // 키워드 세팅(바뀌면 전부 초기화)
-  setTodaysKeywordId: (id: number) => void;
-
-  // 강제 초기화(영상 교체 등)
   resetAll: () => void;
 };
 
 export const useVideoStore = create<VideoState>()(
   persist(
     (set, get) => ({
+      kstDateKey: nowKstDateKey(),
       todaysKeywordId: null,
+
       watchedSeconds: 0,
       lastTime: 0,
       duration: null,
       isCompleted: false,
 
-      setWatchedSeconds: (sec) =>
-        set((state) => ({
-          watchedSeconds: Math.max(
-            0,
-            state.watchedSeconds + Math.floor(sec || 0)
-          ),
-        })),
-      setLastTime: (time) =>
-        set({ lastTime: Math.max(0, Math.floor(time || 0)) }),
-      setDuration: (dur) =>
-        set({ duration: Math.max(0, Math.floor(dur || 0)) }),
-      setIsCompleted: (result = true) => set({ isCompleted: !!result }),
-
-      setTodaysKeywordId: (id: number) => {
-        const prev = get().todaysKeywordId;
-        if (prev !== id) {
-          // 키워드가 바뀌면 전부 초기화
+      ensureKstDay: () => {
+        const nowKey = nowKstDateKey();
+        if (get().kstDateKey !== nowKey) {
           set({
+            kstDateKey: nowKey,
+            todaysKeywordId: null,
+            watchedSeconds: 0,
+            lastTime: 0,
+            duration: null,
+            isCompleted: false,
+          });
+        }
+      },
+
+      setTodaysKeywordId: (id) => {
+        const nowKey = nowKstDateKey();
+        const s = get();
+        if (s.kstDateKey !== nowKey || s.todaysKeywordId !== id) {
+          set({
+            kstDateKey: nowKey,
             todaysKeywordId: id,
             watchedSeconds: 0,
             lastTime: 0,
             duration: null,
             isCompleted: false,
           });
-        } else {
-          // 동일 키워드면 그대로 유지
-          set({ todaysKeywordId: id });
+          return;
         }
+        set({ todaysKeywordId: id });
       },
+
+      setWatchedSeconds: (inc) => {
+        const { isCompleted } = get();
+        if (isCompleted) return;
+        const add = Math.max(0, Math.floor(inc || 0));
+        if (!add) return;
+        set((s) => ({ watchedSeconds: s.watchedSeconds + add }));
+      },
+
+      setLastTime: (time) => {
+        if (get().isCompleted) return;
+        set({ lastTime: Math.max(0, Math.floor(time || 0)) });
+      },
+
+      setDuration: (dur) =>
+        set({ duration: Math.max(0, Math.floor(dur || 0)) }),
+
+      setIsCompleted: (result = true) => set({ isCompleted: !!result }),
 
       resetAll: () =>
         set({
+          kstDateKey: nowKstDateKey(),
+          todaysKeywordId: null,
           watchedSeconds: 0,
           lastTime: 0,
           duration: null,
@@ -73,8 +93,8 @@ export const useVideoStore = create<VideoState>()(
         }),
     }),
     {
-      name: 'watchVideoStatus', // localStorage key
-      version: 1,
+      name: 'watchVideoStatus',
+      version: 2,
     }
   )
 );

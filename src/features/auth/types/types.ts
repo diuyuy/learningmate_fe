@@ -54,7 +54,6 @@ export const PasswordResetSchema = z
 export type PasswordResetForm = z.infer<typeof PasswordResetSchema>;
 
 export type PasswdResetRequest = {
-  email: string;
   password: string;
   authToken: string;
 };

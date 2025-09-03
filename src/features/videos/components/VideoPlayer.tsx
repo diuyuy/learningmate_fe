@@ -1,6 +1,6 @@
-// components/VideoPlayer.tsx
 import { useEffect, useRef } from 'react';
 import { useVideoStore } from '../store/useVideoStore';
+import { useSaveVideoMission } from '../hooks/useSaveVideoMission';
 
 declare global {
   interface Window {
@@ -17,9 +17,10 @@ type Props = {
 export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<any>(null);
+
   const startTimeRef = useRef<number | null>(null);
   const checkTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const readyRef = useRef(false); // ✅ 플레이어 onReady 플래그
+  const dayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const {
     watchedSeconds,
@@ -31,23 +32,37 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
     setLastTime,
     setDuration,
     setIsCompleted,
+    ensureKstDay,
   } = useVideoStore();
 
-  // todaysKeywordId 반영
+  const { mutate: saveMission, isPending: saving } =
+    useSaveVideoMission(todaysKeywordId);
+
   useEffect(() => {
+    ensureKstDay();
     setTodaysKeywordId(todaysKeywordId);
-  }, [todaysKeywordId, setTodaysKeywordId]);
+  }, [todaysKeywordId, ensureKstDay, setTodaysKeywordId]);
+
+  useEffect(() => {
+    if (dayTimerRef.current) clearInterval(dayTimerRef.current);
+    dayTimerRef.current = setInterval(() => {
+      ensureKstDay();
+    }, 60_000);
+    return () => {
+      if (dayTimerRef.current) {
+        clearInterval(dayTimerRef.current);
+        dayTimerRef.current = null;
+      }
+    };
+  }, [ensureKstDay]);
 
   const safeGetCurrentTime = (player: any): number => {
     try {
-      if (player && typeof player.getCurrentTime === 'function') {
+      if (player?.getCurrentTime) {
         const v = player.getCurrentTime();
         return Number.isFinite(v) ? v : 0;
       }
-      if (
-        playerRef.current &&
-        typeof playerRef.current.getCurrentTime === 'function'
-      ) {
+      if (playerRef.current?.getCurrentTime) {
         const v = playerRef.current.getCurrentTime();
         return Number.isFinite(v) ? v : 0;
       }
@@ -57,19 +72,40 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
 
   const safeGetDuration = (player: any): number | null => {
     try {
-      if (player && typeof player.getDuration === 'function') {
+      if (player?.getDuration) {
         const v = player.getDuration();
         return Number.isFinite(v) ? Math.floor(v) : null;
       }
-      if (
-        playerRef.current &&
-        typeof playerRef.current.getDuration === 'function'
-      ) {
+      if (playerRef.current?.getDuration) {
         const v = playerRef.current.getDuration();
         return Number.isFinite(v) ? Math.floor(v) : null;
       }
     } catch {}
     return null;
+  };
+
+  const startWatchdog = () => {
+    if (checkTimerRef.current) return;
+    checkTimerRef.current = setInterval(() => {
+      const { watchedSeconds: ws, isCompleted: completed } =
+        useVideoStore.getState();
+      if (completed) {
+        clearInterval(checkTimerRef.current!);
+        checkTimerRef.current = null;
+        return;
+      }
+      if (!startTimeRef.current) return;
+      const diff = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      const total = ws + diff;
+
+      if (total >= 60) {
+        alert('오늘의 영상 시청 미션을 성공하셨습니다');
+        setIsCompleted(true);
+        if (!saving) saveMission();
+        clearInterval(checkTimerRef.current!);
+        checkTimerRef.current = null;
+      }
+    }, 1000);
   };
 
   const initPlayer = () => {
@@ -87,45 +123,25 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
       },
       events: {
         onReady: (event: any) => {
-          readyRef.current = true;
           const dur = safeGetDuration(event.target);
           if (dur !== null) setDuration(dur);
-
-          if (lastTime > 0 && typeof event.target.seekTo === 'function') {
+          if (lastTime > 0 && event.target.seekTo) {
             event.target.seekTo(lastTime, true);
           }
         },
         onStateChange: (event: any) => {
-          const YTState = window.YT.PlayerState;
-          if (event.data === YTState.PLAYING) {
-            startTimeRef.current = Date.now();
-
-            // 재생 중 60초 달성 체크
-            if (!checkTimerRef.current) {
-              checkTimerRef.current = setInterval(() => {
-                if (!startTimeRef.current || isCompleted) return;
-                const diff = Date.now() - startTimeRef.current;
-                const total = watchedSeconds + Math.floor(diff / 1000);
-                if (total >= 60 && !isCompleted) {
-                  alert('오늘의 영상 시청 미션을 성공하셨습니다');
-                  setIsCompleted(true);
-                  // TODO: DB 저장
-                  clearInterval(checkTimerRef.current!);
-                  checkTimerRef.current = null;
-                }
-              }, 1000);
-            }
-          } else if (
-            event.data === YTState.PAUSED ||
-            event.data === YTState.ENDED
-          ) {
+          const S = window.YT.PlayerState;
+          if (event.data === S.PLAYING) {
+            if (!startTimeRef.current) startTimeRef.current = Date.now();
+            startWatchdog();
+          } else if (event.data === S.PAUSED || event.data === S.ENDED) {
             if (startTimeRef.current) {
-              const diff = Date.now() - startTimeRef.current;
-              setWatchedSeconds(Math.floor(diff / 1000));
-
+              const diff = Math.floor(
+                (Date.now() - startTimeRef.current) / 1000
+              );
+              if (diff > 0) setWatchedSeconds(diff);
               const cur = safeGetCurrentTime(event.target);
               setLastTime(cur);
-
               startTimeRef.current = null;
             }
             if (checkTimerRef.current) {
@@ -139,7 +155,7 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
   };
 
   useEffect(() => {
-    if (window.YT && window.YT.Player) {
+    if (window.YT?.Player) {
       initPlayer();
     } else {
       if (
@@ -155,10 +171,9 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
     }
 
     return () => {
-      // 언마운트 시 flush & 정리
       if (startTimeRef.current) {
-        const diff = Date.now() - startTimeRef.current;
-        setWatchedSeconds(Math.floor(diff / 1000));
+        const diff = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        if (diff > 0) setWatchedSeconds(diff);
         startTimeRef.current = null;
       }
       if (checkTimerRef.current) {
@@ -166,7 +181,15 @@ export default function VideoPlayer({ todaysKeywordId, videoId }: Props) {
         checkTimerRef.current = null;
       }
     };
-  }, [videoId, setWatchedSeconds]);
+  }, [videoId, setWatchedSeconds, setLastTime, setDuration]);
+
+  useEffect(() => {
+    if (watchedSeconds >= 60 && !isCompleted) {
+      alert('오늘의 영상 시청 미션을 성공하셨습니다');
+      setIsCompleted(true);
+      if (!saving) saveMission();
+    }
+  }, [watchedSeconds, isCompleted, saveMission, saving, setIsCompleted]);
 
   const minutes = duration ? Math.floor(duration / 60) : 0;
   const seconds = duration ? Math.floor(duration % 60) : 0;

@@ -13,9 +13,12 @@ export type Review = {
 };
 
 export type ReviewListItem = {
+  updatedAt: string;
   id: number;
+  articleId?: number;
   createdAt: string;
   content1: string;
+  memberId: number;
   nickname: string;
   title: string;
   likeCount: number;
@@ -62,3 +65,9 @@ export type ReviewResponse = Pick<
   Review,
   'id' | 'content1' | 'content2' | 'content3'
 >;
+
+export type HotReviewsResponse = {
+  status: number;
+  message: string;
+  result: ReviewListItem[];
+};
