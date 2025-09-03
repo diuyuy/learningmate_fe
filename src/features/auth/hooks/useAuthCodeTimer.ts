@@ -28,7 +28,6 @@ export const useAuthCodeTimer = (startTime: number) => {
     }
 
     return () => {
-      console.log('Cleared!!!!!');
       if (interval) {
         clearInterval(interval);
       }

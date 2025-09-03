@@ -23,11 +23,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
   };
 
   const updateMember = (updated: Member) => {
-    try {
-      setMember(updated);
-    } catch (error) {
-      console.error(error);
-    }
+    setMember(updated);
   };
 
   const provideSession = (member: Member) => {
@@ -37,7 +33,6 @@ export default function SessionProvider({ children }: PropsWithChildren) {
   };
 
   useEffect(() => {
-    console.log('Interceptor Set');
     setInterceptors(logout);
   }, []);
 
@@ -47,9 +42,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
         const member = await fetchMember();
 
         provideSession(member);
-        console.log('Seesion Set!!!');
       } catch (error) {
-        console.error(error);
         if (error instanceof AxiosError && error.status === 401) {
           logout();
         }

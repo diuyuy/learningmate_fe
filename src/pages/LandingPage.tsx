@@ -1,16 +1,19 @@
-import { useMemo } from 'react';
+import { ROUTE_PATHS } from '@/constants/routepaths';
+import { useSession } from '@/features/auth/context/useSession';
 import {
-  BookOpen,
-  FileText,
-  Video,
-  MessageSquare,
-  BarChart3,
-  CheckCircle,
   ArrowDown,
-  Sparkles,
-  Workflow,
+  BarChart3,
+  BookOpen,
+  CheckCircle,
+  FileText,
+  MessageSquare,
   Quote,
+  Sparkles,
+  Video,
+  Workflow,
 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 const BRAND = '#3f3f3f';
 
@@ -73,8 +76,19 @@ const TESTIMONIAL_IDS = [1, 2, 3, 4] as const;
 
 export default function LearningMateLanding() {
   const year = useMemo(() => new Date().getFullYear(), []);
+  const { isLoggedIn } = useSession();
+  const [isLanding, setIsLanding] = useState(false);
+  const navigate = useNavigate();
 
-  return (
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate(ROUTE_PATHS.MAIN);
+    } else {
+      setIsLanding(true);
+    }
+  }, []);
+
+  return !isLanding ? null : (
     <div
       className='min-h-screen bg-white scroll-smooth relative'
       style={{ color: BRAND }}
