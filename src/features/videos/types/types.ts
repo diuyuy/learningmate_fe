@@ -5,3 +5,9 @@ export type Video = {
   keyword: Keyword;
   link: string;
 };
+
+export type ApiResponse<T> = {
+  status: number;
+  message: string;
+  result: T;
+};
