@@ -1,4 +1,4 @@
-# name: React 앱 CI/CD - AWS EC2에 SCP로 배포
+name: React App CI/CD to AWS EC2 via SCP
 
 on:
   push:
@@ -12,60 +12,46 @@ jobs:
     steps:
       # 1. 소스 코드 체크아웃
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      # 2. Yarn 버전 설정 (Corepack 사용)
-      - name: Set Yarn version to stable
+      - name: Set Yarn version
         run: |
           corepack enable
-          yarn set version stable
+          yarn set version 4.9.2
 
-      # 3. Node.js 환경 설정
+      # 2. Node.js 환경 설정
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: "22"
           cache: "yarn"
 
-      # 4. 의존성 설치 및 React 앱 빌드
+      #
+
+      # 3. 의존성 설치 및 React 앱 빌드
       - name: Install dependencies and build
         run: |
-          yarn install
+          yarn
           yarn build
-        # CI 환경에서 경고를 에러로 처리하지 않으려면 아래 env를 유지합니다.
-        # 하지만 경고를 해결하여 제거하는 것이 가장 좋습니다.
         env:
           CI: false
 
-      # 5. EC2 인스턴스에 접속하여 이전 빌드 파일 삭제
-      # 새로운 파일을 전송하기 전에 기존 파일을 삭제하여 깨끗한 상태에서 배포합니다.
-      - name: Clean up old build files on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |
-            sudo rm -rf ${{ secrets.EC2_TARGET_DIR }}/*
-            echo "Successfully cleaned the target directory."
-
-      # 6. SCP를 사용하여 빌드 파일 전송
+      # 4. SCP를 사용하여 빌드 파일 전송 및 배포
       - name: Deploy to EC2 instance via SCP
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          source: "build/*" # build 디렉토리 안의 모든 파일을 전송
-          target: ${{ secrets.EC2_TARGET_DIR }} # EC2의 웹 서버 루트 디렉토리
+          source: "dist/*" # build 디렉토리 안의 모든 파일을 전송
+          target: ${{ secret.EC2_TARGET_DIR }} # EC2의 웹 서버 루트 디렉토리
 
-      # 7. EC2에 접속하여 웹 서버 재시작
+      # 5. EC2에 접속하여 웹 서버 재시작
       - name: Restart web server
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             sudo systemctl restart nginx
-            echo "Nginx server restarted successfully."
