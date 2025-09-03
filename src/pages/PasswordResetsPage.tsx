@@ -32,16 +32,15 @@ export default function PasswordResetsPage() {
     },
   });
 
-  const email = serachParams.get('email');
   const authToken = serachParams.get('authToken');
 
   const onSubmit = async (data: PasswordResetForm) => {
-    if (!email || !authToken) {
+    if (!authToken) {
       navigate('/error');
       return;
     }
     try {
-      await resetPassword({ email, password: data.password, authToken });
+      await resetPassword({ password: data.password, authToken });
       setDialogOpen(true);
     } catch (error) {
       console.error(error);
@@ -51,7 +50,7 @@ export default function PasswordResetsPage() {
   };
 
   useEffect(() => {
-    if (!email || !authToken) {
+    if (!authToken) {
       navigate('/error');
     }
   }, []);
