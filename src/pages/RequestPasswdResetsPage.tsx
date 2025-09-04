@@ -51,7 +51,6 @@ export default function RequestPasswdResetsPage() {
         unknown: false,
       });
     } catch (error) {
-      console.error(error);
       if (error instanceof AxiosError && error.status === 404) {
         form.setError('email', {
           message: '존재하지 않는 이메일 입니다.',

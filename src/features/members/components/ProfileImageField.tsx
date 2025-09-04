@@ -65,7 +65,6 @@ function ProfileImageFormFiled({
 
   const onSubmit = async (data: ImageForm) => {
     try {
-      console.log('onSubmit 호출: !!!!');
       const imgFile = data.image[0];
       const formData = new FormData();
       formData.append('image', imgFile);
@@ -73,9 +72,7 @@ function ProfileImageFormFiled({
       const updatedMember = await updateProfileImage(formData);
       updateMember(updatedMember);
       toggleSetting();
-    } catch (error) {
-      console.error(error);
-    }
+    } catch (error) {}
   };
 
   const onImageChange = (

@@ -16,6 +16,10 @@ import { createBrowserRouter } from 'react-router';
 
 export const router = createBrowserRouter([
   {
+    path: '/',
+    element: <LandingPage />,
+  },
+  {
     element: <ProtectedRoute />,
     errorElement: <ErrorPage />,
     children: [
@@ -23,7 +27,7 @@ export const router = createBrowserRouter([
         element: <RootLayout />,
         children: [
           {
-            index: true,
+            path: 'main',
             element: <MainPage />,
           },
           {
@@ -41,10 +45,6 @@ export const router = createBrowserRouter([
         ],
       },
     ],
-  },
-  {
-    path: '/landing',
-    element: <LandingPage />,
   },
   {
     element: <AuthLayout />,

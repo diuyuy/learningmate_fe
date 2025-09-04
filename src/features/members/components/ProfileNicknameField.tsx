@@ -68,7 +68,6 @@ function NicknameFormFiled({
   const onSubmit = async (data: NicknameForm) => {
     try {
       const updated = await updateNickname(data);
-      console.log('Member: >>> ', JSON.stringify(updated));
       updateMember(updated);
       toggleSetting();
     } catch (error) {

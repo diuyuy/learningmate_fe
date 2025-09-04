@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # name: React 앱 CI/CD - AWS EC2에 SCP로 배포
+=======
+name: React App CI/CD to AWS EC2 via SCP
+>>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
 
 on:
   push:
@@ -12,6 +16,7 @@ jobs:
     steps:
       # 1. 소스 코드 체크아웃
       - name: Checkout source code
+<<<<<<< HEAD
         uses: actions/checkout@v4
 
       # 2. Yarn 버전 설정 (Corepack 사용)
@@ -23,10 +28,23 @@ jobs:
       # 3. Node.js 환경 설정
       - name: Set up Node.js
         uses: actions/setup-node@v4
+=======
+        uses: actions/checkout@v3
+
+      - name: Set Yarn version
+        run: |
+          corepack enable
+          yarn set version 4.9.2
+
+      # 2. Node.js 환경 설정
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+>>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
         with:
           node-version: "22"
           cache: "yarn"
 
+<<<<<<< HEAD
       # 4. 의존성 설치 및 React 앱 빌드
       - name: Install dependencies and build
         run: |
@@ -52,20 +70,46 @@ jobs:
       # 6. SCP를 사용하여 빌드 파일 전송
       - name: Deploy to EC2 instance via SCP
         uses: appleboy/scp-action@v0.1.7
+=======
+      #
+
+      # 3. 의존성 설치 및 React 앱 빌드
+      - name: Install dependencies and build
+        run: |
+          yarn
+          yarn build
+        env:
+          CI: false
+
+      # 4. SCP를 사용하여 빌드 파일 전송 및 배포
+      - name: Deploy to EC2 instance via SCP
+        uses: appleboy/scp-action@master
+>>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           source: "dist/*" # build 디렉토리 안의 모든 파일을 전송
+<<<<<<< HEAD
           target: ${{ secrets.EC2_TARGET_DIR }} # EC2의 웹 서버 루트 디렉토리
 
       # 7. EC2에 접속하여 웹 서버 재시작
       - name: Restart web server
         uses: appleboy/ssh-action@v1.0.3
+=======
+          target: ${{ secret.EC2_TARGET_DIR }} # EC2의 웹 서버 루트 디렉토리
+
+      # 5. EC2에 접속하여 웹 서버 재시작
+      - name: Restart web server
+        uses: appleboy/ssh-action@master
+>>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             sudo systemctl restart nginx
+<<<<<<< HEAD
             echo "Nginx server restarted successfully."
+=======
+>>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
