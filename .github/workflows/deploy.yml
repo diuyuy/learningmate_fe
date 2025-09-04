@@ -67,7 +67,7 @@ jobs:
             # ECR 로그인
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
 
-            export IMAGE_URI=${{ steps.build-image.outputs.image }}
+            export REACT_IMAGE=${{ steps.build-image.outputs.image }}
 
             docker-compose down
             docker-compose pull
