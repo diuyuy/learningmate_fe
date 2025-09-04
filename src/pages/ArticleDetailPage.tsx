@@ -11,7 +11,6 @@ export default function ArticleDetailPage() {
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
 
   const { articleId } = useParams();
-  console.log(articleId);
 
   return (
     <div className='flex flex-col gap-4 items-center'>

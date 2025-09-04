@@ -7,7 +7,6 @@ export const fetchMember = async () => {
 };
 
 export const fetchProfileImg = async (imgUrl: string) => {
-  console.log('🚀 ~ fetchProfileImg ~ imgUrl:', imgUrl);
   const response = await api.get(`/members/profile-images/${imgUrl}`, {
     responseType: 'blob',
   });
