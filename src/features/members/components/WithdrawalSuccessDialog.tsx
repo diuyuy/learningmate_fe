@@ -24,8 +24,8 @@ export default function WithdrawalSuccessDialog({
 
   const toLandingPage = () => {
     setWithdrawSuccessDialog();
-    navigate(ROUTE_PATHS.LANDING);
     onAccountDeleted();
+    navigate(ROUTE_PATHS.LANDING);
   };
 
   return (
