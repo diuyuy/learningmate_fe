@@ -67,6 +67,8 @@ jobs:
 
             export REACT_IMAGE=${{ steps.build-image.outputs.image }}
 
+            echo $REACT_IMAGE
+
             docker-compose down
             docker-compose pull
             docker-compose up -d
