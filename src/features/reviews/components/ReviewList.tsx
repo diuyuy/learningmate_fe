@@ -143,7 +143,8 @@ export default function ReviewList({
       )}
 
       <section className='flex flex-col gap-4'>
-        {displayedReviews.length === 0 && isPending ? (
+        {(displayedReviews.length === 0 || displayedReviews.length === 1) &&
+        isPending ? (
           <div>Loading...</div>
         ) : (
           displayedReviews.map((review) => (

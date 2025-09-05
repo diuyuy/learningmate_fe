@@ -24,8 +24,6 @@ RUN yarn install
 # 나머지 소스 코드 전체를 복사합니다.
 
 # React 앱을 빌드합니다.
-# /app 디렉토리의 모든 파일 목록을 출력합니다. (.env 파일이 있는지 확인)
-RUN ls -la
 
 RUN yarn build
 
