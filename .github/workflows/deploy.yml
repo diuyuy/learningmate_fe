@@ -16,7 +16,6 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
-
       # IAM 사용자의 Access Key 대신 OIDC 역할을 사용하도록 변경합니다.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4 # 최신 버전 사용 권장
@@ -36,6 +35,10 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Create .env file
+        run: |
+          echo "REACREACT_APP_BASE_URLT_APP=${{ secrets.REACT_APP_BASE_URL }}" > .env
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
@@ -58,12 +61,6 @@ jobs:
           script: |
             cd /home/ec2-user/workspace/learningmate_fe
 
-            # SSM 파라미터를 가져오는 부분은 EC2 인스턴스 역할의 권한으로 실행되므로 변경이 필요 없습니다.
-            aws ssm get-parameters-by-path --path "/learningmate/prod/" --with-decryption --query 'Parameters[*].[Name,Value]' --output text |\
-              while read -r name value; do \
-              echo "${name##*/}=$value"; \
-              done > .env
-
             # ECR 로그인
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
 
@@ -73,5 +70,4 @@ jobs:
             docker-compose pull
             docker-compose up -d
 
-            rm .env
             docker image prune -f

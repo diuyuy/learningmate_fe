@@ -19,7 +19,6 @@ export const signUp = async (signUpForm: SignUpForm) => {
 export const checkEmailExists = async (email: string) => {
   const response = await api.get(`/auth/emails/existence?email=${email}`);
 
-  console.log('Response: >>>', response.data.result);
   return response.data.result as boolean;
 };
 
