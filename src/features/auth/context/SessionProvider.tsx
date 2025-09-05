@@ -17,8 +17,8 @@ export default function SessionProvider({ children }: PropsWithChildren) {
   };
 
   const onAccountDeleted = () => {
-    setIsLoggedIn(false);
     setToLoginPage(false);
+    setIsLoggedIn(false);
     setMember(null);
   };
 
