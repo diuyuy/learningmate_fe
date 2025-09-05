@@ -4,7 +4,7 @@ import { useEffect, useState, type PropsWithChildren } from 'react';
 import { SessionContext } from './SessionContext';
 
 export default function SessionProvider({ children }: PropsWithChildren) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [toLoginPage, setToLoginPage] = useState(true);
   const [member, setMember] = useState<Member | null>(null);
 

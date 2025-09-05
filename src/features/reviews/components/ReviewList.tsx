@@ -111,7 +111,7 @@ export default function ReviewList({
     console.log('🚀 ~ ReviewList ~ allReviews:', allReviews);
     if (!excludeMine || typeof myId !== 'number') return allReviews;
     // memberId가 없는 데이터가 섞여 있을 수 있으니 안전 가드
-    if (allReviews.length === 0) return [];
+    if (allReviews.length === 1) return [];
     return allReviews.filter((r) => r.memberId == null || r.memberId !== myId);
   }, [allReviews, excludeMine, myId]);
 
