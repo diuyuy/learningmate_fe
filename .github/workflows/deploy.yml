@@ -1,115 +1,74 @@
-<<<<<<< HEAD
-# name: React 앱 CI/CD - AWS EC2에 SCP로 배포
-=======
-name: React App CI/CD to AWS EC2 via SCP
->>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
+name: CI/CD with Docker, ECR and EC2
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
+
+# OIDC 토큰을 요청하기 위한 권한을 추가합니다.
+permissions:
+  id-token: write # 필수
+  contents: read # 필수 (actions/checkout@v3 사용 시)
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 소스 코드 체크아웃
       - name: Checkout source code
-<<<<<<< HEAD
-        uses: actions/checkout@v4
-
-      # 2. Yarn 버전 설정 (Corepack 사용)
-      - name: Set Yarn version to stable
-        run: |
-          corepack enable
-          yarn set version stable
-
-      # 3. Node.js 환경 설정
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-=======
         uses: actions/checkout@v3
 
-      - name: Set Yarn version
-        run: |
-          corepack enable
-          yarn set version 4.9.2
-
-      # 2. Node.js 환경 설정
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
->>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
+      # IAM 사용자의 Access Key 대신 OIDC 역할을 사용하도록 변경합니다.
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4 # 최신 버전 사용 권장
         with:
-          node-version: "22"
-          cache: "yarn"
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }} # 여기에 생성한 IAM 역할의 ARN을 입력합니다.
+          aws-region: ${{ secrets.AWS_REGION }}
 
-<<<<<<< HEAD
-      # 4. 의존성 설치 및 React 앱 빌드
-      - name: Install dependencies and build
-        run: |
-          yarn install
-          yarn build
-        # CI 환경에서 경고를 에러로 처리하지 않으려면 아래 env를 유지합니다.
-        # 하지만 경고를 해결하여 제거하는 것이 가장 좋습니다.
+      - name: Create ECR repository if it does not exist
         env:
-          CI: false
-
-      # 5. EC2 인스턴스에 접속하여 이전 빌드 파일 삭제
-      # 새로운 파일을 전송하기 전에 기존 파일을 삭제하여 깨끗한 상태에서 배포합니다.
-      - name: Clean up old build files on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |
-            sudo rm -rf ${{ secrets.EC2_TARGET_DIR }}/*
-            echo "Successfully cleaned the target directory."
-
-      # 6. SCP를 사용하여 빌드 파일 전송
-      - name: Deploy to EC2 instance via SCP
-        uses: appleboy/scp-action@v0.1.7
-=======
-      #
-
-      # 3. 의존성 설치 및 React 앱 빌드
-      - name: Install dependencies and build
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          yarn
-          yarn build
+          aws ecr create-repository \
+            --repository-name $ECR_REPOSITORY \
+            --region $AWS_REGION || true
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Create .env file
+        run: |
+          echo "REACREACT_APP_BASE_URLT_APP=${{ secrets.REACT_APP_BASE_URL }}" > .env
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
         env:
-          CI: false
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      # 4. SCP를 사용하여 빌드 파일 전송 및 배포
-      - name: Deploy to EC2 instance via SCP
-        uses: appleboy/scp-action@master
->>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          source: "dist/*" # build 디렉토리 안의 모든 파일을 전송
-<<<<<<< HEAD
-          target: ${{ secrets.EC2_TARGET_DIR }} # EC2의 웹 서버 루트 디렉토리
-
-      # 7. EC2에 접속하여 웹 서버 재시작
-      - name: Restart web server
-        uses: appleboy/ssh-action@v1.0.3
-=======
-          target: ${{ secret.EC2_TARGET_DIR }} # EC2의 웹 서버 루트 디렉토리
-
-      # 5. EC2에 접속하여 웹 서버 재시작
-      - name: Restart web server
+      - name: Deploy to EC2 instance
         uses: appleboy/ssh-action@master
->>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          # envs: IMAGE_URI=${{ steps.build-image.outputs.image }}
           script: |
-            sudo systemctl restart nginx
-<<<<<<< HEAD
-            echo "Nginx server restarted successfully."
-=======
->>>>>>> dc7b0a5fbe251d4b7a592405c2a3bd936c7404b4
+            cd /home/ec2-user/workspace/learningmate_fe
+
+            # ECR 로그인
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+            export REACT_IMAGE=${{ steps.build-image.outputs.image }}
+
+            docker-compose down
+            docker-compose pull
+            docker-compose up -d
+
+            docker image prune -f

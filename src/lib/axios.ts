@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 
 // TODO: 인터셉터 설정 필요.
 export const api = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: process.env.REACT_APP_BASE_URL,
   withCredentials: true,
 });
 
