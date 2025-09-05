@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type {
-  InfiniteData,
-  UseInfiniteQueryResult,
-  QueryKey,
-} from '@tanstack/react-query';
 import ReviewCard from '@/components/ui/ReviewCard';
 import { Button } from '@/components/ui/button';
+import { useSession } from '@/features/auth/context/useSession';
 import { useToggleReviewLike } from '@/features/reviews/hooks/useToggleReviewLike';
 import type {
   ReviewListItem,
   ReviewListPageResponse,
 } from '@/features/reviews/types/types';
-import { useSession } from '@/features/auth/context/useSession';
+import type {
+  InfiniteData,
+  QueryKey,
+  UseInfiniteQueryResult,
+} from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 const THROTTLE_DELAY = 500;
@@ -110,6 +110,7 @@ export default function ReviewList({
   const displayedReviews: ReviewListItem[] = useMemo(() => {
     if (!excludeMine || typeof myId !== 'number') return allReviews;
     // memberId가 없는 데이터가 섞여 있을 수 있으니 안전 가드
+    if (allReviews.length === 0) return [];
     return allReviews.filter((r) => r.memberId == null || r.memberId !== myId);
   }, [allReviews, excludeMine, myId]);
 
