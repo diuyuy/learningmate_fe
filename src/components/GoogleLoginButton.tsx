@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 
 export function GoogleLoginButton() {
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  console.log('🚀 ~ GoogleLoginButton ~ baseUrl:', baseUrl);
   return (
     <Button
       asChild
