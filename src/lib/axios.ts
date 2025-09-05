@@ -1,8 +1,11 @@
 import axios, { AxiosError } from 'axios';
 
 // TODO: 인터셉터 설정 필요.
+
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 export const api = axios.create({
-  baseURL: process.env.REACT_APP_BASE_URL,
+  baseURL: baseUrl,
   withCredentials: true,
 });
 
