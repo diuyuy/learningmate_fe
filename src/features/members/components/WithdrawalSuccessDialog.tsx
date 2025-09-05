@@ -40,7 +40,7 @@ export default function WithdrawalSuccessDialog({
         </p>
         <DialogFooter>
           <Button variant={'primary_semibold'} onClick={toLandingPage}>
-            홈으로 이동
+            로그인 화면으로 이동
           </Button>
         </DialogFooter>
       </DialogContent>
