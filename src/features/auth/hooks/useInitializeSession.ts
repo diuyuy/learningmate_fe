@@ -15,9 +15,10 @@ export const useInitializeSessoin = (
     (async () => {
       try {
         const member = await fetchMember();
-
-        provideSession(member);
-      } catch (error) {}
+        if (!!member) provideSession(member);
+      } catch (error) {
+        logout();
+      }
     })();
   }, []);
 };

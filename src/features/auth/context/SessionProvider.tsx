@@ -1,12 +1,10 @@
-import { fetchMember } from '@/features/members/api/api';
 import type { Member } from '@/features/members/types/types';
 import { setInterceptors } from '@/lib/axios';
-import { AxiosError } from 'axios';
 import { useEffect, useState, type PropsWithChildren } from 'react';
 import { SessionContext } from './SessionContext';
 
 export default function SessionProvider({ children }: PropsWithChildren) {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [toLoginPage, setToLoginPage] = useState(true);
   const [member, setMember] = useState<Member | null>(null);
 
@@ -36,19 +34,19 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     setInterceptors(logout);
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const member = await fetchMember();
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const member = await fetchMember();
 
-        provideSession(member);
-      } catch (error) {
-        if (error instanceof AxiosError && error.status === 401) {
-          logout();
-        }
-      }
-    })();
-  }, []);
+  //       provideSession(member);
+  //     } catch (error) {
+  //       if (error instanceof AxiosError && error.status === 401) {
+  //         logout();
+  //       }
+  //     }
+  //   })();
+  // }, []);
 
   return (
     <SessionContext.Provider
