@@ -1,13 +1,14 @@
 import { Button } from '@/components/ui/button';
 
 export function GoogleLoginButton() {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   return (
     <Button
       asChild
       variant='outline'
       className='w-full gap-2 rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 h-12 dark:text-white'
     >
-      <a href='http://localhost:8080/api/v1/auth/login/oauth2/google'>
+      <a href={`${baseUrl}/auth/login/oauth2/google`}>
         <svg
           className='w-6 h-6'
           viewBox='0 0 48 48'
