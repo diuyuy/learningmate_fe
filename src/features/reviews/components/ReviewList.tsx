@@ -108,10 +108,8 @@ export default function ReviewList({
 
   // ✅ 내 리뷰 제외: memberId === myId 인 항목 제거
   const displayedReviews: ReviewListItem[] = useMemo(() => {
-    console.log('🚀 ~ ReviewList ~ allReviews:', allReviews);
     if (!excludeMine || typeof myId !== 'number') return allReviews;
     // memberId가 없는 데이터가 섞여 있을 수 있으니 안전 가드
-    if (allReviews.length === 1) return [];
     return allReviews.filter((r) => r.memberId == null || r.memberId !== myId);
   }, [allReviews, excludeMine, myId]);
 
@@ -143,8 +141,7 @@ export default function ReviewList({
       )}
 
       <section className='flex flex-col gap-4'>
-        {(displayedReviews.length === 0 || displayedReviews.length === 1) &&
-        isPending ? (
+        {displayedReviews.length === 0 && isPending ? (
           <div>Loading...</div>
         ) : (
           displayedReviews.map((review) => (
