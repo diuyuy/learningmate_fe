@@ -2,8 +2,12 @@ import { api } from '@/lib/axios';
 import type { Member, PasswdUpdateReq } from '../types/types';
 
 export const fetchMember = async () => {
-  const response = await api.get('/members/me');
-  return response.data.result as Member;
+  try {
+    const response = await api.get('/members/me');
+    return response.data.result as Member;
+  } catch (error) {
+    return null;
+  }
 };
 
 export const fetchProfileImg = async (imgUrl: string) => {
