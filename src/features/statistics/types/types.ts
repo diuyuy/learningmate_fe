@@ -1,9 +1,9 @@
-import type { User } from '@/features/users/types/types';
+import type { Member } from '@/features/members/types/types';
 import type { Category } from '@/types/types';
 
 export type Statistic = {
   id: number;
-  user: User;
+  user: Member;
   category: Category;
   studyCount: number;
 };

@@ -1,5 +1,6 @@
 export const QUERY_KEYS = {
   ARTICLE: 'article',
+  ARTICLE_PREVIEWS: 'articlePreviews',
   AUTH: 'auth',
   KEYWORDS: 'keywords',
   QUIZZES: 'quizzes',
@@ -7,6 +8,7 @@ export const QUERY_KEYS = {
   REVIEWS: 'reviews',
   STATISTICS: 'statistics',
   STUDIES: 'studies',
-  USER: 'user',
+  MEMBER: 'members',
   VIDEOS: 'videos',
+  REVIEW: 'review',
 };
