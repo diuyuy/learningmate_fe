@@ -7,15 +7,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useQuizQuery } from '../../hooks/useQuizQuery';
-import { useParams } from 'react-router';
-import { useMemo, useState } from 'react';
-import { type QuizChoiceArr, type QuizSolveResponse } from '../../types/types';
-import { useMutation } from '@tanstack/react-query';
-import { solveQuiz } from '../../api/api';
-import { CheckIcon, XIcon } from 'lucide-react';
-import type { AxiosError } from 'axios';
 import { useSession } from '@/features/auth/context/useSession';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
+import { CheckIcon, XIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useParams } from 'react-router';
+import { solveQuiz } from '../../api/api';
+import { useQuizQuery } from '../../hooks/useQuizQuery';
+import { type QuizChoiceArr, type QuizSolveResponse } from '../../types/types';
 
 type Props = {
   isOpen: boolean;
@@ -23,7 +23,10 @@ type Props = {
 };
 
 export default function QuizModal({ isOpen, onClose }: Props) {
-  const memberId = useSession();
+  const { member } = useSession();
+  if (!member) return null;
+
+  const memberId = member.id;
   const { articleId } = useParams();
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);

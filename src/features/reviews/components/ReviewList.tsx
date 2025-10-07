@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type {
-  InfiniteData,
-  UseInfiniteQueryResult,
-  QueryKey,
-} from '@tanstack/react-query';
 import ReviewCard from '@/components/ui/ReviewCard';
 import { Button } from '@/components/ui/button';
+import { useSession } from '@/features/auth/context/useSession';
 import { useToggleReviewLike } from '@/features/reviews/hooks/useToggleReviewLike';
 import type {
   ReviewListItem,
   ReviewListPageResponse,
 } from '@/features/reviews/types/types';
-import { useSession } from '@/features/auth/context/useSession';
+import type {
+  InfiniteData,
+  QueryKey,
+  UseInfiniteQueryResult,
+} from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 const THROTTLE_DELAY = 500;

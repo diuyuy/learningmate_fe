@@ -17,8 +17,8 @@ export default function SessionProvider({ children }: PropsWithChildren) {
   };
 
   const onAccountDeleted = () => {
-    setIsLoggedIn(false);
     setToLoginPage(false);
+    setIsLoggedIn(false);
     setMember(null);
   };
 
@@ -40,8 +40,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     (async () => {
       try {
         const member = await fetchMember();
-
-        provideSession(member);
+        if (member) provideSession(member);
       } catch (error) {
         if (error instanceof AxiosError && error.status === 401) {
           logout();

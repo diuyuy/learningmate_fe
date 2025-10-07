@@ -1,3 +1,4 @@
+import { fetchMember } from '@/features/members/api/api';
 import AuthLayout from '@/layouts/AuthLayout';
 import ProtectedRoute from '@/layouts/ProtectedRoute';
 import RootLayout from '@/layouts/RootLayout';
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <LandingPage />,
+    loader: fetchMember,
   },
   {
     element: <ProtectedRoute />,

@@ -11,8 +11,12 @@ export default function OauthRedirectPage() {
   useEffect(() => {
     (async () => {
       const member = await fetchMember();
-      provideSession(member);
-      navigate(ROUTE_PATHS.MAIN);
+      if (member) {
+        provideSession(member);
+        navigate(ROUTE_PATHS.MAIN);
+      } else {
+        navigate(ROUTE_PATHS.LOGIN);
+      }
     })();
   }, []);
 

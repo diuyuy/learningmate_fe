@@ -1,8 +1,11 @@
 import axios, { AxiosError } from 'axios';
 
 // TODO: 인터셉터 설정 필요.
+
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 export const api = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: baseUrl,
   withCredentials: true,
 });
 
@@ -57,7 +60,7 @@ export const setInterceptors = (logout: () => void) => {
           // 리프레시 토큰으로 새로운 액세스 토큰을 요청
           // 서버의 응답 헤더(Set-Cookie)를 통해 브라우저에 새로운 accessToken 쿠키가 설정됩니다.
           await axios.post(
-            'http://localhost:8080/api/v1/auth/refresh-token',
+            `${baseUrl}/auth/refresh-token`,
             {},
             {
               withCredentials: true,
