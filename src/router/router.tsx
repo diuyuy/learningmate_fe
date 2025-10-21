@@ -1,7 +1,9 @@
+import { fetchTodaysKeyword } from '@/features/keywords/api/api';
 import { fetchMember } from '@/features/members/api/api';
 import AuthLayout from '@/layouts/AuthLayout';
 import ProtectedRoute from '@/layouts/ProtectedRoute';
 import RootLayout from '@/layouts/RootLayout';
+import AdminPage from '@/pages/AdminPage';
 import ArticleDetailPage from '@/pages/ArticleDetailPage';
 import ErrorPage from '@/pages/ErrorPage';
 import LandingPage from '@/pages/LandingPage';
@@ -43,6 +45,11 @@ export const router = createBrowserRouter([
           {
             path: 'my',
             element: <MyPage />,
+          },
+          {
+            path: 'admin',
+            element: <AdminPage />,
+            loader: fetchTodaysKeyword,
           },
         ],
       },

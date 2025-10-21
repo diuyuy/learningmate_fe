@@ -1,6 +1,6 @@
 import { api } from '@/lib/axios';
-import type { TodaysKeyword } from '../types/types';
 import { nowKstDateKey } from '@/lib/timezone';
+import type { TodaysKeyword } from '../types/types';
 
 export const fetchTodaysKeyword = async () => {
   const today = nowKstDateKey();
