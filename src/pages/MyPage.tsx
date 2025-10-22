@@ -56,28 +56,27 @@ export default function MyPage() {
 
             <ProfilePasswdField updateMember={updateMember} />
           </div>
+          <div className='flex justify-end mr-2 mt-20'>
+            <Button
+              variant={'outline_semibold'}
+              onClick={setCheckWithdrawDialog}
+              className='text-red-500 hover:text-red-500'
+            >
+              회원 탈퇴
+            </Button>
+          </div>
+          <CheckWithdrawDialog
+            isOpen={isCheckWithdrawDialogOpen}
+            setCheckWithdrawDialog={setCheckWithdrawDialog}
+            deleteAccount={deleteAccount}
+          />
+
+          <WithdrawalSuccessDialog
+            isOpen={isWithdrawSuccessDialogOpen}
+            setWithdrawSuccessDialog={setWithdrawSuccessDialog}
+            onAccountDeleted={onAccountDeleted}
+          />
         </section>
-
-        <div className='flex justify-end mr-2 mt-20'>
-          <Button
-            variant={'outline_semibold'}
-            onClick={setCheckWithdrawDialog}
-            className='text-red-500 hover:text-red-500'
-          >
-            회원 탈퇴
-          </Button>
-        </div>
-        <CheckWithdrawDialog
-          isOpen={isCheckWithdrawDialogOpen}
-          setCheckWithdrawDialog={setCheckWithdrawDialog}
-          deleteAccount={deleteAccount}
-        />
-
-        <WithdrawalSuccessDialog
-          isOpen={isWithdrawSuccessDialogOpen}
-          setWithdrawSuccessDialog={setWithdrawSuccessDialog}
-          onAccountDeleted={onAccountDeleted}
-        />
       </div>
     </div>
   );

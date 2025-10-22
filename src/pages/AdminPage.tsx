@@ -15,16 +15,15 @@ const PAGE_SIZE = 10;
 
 export default function AdminPage() {
   const todaysKeyword = useLoaderData<TodaysKeyword>();
-  const todaysKeywordId = todaysKeyword.id;
-  const initialIdx = Math.trunc(todaysKeywordId / PAGE_SIZE);
+  const initialPageIdx = Math.trunc(todaysKeyword.id / PAGE_SIZE);
 
   const [pagination, setPagination] = useState({
-    pageIndex: initialIdx,
+    pageIndex: initialPageIdx,
     pageSize: PAGE_SIZE,
   });
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({
-    [String(initialIdx)]: true,
+    [String(todaysKeyword.id % PAGE_SIZE)]: true,
   });
 
   const [keyword, setKeyword] = useState<KeywordWithVideo>();
@@ -43,7 +42,7 @@ export default function AdminPage() {
         setKeyword={setKeyword}
       />
 
-      <VideoSection videoUrl={keyword?.video?.link} />
+      {keyword && <VideoSection keywordId={keyword.id} video={keyword.video} />}
       <section>
         <div className='flex justify-between'>
           <h2 className='text-2xl font-bold'>Articles</h2>

@@ -1,4 +1,5 @@
 import type { KeywordWithVideo } from '@/features/keywords/types/types';
+import type { Video } from '@/features/videos/types/types';
 import { api } from '@/lib/axios';
 import type { PageResponse } from '@/types/types';
 
@@ -23,4 +24,23 @@ export const fetchKeywordsByPage = async ({
     console.error('error:', error);
     throw Error('sdfsdf');
   }
+};
+
+export const createVideo = async (keywordId: number, videoUrl: string) => {
+  const response = await api.post<Video>(
+    `/admin/keywords/${keywordId}/videos`,
+    {
+      videoUrl,
+    }
+  );
+
+  return response.data;
+};
+
+export const updateVideo = async (videoId: number, videoUrl: string) => {
+  const response = await api.patch<Video>(`/admin/videos/${videoId}`, {
+    videoUrl,
+  });
+
+  return response.data;
 };
