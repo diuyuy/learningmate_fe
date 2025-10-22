@@ -41,6 +41,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       try {
         const member = await fetchMember();
         if (member) provideSession(member);
+        // else logout();
       } catch (error) {
         if (error instanceof AxiosError && error.status === 401) {
           logout();

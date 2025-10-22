@@ -8,6 +8,7 @@ export default function ProtectedRoute() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('🚀 ~ ProtectedRoute ~ isLoggedIn:', isLoggedIn);
     if (!isLoggedIn) {
       if (!toLoginPage) return;
       alert('로그인이 필요한 화면입니다.');
@@ -15,7 +16,7 @@ export default function ProtectedRoute() {
         replace: true,
       });
     }
-  }, [isLoggedIn, toLoginPage]);
+  }, [isLoggedIn, toLoginPage, navigate]);
 
   return isLoggedIn ? <Outlet /> : null;
 }

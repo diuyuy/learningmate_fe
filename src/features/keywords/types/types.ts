@@ -1,3 +1,4 @@
+import type { Video } from '@/features/videos/types/types';
 import type { Category } from '@/types/types';
 
 export type Keyword = {
@@ -11,4 +12,12 @@ export type TodaysKeyword = {
   id: number;
   keyword: Keyword;
   date: string; // YYYY-MM-DD
+};
+
+export type KeywordWithVideo = {
+  id: number;
+  name: string;
+  description: string;
+  category: Category;
+  video: Video | null;
 };
