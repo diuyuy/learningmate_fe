@@ -75,7 +75,7 @@ export default function VideoSection({ keywordId, video }: Props) {
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor='video-url-input' className='font-semibold'>
-                  videoUrl:
+                  Video URL:
                 </FieldLabel>
                 <Input
                   {...field}

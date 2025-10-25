@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 
 export function GoogleLoginButton() {
   const baseUrl = import.meta.env.VITE_BASE_URL;
-  console.log('🚀 ~ GoogleLoginButton ~ baseUrl:', baseUrl);
   return (
     <Button
       asChild

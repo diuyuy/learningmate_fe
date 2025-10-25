@@ -7,4 +7,7 @@ export const ROUTE_PATHS = {
   SIGNUP: '/signup',
   LANDING: '/',
   PASSWORD_RESETS: '/password-resets',
+  EDIT_ARTICLE: (keywordId: number, articleId: number) =>
+    `/admin/keywords/${keywordId}/articles/${articleId}`,
+  ADMIN: '/admin',
 } as const;

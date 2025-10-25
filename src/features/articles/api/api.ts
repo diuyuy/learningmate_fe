@@ -9,7 +9,6 @@ export const fetchArticlePreviews = async (keywordId: number) => {
 
 export const fetchArticle = async (articleId: number) => {
   const response = await api.get(`/articles/${articleId}`);
-  console.log(response.data);
 
   return response.data.result as Article;
 };

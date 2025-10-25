@@ -5,6 +5,7 @@ export type Member = {
   email: string;
   nickname?: string;
   imageUrl?: string;
+  role: 'ADMIN' | 'USER';
 };
 
 export type PasswdUpdateReq = {
