@@ -35,12 +35,19 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
 
   const form = useArticleForm(article);
   const contentRef = useRef<HTMLTextAreaElement>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleDialogOpen = (open: boolean) => setIsDialogOpen(open);
+
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
+  const handleErrorDialogOpen = (open: boolean) => setIsErrorDialogOpen(open);
+
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationKey: [QUERY_KEYS.ARTICLE, articleId],
     mutationFn: async (formData: ArticleForm) =>
       updateArticle(articleId, formData),
-    onSuccess: async () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.ARTICLE_PREVIEWS, keywordId],
       });
@@ -49,14 +56,14 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
       });
       setIsDialogOpen(true);
     },
+    onError: () => {
+      handleErrorDialogOpen(true);
+    },
   });
 
   const onSubmit = (formData: ArticleForm) => {
     mutation.mutate(formData);
   };
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const handleDialogOpen = (open: boolean) => setIsDialogOpen(open);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -299,6 +306,11 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
         isOpen={isDialogOpen}
         content='Article 수정이 완료됐습니다.'
         handleDialogOpen={handleDialogOpen}
+      />
+      <ActionResultDialog
+        isOpen={isErrorDialogOpen}
+        handleDialogOpen={handleErrorDialogOpen}
+        content='예상치 못한 에러가 발생했습니다. 다시 시도해주세요.'
       />
     </section>
   );
