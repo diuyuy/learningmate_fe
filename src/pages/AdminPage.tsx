@@ -14,7 +14,7 @@ const PAGE_SIZE = 10;
 
 export default function AdminPage() {
   const todaysKeyword = useLoaderData<TodaysKeyword>();
-  const initialPageIdx = Math.trunc(todaysKeyword.id / PAGE_SIZE);
+  const initialPageIdx = Math.trunc(todaysKeyword.keyword.id / PAGE_SIZE);
 
   const [pagination, setPagination] = useState({
     pageIndex: initialPageIdx,
@@ -22,7 +22,7 @@ export default function AdminPage() {
   });
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({
-    [String((todaysKeyword.id % PAGE_SIZE) - 1)]: true,
+    [String((todaysKeyword.keyword.id % PAGE_SIZE) - 1)]: true,
   });
 
   const [keyword, setKeyword] = useState<KeywordWithVideo>();
