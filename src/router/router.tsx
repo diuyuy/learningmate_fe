@@ -5,6 +5,7 @@ import ProtectedRoute from '@/layouts/ProtectedRoute';
 import RootLayout from '@/layouts/RootLayout';
 import AdminPage from '@/pages/AdminPage';
 import ArticleDetailPage from '@/pages/ArticleDetailPage';
+import EditArticlePage from '@/pages/EditArticlePage';
 import ErrorPage from '@/pages/ErrorPage';
 import LandingPage from '@/pages/LandingPage';
 import LearningPage from '@/pages/LearningPage';
@@ -32,25 +33,29 @@ export const router = createBrowserRouter([
         element: <RootLayout />,
         children: [
           {
-            path: 'main',
+            path: '/main',
             element: <MainPage />,
           },
           {
-            path: 'learning',
+            path: '/learning',
             element: <LearningPage />,
           },
           {
-            path: 'article/:articleId',
+            path: '/article/:articleId',
             element: <ArticleDetailPage />,
           },
           {
-            path: 'my',
+            path: '/my',
             element: <MyPage />,
           },
           {
-            path: 'admin',
+            path: '/admin',
             element: <AdminPage />,
             loader: fetchTodaysKeyword,
+          },
+          {
+            path: 'admin/keywords/:keywordId/articles/:articleId',
+            element: <EditArticlePage />,
           },
         ],
       },

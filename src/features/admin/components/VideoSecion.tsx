@@ -4,12 +4,13 @@ import { Input } from '@/components/ui/input';
 import { QUERY_KEYS } from '@/constants/querykeys';
 import type { Video } from '@/features/videos/types/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import YouTube from 'react-youtube';
 import { createVideo, updateVideo } from '../api/api';
 import { useVideoForm } from '../hooks/useVideoForm';
 import type { VideoUrlForm } from '../types/types';
+import ActionResultDialog from './ActionResultDialog';
 
 type Props = {
   keywordId: number;
@@ -19,6 +20,9 @@ type Props = {
 export default function VideoSection({ keywordId, video }: Props) {
   const queryClient = useQueryClient();
   const form = useVideoForm(video?.link);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const handleDialogOpen = (open: boolean) => setIsDialogOpen(open);
+
   const mutation = useMutation({
     mutationKey: [QUERY_KEYS.VIDEOS, video?.id],
     mutationFn: async ({ videoUrl }: VideoUrlForm) => {
@@ -30,6 +34,9 @@ export default function VideoSection({ keywordId, video }: Props) {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.KEYWORDS],
       });
+    },
+    onError: () => {
+      handleDialogOpen(true);
     },
   });
 
@@ -75,7 +82,7 @@ export default function VideoSection({ keywordId, video }: Props) {
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor='video-url-input' className='font-semibold'>
-                  videoUrl:
+                  Video URL:
                 </FieldLabel>
                 <Input
                   {...field}
@@ -102,6 +109,11 @@ export default function VideoSection({ keywordId, video }: Props) {
           </div>
         )}
       </div>
+      <ActionResultDialog
+        isOpen={isDialogOpen}
+        handleDialogOpen={handleDialogOpen}
+        content='예상치 못한 에러가 발생했습니다. 다시 시도해주세요.'
+      />
     </section>
   );
 }

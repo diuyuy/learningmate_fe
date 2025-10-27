@@ -30,3 +30,4 @@ storybook-static
 .env
 
 claude_contexts
+.yarn

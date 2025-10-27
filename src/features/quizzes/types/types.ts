@@ -12,6 +12,17 @@ export type Quiz = {
   explanation: string;
 };
 
+export type QuizDetail = {
+  id: number;
+  description: string;
+  question1: string;
+  question2: string;
+  question3: string;
+  question4: string;
+  answer: '1' | '2' | '3' | '4'; // 1 ~ 4
+  explanation: string;
+};
+
 export type MemberQuiz = {
   memberId: number;
   memberAnswer: string; // '1' | '2' | '3' | '4'
