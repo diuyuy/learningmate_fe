@@ -22,6 +22,7 @@ export const router = createBrowserRouter([
     path: '/',
     element: <LandingPage />,
     loader: fetchMember,
+    errorElement: <ErrorPage />,
   },
   {
     element: <ProtectedRoute />,
