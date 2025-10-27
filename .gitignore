@@ -29,4 +29,5 @@ storybook-static
 
 .env
 
-CLAUDE.md
+claude_contexts
+.yarn
