@@ -5,6 +5,7 @@ import ProtectedRoute from '@/layouts/ProtectedRoute';
 import RootLayout from '@/layouts/RootLayout';
 import AdminPage from '@/pages/AdminPage';
 import ArticleDetailPage from '@/pages/ArticleDetailPage';
+import EditArticlePage from '@/pages/EditArticlePage';
 import ErrorPage from '@/pages/ErrorPage';
 import LandingPage from '@/pages/LandingPage';
 import LearningPage from '@/pages/LearningPage';
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
             path: 'admin',
             element: <AdminPage />,
             loader: fetchTodaysKeyword,
+          },
+          {
+            path: 'admin/keywords/:keywordId/articles/:articleId',
+            element: <EditArticlePage />,
           },
         ],
       },

@@ -4,7 +4,7 @@ import { fetchArticlePreviews } from '../api/api';
 
 export const useArticlePreviewsQuery = (keywordId: number) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.ARTICLE_PREVIEWS],
+    queryKey: [QUERY_KEYS.ARTICLE_PREVIEWS, keywordId],
     queryFn: async () => {
       return await fetchArticlePreviews(keywordId);
     },

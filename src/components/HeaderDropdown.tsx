@@ -8,6 +8,7 @@ import {
   LightbulbIcon,
   LogOutIcon,
   MenuIcon,
+  UserStarIcon,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import {
@@ -21,7 +22,7 @@ import {
 } from './ui/dropdown-menu';
 
 export default function HeaderDropDown() {
-  const { logout } = useSession();
+  const { logout, member } = useSession();
 
   const handleLogout = async () => {
     await signOut();
@@ -42,6 +43,14 @@ export default function HeaderDropDown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          {member?.role === 'ADMIN' && (
+            <DropdownMenuItem asChild>
+              <Link to={ROUTE_PATHS.ADMIN}>
+                <UserStarIcon color='black' />
+                어드민
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem asChild>
             <Link to={ROUTE_PATHS.MAIN} className='w-full hover:cursor-pointer'>
               <HouseIcon color='black' />홈
