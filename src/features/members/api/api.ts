@@ -33,7 +33,7 @@ export const updatePasswd = async (newPasswd: PasswdUpdateReq) => {
 };
 
 export const updateProfileImage = async (image: FormData) => {
-  const response = await api.patch('/members/me/profile-image', image);
+  const response = await api.patch('/members/me/profile-images', image);
 
   return response.data.result as Member;
 };

@@ -9,7 +9,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AvatarImage } from '@radix-ui/react-avatar';
 import { useEffect, useReducer, useState, type ChangeEvent } from 'react';
@@ -30,7 +29,7 @@ export default function ProfileImageField({ imgUrl, updateMember }: Props) {
       <div className='flex items-start'>
         <div className='w-28 font-semibold'>이미지: </div>
         {isForm ? (
-          <ProfileImageFormFiled
+          <ProfileImageFormField
             imgUrl={imgUrl}
             toggleSetting={toggleSetting}
             updateMember={updateMember}
@@ -52,7 +51,7 @@ export default function ProfileImageField({ imgUrl, updateMember }: Props) {
 
 type ProfileImgFieldProps = Props & { toggleSetting: () => void };
 
-function ProfileImageFormFiled({
+function ProfileImageFormField({
   imgUrl,
   toggleSetting,
   updateMember,
@@ -72,19 +71,22 @@ function ProfileImageFormFiled({
       const updatedMember = await updateProfileImage(formData);
       updateMember(updatedMember);
       toggleSetting();
-    } catch (error) {}
+    } catch (error) {
+      form.setError('image', {
+        message: '이미지 업로드에 실패했습니다. 다시 시도해주세요.',
+      });
+    }
   };
 
-  const onImageChange = (
-    e: ChangeEvent<HTMLInputElement>,
-    onChange: (...event: any[]) => void
-  ) => {
+  const onImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const imgFile = e.target.files?.[0];
     if (imgFile) {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       const newUrl = URL.createObjectURL(imgFile);
       setPreviewUrl(newUrl);
     }
-    onChange(e.target.files);
   };
 
   useEffect(() => {
@@ -105,7 +107,6 @@ function ProfileImageFormFiled({
           <AvatarImage src={previewUrl} />
         )}
       </Avatar>
-
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -121,13 +122,14 @@ function ProfileImageFormFiled({
                     <FormLabel>변경</FormLabel>
                   </Button>
                 </div>
-
                 <FormControl>
-                  <Input
+                  <input
                     type='file'
-                    accept='image/*'
+                    accept='image/png, image/jpeg, image/jpg'
+                    aria-label='프로필 이미지 업로드'
                     onChange={(e) => {
-                      onImageChange(e, onChange);
+                      onImageChange(e);
+                      onChange(e.target.files);
                     }}
                     {...fieldRest}
                     value={undefined}
