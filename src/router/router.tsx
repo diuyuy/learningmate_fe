@@ -32,23 +32,23 @@ export const router = createBrowserRouter([
         element: <RootLayout />,
         children: [
           {
-            path: 'main',
+            path: '/main',
             element: <MainPage />,
           },
           {
-            path: 'learning',
+            path: '/learning',
             element: <LearningPage />,
           },
           {
-            path: 'article/:articleId',
+            path: '/article/:articleId',
             element: <ArticleDetailPage />,
           },
           {
-            path: 'my',
+            path: '/my',
             element: <MyPage />,
           },
           {
-            path: 'admin',
+            path: '/admin',
             element: <AdminPage />,
             loader: fetchTodaysKeyword,
           },
