@@ -1,3 +1,4 @@
+// src/features/reviews/hooks/useReviewMutations.ts
 import { QUERY_KEYS } from '@/constants/querykeys';
 import {
   useMutation,
@@ -19,6 +20,12 @@ function defaultOnError(error: unknown) {
   }
 }
 
+// ✅ MyReview(내 리뷰 무한스크롤) 리스트 최신화를 위한 invalidate helper
+const invalidateMyReviews = async (qc: ReturnType<typeof useQueryClient>) => {
+  // [QUERY_KEYS.REVIEWS, 'me', { sort, size }] 계열 전부 무효화 (부분 일치)
+  await qc.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEWS, 'me'] });
+};
+
 export function useUpdateReviewMutation(
   articleId: number,
   reviewId: number,
@@ -31,9 +38,15 @@ export function useUpdateReviewMutation(
     mutationFn: (payload: ReviewForm) => updateReview(payload, reviewId),
     onSuccess: async (...args) => {
       alert('수정이 완료되었습니다.');
+
+      // 단건/상세 쿼리 최신화
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.REVIEW, articleId, reviewId],
       });
+
+      // ✅ 내 리뷰 목록 최신화 (마이페이지 > 내 리뷰 즉시 반영)
+      await invalidateMyReviews(queryClient);
+
       options?.onSuccess?.(...args);
     },
     onError: (err, ...rest) => {
@@ -56,9 +69,15 @@ export function useDeleteReviewMutation(
     mutationFn: () => deleteReview(reviewId),
     onSuccess: async (...args) => {
       alert('리뷰가 삭제되었습니다.');
+
+      // 단건/상세 쿼리 최신화
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.REVIEW, articleId, reviewId],
       });
+
+      // ✅ 내 리뷰 목록 최신화
+      await invalidateMyReviews(queryClient);
+
       options?.onSuccess?.(...args);
     },
     onError: (err, ...rest) => {
@@ -80,9 +99,15 @@ export function useCreateReviewMutation(
     mutationFn: (payload: ReviewForm) => postReview(payload, articleId),
     onSuccess: async (...args) => {
       alert('작성이 완료되었습니다.');
+
+      // 아티클 별 리뷰 목록/상세 최신화
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.REVIEW, articleId],
       });
+
+      // ✅ 내 리뷰 목록 최신화
+      await invalidateMyReviews(queryClient);
+
       options?.onSuccess?.(...args);
     },
     onError: (err, ...rest) => {
