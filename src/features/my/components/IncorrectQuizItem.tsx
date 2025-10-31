@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import type { IncorrectQuizItem } from '@/features/my/types/quiz';
 import * as Accordion from '@radix-ui/react-accordion';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import {
   BookOpen,
   ExternalLink,
@@ -56,6 +58,13 @@ export default function IncorrectQuizItem({ item, value }: Props) {
             <Newspaper className='h-3.5 w-3.5' />
             {item.article.keyword?.name ?? '키워드'}
           </span>
+          {item.article.keyword?.date && (
+            <span className='text-[11px] text-zinc-500 ml-2'>
+              {format(new Date(item.article.keyword.date), 'yyyy-MM-dd (E)', {
+                locale: ko,
+              })}
+            </span>
+          )}
           {/* chevron */}
           <svg
             className='chev ml-2 h-4 w-4 transition-transform'

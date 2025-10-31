@@ -14,6 +14,7 @@ export type IncorrectQuizItem = {
       id: number;
       name: string;
       description: string;
+      date: string;
     };
   };
   description: string; // 문제 내용
