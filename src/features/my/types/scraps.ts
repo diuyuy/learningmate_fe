@@ -6,6 +6,7 @@ export type ScrapItem = {
   publishedAt: string;
   date?: string;
   views?: number;
+  scrapCount?: number;
   scrappedByMe: boolean;
 };
 

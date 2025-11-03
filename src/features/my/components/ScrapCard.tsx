@@ -31,14 +31,22 @@ export default function ScrapCard({ item, onToggleScrap }: Props) {
       </h2>
 
       {/* 날짜 + 조회수 */}
-      <div className='mt-1 flex items-center gap-4 text-xs text-zinc-500'>
+      <div className='mt-1 flex items-center gap-4 text-sm text-zinc-600'>
         {dateLabel && (
-          <span className='inline-flex items-center gap-1'>
-            <CalendarDays className='h-4 w-4' /> {dateLabel}
+          <span className='inline-flex items-center gap-1.5 leading-none'>
+            <CalendarDays className='h-4 w-4 text-zinc-500 translate-y-[1px]' />
+            {dateLabel}
           </span>
         )}
-        <span className='inline-flex items-center gap-1'>
-          <Eye className='h-4 w-4' /> {item.views ?? 0}
+
+        <span className='inline-flex items-center gap-1.5 leading-none'>
+          <Eye className='h-4 w-4 text-zinc-500 translate-y-[1px]' />
+          {item.views ?? 0}
+        </span>
+
+        <span className='inline-flex items-center gap-1.5 leading-none'>
+          <Bookmark className='h-4 w-4 text-zinc-500 translate-y-[1px]' />
+          {item.scrapCount ?? 0}
         </span>
       </div>
 
