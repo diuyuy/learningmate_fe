@@ -48,7 +48,7 @@ export default function EditQuizSection({ articleId }: Props) {
   if (isError) return <QuizSectionError />;
 
   return (
-    <section className='w-full max-w-2xl'>
+    <section className='w-full max-w-2xl mx-auto'>
       <Card>
         <CardHeader>
           <CardTitle className='text-xl'>Quiz</CardTitle>

@@ -70,7 +70,7 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
       contentRef.current.style.height = 'auto';
       contentRef.current.style.height = `${contentRef.current.scrollHeight}px`;
     }
-  });
+  }, []);
 
   useEffect(() => {
     form.reset({
@@ -81,7 +81,7 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
   }, [article, form]);
 
   return (
-    <section className='w-full max-w-2xl'>
+    <section className='w-full max-w-2xl mx-auto'>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardHeader>
