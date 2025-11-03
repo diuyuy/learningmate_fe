@@ -8,11 +8,13 @@ import type { ArticleForm, KeywordInfoForm, QuizForm } from '../types/types';
 
 export const fetchKeywordsByPage = async ({
   pageParam,
+  query,
 }: {
   pageParam: number;
-}) => {
+  query: string;
+}): Promise<PageResponse<KeywordWithVideo>> => {
   try {
-    const response = await api.get('/admin/keywords', {
+    const response = await api.get(`/admin/keywords?query=${query}`, {
       params: {
         page: pageParam,
         size: 10,
@@ -20,7 +22,7 @@ export const fetchKeywordsByPage = async ({
       },
     });
 
-    return response.data.result as PageResponse<KeywordWithVideo>;
+    return response.data.result;
   } catch (error) {
     console.error('error:', error);
     throw Error('sdfsdf');

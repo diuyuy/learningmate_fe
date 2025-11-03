@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { Skeleton } from './ui/skeleton';
 
 export default function HeaderDropDown() {
   const { logout, member } = useSession();
@@ -33,11 +34,7 @@ export default function HeaderDropDown() {
   };
 
   if (isPending) {
-    return null;
-  }
-
-  if (isError) {
-    return null;
+    return <Skeleton className='size-8 rounded-md' />;
   }
 
   return (
@@ -53,9 +50,11 @@ export default function HeaderDropDown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {member?.role === 'ADMIN' && (
+          {!isError && member?.role === 'ADMIN' && (
             <DropdownMenuItem asChild>
-              <Link to={`${ROUTE_PATHS.ADMIN}?keywordId=${todaysKeyword.id}`}>
+              <Link
+                to={`${ROUTE_PATHS.ADMIN}?keywordId=${todaysKeyword.keyword.id}`}
+              >
                 <UserStarIcon color='black' />
                 어드민
               </Link>

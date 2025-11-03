@@ -1,4 +1,6 @@
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -9,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { KeywordWithVideo } from '@/features/keywords/types/types';
+import { debounce } from '@/lib/utils';
 import {
   flexRender,
   getCoreRowModel,
@@ -21,8 +24,15 @@ import {
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
+  SearchIcon,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+} from 'react';
 import type { SetURLSearchParams } from 'react-router';
 import { useKeywordsQuery } from '../hooks/useKeywordsQuery';
 import type { PaginationState } from '../types/types';
@@ -39,6 +49,7 @@ type Props = {
     React.SetStateAction<KeywordWithVideo | undefined>
   >;
   setSearchParams: SetURLSearchParams;
+  setFilteringQuery: React.Dispatch<React.SetStateAction<string>>;
 };
 
 // 10개씩 묶어서 페이지 번호 생성
@@ -65,6 +76,7 @@ export default function KeywordSection({
   setRowSelection,
   setKeyword,
   setSearchParams,
+  setFilteringQuery,
 }: Props) {
   const { isPending, isError, data } = queryState;
   const [selectedKeyword, setSelectedKeyword] =
@@ -75,6 +87,13 @@ export default function KeywordSection({
     setSelectedKeyword(keyword);
     setIsDialogOpen(true);
   };
+
+  const handleOnQueryChange = useCallback(
+    debounce((e: ChangeEvent<HTMLInputElement>) =>
+      setFilteringQuery(e.target.value)
+    ),
+    [setFilteringQuery]
+  );
 
   const columns = useMemo(() => createKeywordColumns(handleViewDetail), []);
 
@@ -156,6 +175,17 @@ export default function KeywordSection({
       <section>
         <h2 className='text-2xl font-bold'>Keywords</h2>
         <div className='my-2 flex flex-col gap-3'>
+          <Label htmlFor='input-query' className='mt-3 font-semibold'>
+            키워드 검색:{' '}
+          </Label>
+          <div className='relative max-w-80'>
+            <Input id='input-query' onChange={handleOnQueryChange} />
+            <SearchIcon
+              color='gray'
+              className='absolute right-0 top-1/2 -translate-1/2 size-4'
+            />
+          </div>
+
           <div className='overflow-hidden border rounded-md'>
             <Table className='table-fixed'>
               <TableHeader>
