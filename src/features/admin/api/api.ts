@@ -4,7 +4,7 @@ import type { Quiz, QuizDetail } from '@/features/quizzes/types/types';
 import type { Video } from '@/features/videos/types/types';
 import { api } from '@/lib/axios';
 import type { PageResponse } from '@/types/types';
-import type { ArticleForm, QuizForm } from '../types/types';
+import type { ArticleForm, KeywordInfoForm, QuizForm } from '../types/types';
 
 export const fetchKeywordsByPage = async ({
   pageParam,
@@ -80,4 +80,13 @@ export const updateQuiz = async (quizId: number, quizForm: QuizForm) => {
   const response = await api.patch<Quiz>(`/admin/quizzes/${quizId}`, quizForm);
 
   return response.data;
+};
+
+export const updateKeyword = async (
+  keywordId: number,
+  keywordForm: KeywordInfoForm
+): Promise<KeywordWithVideo> => {
+  const response = await api.patch(`/admin/keywords/${keywordId}`, keywordForm);
+
+  return response.data.result;
 };

@@ -1,10 +1,13 @@
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { KeywordWithVideo } from '@/features/keywords/types/types';
 import { createColumnHelper } from '@tanstack/react-table';
 
 const columnHelper = createColumnHelper<KeywordWithVideo>();
 
-export const createKeywordColumns = () => [
+export const createKeywordColumns = (
+  onViewDetail: (keyword: KeywordWithVideo) => void
+) => [
   columnHelper.display({
     id: '선택',
     header: '선택',
@@ -23,17 +26,40 @@ export const createKeywordColumns = () => [
     },
     enableSorting: false,
     enableHiding: false,
+    size: 30,
   }),
   columnHelper.accessor('id', {
     header: 'ID',
+    size: 40,
   }),
   columnHelper.accessor('name', {
     header: '이름',
+    size: 180,
   }),
   columnHelper.accessor('category.name', {
     header: '카테고리',
+    size: 60,
   }),
   columnHelper.accessor('description', {
     header: '설명',
+    size: 300,
+  }),
+  columnHelper.display({
+    id: '상세 보기',
+    header: '상세 보기',
+    cell: ({ row }) => {
+      return (
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={() => onViewDetail(row.original)}
+        >
+          상세 보기
+        </Button>
+      );
+    },
+    enableSorting: false,
+    enableHiding: false,
+    size: 60,
   }),
 ];

@@ -1,6 +1,7 @@
 import { ROUTE_PATHS } from '@/constants/routepaths';
 import { signOut } from '@/features/auth/api/api';
 import { useSession } from '@/features/auth/context/useSession';
+import { useTodaysKeywordQuery } from '@/features/keywords/hooks/useTodaysKeywordQuery';
 import MemberProfile from '@/features/members/components/MemberProfile';
 import {
   BookOpenIcon,
@@ -23,12 +24,21 @@ import {
 
 export default function HeaderDropDown() {
   const { logout, member } = useSession();
+  const { isPending, isError, data: todaysKeyword } = useTodaysKeywordQuery();
 
   const handleLogout = async () => {
     await signOut();
 
     logout();
   };
+
+  if (isPending) {
+    return null;
+  }
+
+  if (isError) {
+    return null;
+  }
 
   return (
     <DropdownMenu>
@@ -45,7 +55,7 @@ export default function HeaderDropDown() {
         <DropdownMenuGroup>
           {member?.role === 'ADMIN' && (
             <DropdownMenuItem asChild>
-              <Link to={ROUTE_PATHS.ADMIN}>
+              <Link to={`${ROUTE_PATHS.ADMIN}?keywordId=${todaysKeyword.id}`}>
                 <UserStarIcon color='black' />
                 어드민
               </Link>

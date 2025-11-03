@@ -1,6 +1,6 @@
 export type Category = {
   id: number;
-  name: string; // CHAR(2)
+  name: '과학' | '금융' | '경제' | '사회' | '공공' | '경영'; // CHAR(2)
 };
 
 export type PageResponse<T> = {

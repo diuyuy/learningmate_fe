@@ -16,11 +16,18 @@ import {
   type RowSelectionState,
   type Updater,
 } from '@tanstack/react-table';
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import type { SetURLSearchParams } from 'react-router';
 import { useKeywordsQuery } from '../hooks/useKeywordsQuery';
 import type { PaginationState } from '../types/types';
 import { createKeywordColumns } from './createKeywordColumns';
+import KeywordDetailDialog from './KeywordDetailDialog';
 
 type Props = {
   queryState: ReturnType<typeof useKeywordsQuery>;
@@ -31,6 +38,23 @@ type Props = {
   setKeyword: React.Dispatch<
     React.SetStateAction<KeywordWithVideo | undefined>
   >;
+  setSearchParams: SetURLSearchParams;
+};
+
+// 10개씩 묶어서 페이지 번호 생성
+const generatePageNumbers = (currentPage: number, totalPages: number) => {
+  const pages: number[] = [];
+  const pagesPerBlock = 10;
+
+  // 현재 페이지가 속한 블록의 시작 인덱스 계산
+  const blockStart = Math.floor(currentPage / pagesPerBlock) * pagesPerBlock;
+  const blockEnd = Math.min(blockStart + pagesPerBlock, totalPages);
+
+  for (let i = blockStart; i < blockEnd; i++) {
+    pages.push(i);
+  }
+
+  return pages;
 };
 
 export default function KeywordSection({
@@ -40,9 +64,19 @@ export default function KeywordSection({
   rowSelection,
   setRowSelection,
   setKeyword,
+  setSearchParams,
 }: Props) {
   const { isPending, isError, data } = queryState;
-  const columns = useMemo(() => createKeywordColumns(), []);
+  const [selectedKeyword, setSelectedKeyword] =
+    useState<KeywordWithVideo | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleViewDetail = (keyword: KeywordWithVideo) => {
+    setSelectedKeyword(keyword);
+    setIsDialogOpen(true);
+  };
+
+  const columns = useMemo(() => createKeywordColumns(handleViewDetail), []);
 
   const keywords = data?.items ?? [];
 
@@ -60,104 +94,210 @@ export default function KeywordSection({
     },
   });
 
-  const handleClickNextPage = async () => {
+  const handleClickFirstPage = () => {
     if (isPending) return;
-    table.nextPage();
+    table.setPageIndex(0);
   };
 
-  const handleClickPreviousPage = async () => {
-    if (isPending) return;
-    table.previousPage();
+  const handleClickLastPage = () => {
+    if (isPending || !data) return;
+    table.setPageIndex(data.totalPages - 1);
   };
+
+  const handleClickPage = (pageIndex: number) => {
+    if (isPending) return;
+    table.setPageIndex(pageIndex);
+  };
+
+  const handleClickPrevBlock = () => {
+    if (isPending) return;
+    const pagesPerBlock = 10;
+    const currentBlockStart =
+      Math.floor(pagination.pageIndex / pagesPerBlock) * pagesPerBlock;
+    const prevBlockStart = Math.max(0, currentBlockStart - pagesPerBlock);
+    table.setPageIndex(prevBlockStart);
+  };
+
+  const handleClickNextBlock = () => {
+    if (isPending || !data) return;
+    const pagesPerBlock = 10;
+    const currentBlockStart =
+      Math.floor(pagination.pageIndex / pagesPerBlock) * pagesPerBlock;
+    const nextBlockStart = Math.min(
+      currentBlockStart + pagesPerBlock,
+      data.totalPages - 1
+    );
+    table.setPageIndex(nextBlockStart);
+  };
+
+  const pageNumbers = useMemo(() => {
+    if (!data) return [];
+    return generatePageNumbers(pagination.pageIndex, data.totalPages);
+  }, [pagination.pageIndex, data]);
+
+  const isFirstBlock = pagination.pageIndex < 10;
+  const isLastBlock =
+    data &&
+    Math.floor(pagination.pageIndex / 10) ===
+      Math.floor((data.totalPages - 1) / 10);
 
   useEffect(() => {
     const keyword = table.getSelectedRowModel().rows.at(0)?.original;
     setKeyword(keyword);
-  }, [rowSelection, keywords, setKeyword, table]);
+
+    // Update searchParams when a keyword is selected
+    if (keyword) {
+      setSearchParams({ keywordId: String(keyword.id) });
+    }
+  }, [rowSelection, keywords, setKeyword, table, setSearchParams]);
 
   return (
-    <section>
-      <h2 className='text-2xl font-bold'>Keywords</h2>
-      <div className='my-2 flex flex-col gap-3'>
-        <div className='overflow-hidden border rounded-md'>
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className='font-semibold'>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {isPending ? (
-                <>
-                  {Array.from({ length: pagination.pageSize }).map(
-                    (_, index) => {
-                      return (
-                        <TableRow key={`empty-${index}`}>
-                          <TableCell>
-                            <Skeleton className='h-4' />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    }
-                  )}
-                </>
-              ) : isError ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className='text-center py-8'
-                  >
-                    예상치 못한 오류가 발생했습니다.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getAllCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className='max-w-[250px] truncate'
+    <>
+      <section>
+        <h2 className='text-2xl font-bold'>Keywords</h2>
+        <div className='my-2 flex flex-col gap-3'>
+          <div className='overflow-hidden border rounded-md'>
+            <Table className='table-fixed'>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className='font-semibold'
+                        style={{ width: header.getSize() }}
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {isPending ? (
+                  <>
+                    {Array.from({ length: pagination.pageSize }).map(
+                      (_, index) => {
+                        return (
+                          <TableRow key={`empty-${index}`}>
+                            <TableCell>
+                              <Skeleton className='h-4' />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }
+                    )}
+                  </>
+                ) : isError ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className='text-center py-8'
+                    >
+                      예상치 못한 오류가 발생했습니다.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id}>
+                      {row.getAllCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          style={{
+                            width: cell.column.getSize(),
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <div className='flex gap-1 items-center justify-center flex-wrap'>
+            <Button
+              variant={'outline'}
+              size={'icon'}
+              onClick={handleClickFirstPage}
+              disabled={!data || pagination.pageIndex === 0 || isPending}
+              aria-label='첫 페이지'
+            >
+              <ChevronsLeftIcon className='h-4 w-4' />
+            </Button>
+            <Button
+              variant={'outline'}
+              size={'icon'}
+              onClick={handleClickPrevBlock}
+              disabled={!data || isFirstBlock || isPending}
+              aria-label='이전 10페이지'
+            >
+              <ChevronLeftIcon className='h-4 w-4' />
+            </Button>
+
+            {pageNumbers.map((pageNum) => {
+              const isCurrentPage = pageNum === pagination.pageIndex;
+
+              return (
+                <Button
+                  key={pageNum}
+                  variant={isCurrentPage ? 'default' : 'outline'}
+                  size={'icon'}
+                  onClick={() => handleClickPage(pageNum)}
+                  disabled={isPending}
+                  aria-label={`페이지 ${pageNum + 1}`}
+                  aria-current={isCurrentPage ? 'page' : undefined}
+                  className='min-w-10'
+                >
+                  {pageNum + 1}
+                </Button>
+              );
+            })}
+
+            <Button
+              variant={'outline'}
+              size={'icon'}
+              onClick={handleClickNextBlock}
+              disabled={!data || isLastBlock || isPending}
+              aria-label='다음 10페이지'
+            >
+              <ChevronRightIcon className='h-4 w-4' />
+            </Button>
+            <Button
+              variant={'outline'}
+              size={'icon'}
+              onClick={handleClickLastPage}
+              disabled={
+                !data ||
+                pagination.pageIndex === data.totalPages - 1 ||
+                isPending
+              }
+              aria-label='마지막 페이지'
+            >
+              <ChevronsRightIcon className='h-4 w-4' />
+            </Button>
+          </div>
         </div>
-        <div className='flex gap-3'>
-          <Button
-            variant={'secondary'}
-            onClick={handleClickPreviousPage}
-            disabled={!data || data.page === 0 || isPending}
-          >
-            <ChevronLeftIcon />
-          </Button>
-          <Button
-            variant={'secondary'}
-            onClick={handleClickNextPage}
-            disabled={!data?.hasNext || isPending}
-          >
-            <ChevronRightIcon />
-          </Button>
-        </div>
-      </div>
-    </section>
+      </section>
+      {selectedKeyword && (
+        <KeywordDetailDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          keyword={selectedKeyword}
+        />
+      )}
+    </>
   );
 }

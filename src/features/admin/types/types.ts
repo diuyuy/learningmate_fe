@@ -72,3 +72,18 @@ export const QuizSchema = z.object({
 });
 
 export type QuizForm = z.infer<typeof QuizSchema>;
+
+export const KeywordInfoSchema = z.object({
+  name: z.string().nonempty().max(80),
+  category: z.union([
+    z.literal('과학'),
+    z.literal('경제'),
+    z.literal('공공'),
+    z.literal('금융'),
+    z.literal('경영'),
+    z.literal('사회'),
+  ]),
+  description: z.string().nonempty().max(1320),
+});
+
+export type KeywordInfoForm = z.infer<typeof KeywordInfoSchema>;
