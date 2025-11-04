@@ -99,7 +99,8 @@ export default function MyReview() {
 
   return (
     <article className='w-full'>
-      <header className='mb-3 flex items-center justify-end border-b pb-2'>
+      <header className='mb-3 flex items-center justify-between border-b pb-2'>
+        <h3 className='text-lg font-bold tracking-tight'>내 리뷰</h3>
         {/* ✅ 정렬 드롭다운(요청에 실제 반영) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

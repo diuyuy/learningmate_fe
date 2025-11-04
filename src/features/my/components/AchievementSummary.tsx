@@ -32,7 +32,6 @@ export default function AchievementSummary({ achievement, isLoading }: Props) {
 
   return (
     <div className='rounded-2xl border p-4 shadow-sm md:p-6'>
-      {/* <h3 className='mb-4 text-lg font-semibold'>학습 성취도</h3> */}
       <div className='grid grid-cols-2 gap-3 md:grid-cols-4'>
         {items.map(({ label, value, icon: Icon }) => (
           <div

@@ -21,13 +21,6 @@ export default function QuizStatCard({
 
   return (
     <div className='rounded-2xl border p-4 shadow-sm'>
-      <div className='mb-2 flex items-center gap-2'>
-        <span className='grid h-8 w-8 place-items-center rounded-full bg-amber-50 text-amber-600'>
-          <Trophy className='h-4 w-4' />
-        </span>
-        <h3 className='text-lg font-bold tracking-tight'>퀴즈 성과</h3>
-      </div>
-
       {isLoading ? (
         <div className='h-28 animate-pulse rounded-xl bg-zinc-100' />
       ) : (

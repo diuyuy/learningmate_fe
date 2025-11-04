@@ -57,10 +57,10 @@ export default function MyPage() {
         <Sidebar active={active} onSelect={setActive} pages={PAGES} />
 
         <section className='rounded-2xl border bg-white p-4 shadow-sm md:p-6'>
-          <div className='mb-4 flex items-center gap-2 text-lg font-semibold md:text-2xl'>
+          {/* <div className='mb-4 flex items-center gap-2 text-lg font-semibold md:text-2xl'>
             <ActiveIcon className='h-6 w-6' />
             {PAGES[active].label}
-          </div>
+          </div> */}
           <div className='min-h-[420px]'>{ActiveView}</div>
         </section>
       </div>

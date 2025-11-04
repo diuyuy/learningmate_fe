@@ -43,9 +43,10 @@ function ReviewCardImpl({
   const likeCount = review.likeCount ?? 0;
 
   return (
-    <article className='w-full'>
-      <Card className='grid min-h-[120px] grid-cols-[64px_1fr] gap-3'>
-        <figure className='pl-4 py-4'>
+    // ✅ 카드가 화면 바깥으로 커지지 않도록 가로 오버플로 차단
+    <article className='w-full max-w-full overflow-hidden'>
+      <Card className='grid min-h-[120px] grid-cols-[64px_1fr] gap-3 w-full max-w-full overflow-hidden'>
+        <figure className='py-4 pl-4'>
           <Avatar className='h-16 w-16'>
             <AvatarImage
               src='https://github.com/shadcn.png'
@@ -57,9 +58,11 @@ function ReviewCardImpl({
           </Avatar>
         </figure>
 
-        <section className='pr-3'>
+        {/* ✅ 내용 영역이 줄어들 수 있도록 min-w-0 추가 */}
+        <section className='pr-3 min-w-0'>
           <CardHeader className='pb-2'>
-            <CardTitle className='text-xl font-extrabold lg:text-2xl'>
+            {/* ✅ 긴 제목 줄바꿈/단어 분할 허용 */}
+            <CardTitle className='text-xl font-extrabold lg:text-2xl break-words'>
               {review.id} {review.title} {nickname}
             </CardTitle>
             <CardDescription className='mb-2 text-sm lg:text-base'>
@@ -67,7 +70,8 @@ function ReviewCardImpl({
             </CardDescription>
           </CardHeader>
 
-          <CardContent className='pt-0 text-sm lg:text-base'>
+          {/* ✅ 본문도 줄바꿈/긴 문자열 강제 분할 */}
+          <CardContent className='pt-0 text-sm lg:text-base whitespace-pre-wrap break-words'>
             <p>{review.content1}</p>
           </CardContent>
 
