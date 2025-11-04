@@ -4,7 +4,7 @@ import {
   type QueryKey,
   type UseInfiniteQueryResult,
 } from '@tanstack/react-query';
-import { fetchMyScraps } from '@/features/my/api/scraps';
+import { fetchMyScraps, type MyScrapSort } from '@/features/my/api/scraps';
 import type { ScrapPage } from '@/features/my/types/scraps';
 
 // 다양한 서버 키 대응
@@ -24,7 +24,10 @@ export type InfiniteScrapsResult = UseInfiniteQueryResult<
   Error
 >;
 
-export function useInfiniteMyScraps(size = 12): InfiniteScrapsResult {
+export function useInfiniteMyScraps(
+  size = 12,
+  sort: MyScrapSort = 'latest'
+): InfiniteScrapsResult {
   return useInfiniteQuery<
     ScrapPage,
     Error,
@@ -32,11 +35,13 @@ export function useInfiniteMyScraps(size = 12): InfiniteScrapsResult {
     QueryKey,
     number
   >({
-    queryKey: ['my', 'scraps', { size }],
-    queryFn: ({ pageParam = 0 }) => fetchMyScraps(pageParam, size),
+    queryKey: ['my', 'scraps', { size, sort }], // ✅ 정렬별 별도 캐시
+    queryFn: ({ pageParam = 0 }) => fetchMyScraps(pageParam, size, sort),
     initialPageParam: 0,
     getNextPageParam: (last, _pages, lastParam) =>
       hasNext(last) ? nextPageFrom(last, lastParam) : undefined,
+
+    // 최신화 전략(마이페이지 진입 시 신선도 확보)
     refetchOnMount: 'always',
     staleTime: 0,
   });

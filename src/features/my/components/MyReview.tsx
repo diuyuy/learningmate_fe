@@ -1,6 +1,5 @@
 // src/features/my/components/MyReview.tsx
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query'; // ✅ 추가
 import { SlidersHorizontal, Check } from 'lucide-react';
 import ReviewCard from '@/components/ui/ReviewCard';
 import { Button } from '@/components/ui/button';
@@ -16,28 +15,15 @@ import {
   useInfiniteMyReviews,
   type MyReviewSort,
 } from '@/features/my/hooks/useInfiniteMyReviews';
-import { QUERY_KEYS } from '@/constants/querykeys';
 
 const PAGE_SIZE = 10;
 const MOBILE_BREAKPOINT = 768;
 const THROTTLE_DELAY = 500;
 
 export default function MyReview() {
-  const qc = useQueryClient(); // ✅
-
-  // 정렬은 UI 전용(요청 영향 X)
+  // ✅ 정렬 상태: 'latest' | 'liked' → 훅에 그대로 전달되어 서버 sort로 매핑됨
   const [sortUI, setSortUI] = useState<MyReviewSort>('latest');
 
-  // ✅ 진입 시 1회 무효화 → 곧바로 최신화 트리거
-  useEffect(() => {
-    qc.invalidateQueries({
-      queryKey: [QUERY_KEYS.REVIEWS, 'me'],
-    });
-    // 완전 초기화가 필요하면 invalidate 대신 아래를 사용:
-    // qc.removeQueries({ queryKey: [QUERY_KEYS.REVIEWS, 'me'] });
-  }, [qc]);
-
-  // API는 고정 파라미터로 호출
   const {
     data,
     fetchNextPage,
@@ -46,7 +32,7 @@ export default function MyReview() {
     isLoading,
     isError,
     error,
-  } = useInfiniteMyReviews('latest', PAGE_SIZE);
+  } = useInfiniteMyReviews(sortUI, PAGE_SIZE);
 
   const pages = Array.isArray(data?.pages) ? data.pages : [];
   const items: ReviewListItem[] = useMemo(
@@ -65,8 +51,11 @@ export default function MyReview() {
     return () => window.removeEventListener('resize', handle);
   }, []);
 
+  // ✅ 무한 스크롤(모바일). 정렬이 바뀌면 observer를 재설치.
   useEffect(() => {
     if (!isMobile || !loadMoreRef.current) return;
+    const el = loadMoreRef.current;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (
@@ -85,11 +74,15 @@ export default function MyReview() {
       },
       { threshold: 0.5 }
     );
-    observer.observe(loadMoreRef.current);
-    return () => {
-      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
-    };
-  }, [isMobile, fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+    observer.observe(el);
+    return () => observer.unobserve(el);
+  }, [isMobile, fetchNextPage, hasNextPage, isFetchingNextPage, sortUI]);
+
+  // ✅ 정렬 변경 시 상단으로 스크롤(체감 UX)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, [sortUI]);
 
   if (isError) {
     return (
@@ -107,7 +100,7 @@ export default function MyReview() {
   return (
     <article className='w-full'>
       <header className='mb-3 flex items-center justify-end border-b pb-2'>
-        {/* 정렬 드롭다운(UI만, 요청 영향 없음) */}
+        {/* ✅ 정렬 드롭다운(요청에 실제 반영) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

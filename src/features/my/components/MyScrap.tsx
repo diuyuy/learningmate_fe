@@ -1,16 +1,32 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useInfiniteMyScraps } from '@/features/my/hooks/useInfiniteMyScraps';
-import ScrapCard from '@/features/my/components/ScrapCard';
-import { deleteArticleScrap, postArticleScrap } from '@/features/my/api/scraps';
-import type { ScrapItem } from '@/features/my/types/scraps';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { SlidersHorizontal, Check } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import ScrapCard from '@/features/my/components/ScrapCard';
+import { useInfiniteMyScraps } from '@/features/my/hooks/useInfiniteMyScraps';
+import {
+  deleteArticleScrap,
+  postArticleScrap,
+  type MyScrapSort,
+} from '@/features/my/api/scraps';
+import type { ScrapItem } from '@/features/my/types/scraps';
+
 const GRID_COLS = 'md:grid-cols-2'; // 필요시 md:grid-cols-3 로 변경
+const THROTTLE_MS = 400;
 
 export default function MyScrap() {
   const size = 12;
-  const queryKey = ['my', 'scraps', { size }] as const;
+  const [sort, setSort] = useState<MyScrapSort>('latest');
 
+  // ✅ 정렬 반영된 무한스크롤 쿼리
   const {
     data,
     fetchNextPage,
@@ -19,7 +35,7 @@ export default function MyScrap() {
     isLoading,
     isError,
     error,
-  } = useInfiniteMyScraps(size);
+  } = useInfiniteMyScraps(size, sort);
 
   const pages = data?.pages ?? [];
   const items: ScrapItem[] = useMemo(
@@ -27,8 +43,10 @@ export default function MyScrap() {
     [pages]
   );
 
-  // --- 스크랩 토글(낙관적 업데이트)
+  // --- 스크랩 토글(낙관적 업데이트) - 정렬별 캐시키 포함
   const qc = useQueryClient();
+  const queryKey = ['my', 'scraps', { size, sort }] as const;
+
   const toggleMutation = useMutation({
     mutationFn: async ({ id, next }: { id: number; next: boolean }) => {
       return next ? postArticleScrap(id) : deleteArticleScrap(id);
@@ -82,7 +100,7 @@ export default function MyScrap() {
           fetchNextPage().finally(() => {
             setTimeout(() => {
               throttleRef.current = false;
-            }, 400);
+            }, THROTTLE_MS);
           });
         }
       },
@@ -91,7 +109,7 @@ export default function MyScrap() {
 
     io.observe(el);
     return () => io.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, sort]);
 
   if (isError) {
     return (
@@ -106,6 +124,44 @@ export default function MyScrap() {
 
   return (
     <section className='space-y-4'>
+      {/* 헤더(정렬) */}
+      <header className='flex items-center justify-end'>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant='outline'
+              size='icon'
+              className='h-8 w-8'
+              aria-label='정렬 선택'
+              title='정렬 선택'
+            >
+              <SlidersHorizontal className='h-4 w-4' />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align='end' className='w-40'>
+            <DropdownMenuRadioGroup
+              value={sort}
+              onValueChange={(v) => setSort(v as MyScrapSort)}
+            >
+              <DropdownMenuRadioItem
+                value='latest'
+                className='flex items-center justify-between'
+              >
+                최신순 {sort === 'latest' && <Check className='h-4 w-4' />}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem
+                value='popular'
+                className='flex items-center justify-between'
+              >
+                스크랩 많은 순{' '}
+                {sort === 'popular' && <Check className='h-4 w-4' />}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </header>
+
+      {/* 컨텐츠 */}
       {isLoading && (
         <div className='h-24 animate-pulse rounded-xl bg-zinc-100' />
       )}
