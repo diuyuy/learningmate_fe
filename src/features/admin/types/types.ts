@@ -1,5 +1,22 @@
 import z from 'zod';
 
+export type CreateArticleResponseDto = {
+  jobId: string;
+};
+
+export type FetchJobStateDto = {
+  state: JobState;
+};
+
+export type JobState =
+  | 'completed'
+  | 'failed'
+  | 'delayed'
+  | 'active'
+  | 'waiting'
+  | 'waiting-children'
+  | 'unknown';
+
 export type PaginationState = {
   pageIndex: number;
   pageSize: number;
