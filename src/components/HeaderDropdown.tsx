@@ -25,7 +25,7 @@ import { Skeleton } from './ui/skeleton';
 
 export default function HeaderDropDown() {
   const { logout, member } = useSession();
-  const { isPending, isError, data: todaysKeyword } = useTodaysKeywordQuery();
+  const { isPending, data: todaysKeyword } = useTodaysKeywordQuery();
 
   const handleLogout = async () => {
     await signOut();
@@ -50,7 +50,7 @@ export default function HeaderDropDown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {!isError && member?.role === 'ADMIN' && (
+          {todaysKeyword && member?.role === 'ADMIN' && (
             <DropdownMenuItem asChild>
               <Link
                 to={`${ROUTE_PATHS.ADMIN}?keywordId=${todaysKeyword.keyword.id}`}

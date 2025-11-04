@@ -32,7 +32,7 @@ export default function ArticleSection({ keywordId }: Props) {
           ) : (
             <ul className='space-y-3'>
               {data.map((article) => (
-                <li>
+                <li key={article.id}>
                   <ArticleItem
                     keywordId={keywordId}
                     articleId={article.id}

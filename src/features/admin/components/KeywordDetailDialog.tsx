@@ -148,7 +148,7 @@ export default function KeywordDetailDialog({
                   </FieldLabel>
                   <TextareaAutosize
                     {...field}
-                    className='w-full resize-none border border-input p-2 rounded-md focus-visible:outline-none shadow-xs max-h-80'
+                    className='w-full resize-none border border-input p-2 rounded-md focus-visible:outline-none shadow-xs max-h-40 md:max-h-80'
                   />
                 </Field>
               )}

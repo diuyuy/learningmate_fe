@@ -8,24 +8,30 @@ import type { ArticleForm, KeywordInfoForm, QuizForm } from '../types/types';
 
 export const fetchKeywordsByPage = async ({
   pageParam,
-  query,
+  query = '',
+  category,
+  sortOrder,
 }: {
   pageParam: number;
   query: string;
+  category: string | null;
+  sortOrder: 'asc' | 'desc';
 }): Promise<PageResponse<KeywordWithVideo>> => {
   try {
-    const response = await api.get(`/admin/keywords?query=${query}`, {
+    const response = await api.get('/admin/keywords', {
       params: {
+        query,
+        category,
         page: pageParam,
         size: 10,
-        sort: 'id,asc',
+        sort: `id,${sortOrder}`,
       },
     });
 
     return response.data.result;
   } catch (error) {
     console.error('error:', error);
-    throw Error('sdfsdf');
+    throw Error('Failed to fetch keywords');
   }
 };
 
