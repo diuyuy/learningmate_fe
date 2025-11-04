@@ -95,7 +95,11 @@ export default function VideoSection({ keywordId, video }: Props) {
               </Field>
             )}
           />
-          <Button type='submit' variant={'primary_semibold'}>
+          <Button
+            type='submit'
+            variant={'primary_semibold'}
+            disabled={!form.formState.isDirty}
+          >
             비디오 수정
           </Button>
         </form>

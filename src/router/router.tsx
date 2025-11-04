@@ -1,4 +1,3 @@
-import { fetchTodaysKeyword } from '@/features/keywords/api/api';
 import { fetchMember } from '@/features/members/api/api';
 import AuthLayout from '@/layouts/AuthLayout';
 import ProtectedRoute from '@/layouts/ProtectedRoute';
@@ -51,7 +50,6 @@ export const router = createBrowserRouter([
           {
             path: '/admin',
             element: <AdminPage />,
-            loader: fetchTodaysKeyword,
           },
           {
             path: 'admin/keywords/:keywordId/articles/:articleId',
