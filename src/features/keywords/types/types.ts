@@ -20,4 +20,5 @@ export type KeywordWithVideo = {
   description: string;
   category: Category;
   video: Video | null;
+  date: Date | null;
 };
