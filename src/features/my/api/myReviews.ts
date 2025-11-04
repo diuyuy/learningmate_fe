@@ -6,9 +6,10 @@ import type {
 } from '@/features/reviews/types/types';
 
 export type MyReviewsParams = {
-  page?: number; // 0-base (Spring 기본)
+  page?: number; // 0-based
   size?: number;
-  sort?: 'latest' | 'liked'; // UI용 키
+  /** UI용 키 */
+  sort?: 'latest' | 'liked';
 };
 
 const DEFAULT_SIZE = 10;
@@ -22,12 +23,18 @@ function unwrapPage(data: any): ReviewListPageResponse {
   return page as ReviewListPageResponse;
 }
 
-// UI sort → 서버 sort 파라미터(Spring Pageable)
-function toServerSort(s?: MyReviewsParams['sort']) {
-  if (!s) return undefined;
-  if (s === 'latest') return 'createdAt,desc';
-  if (s === 'liked') return 'likeCount,desc';
-  return undefined;
+/** UI sort → 서버 sort(Spring Pageable) */
+function toServerSort(sort?: MyReviewsParams['sort']) {
+  switch (sort) {
+    case 'latest':
+      // ✅ 최신순: updatedAt desc
+      return 'updatedAt,desc';
+    case 'liked':
+      // ✅ 좋아요순: likeCounts desc
+      return 'likeCounts,desc';
+    default:
+      return undefined;
+  }
 }
 
 export async function fetchMyReviews(
@@ -40,12 +47,14 @@ export async function fetchMyReviews(
   const sortParam = toServerSort(params.sort);
 
   const query: Record<string, any> = { page, size };
-  if (sortParam) query.sort = sortParam; // ❗️예: sort=createdAt,desc
+  if (sortParam) query.sort = sortParam; // e.g. sort=updatedAt,desc
 
   const res = await api.get('/reviews/me', { params: query });
   const pageData = unwrapPage(res.data);
+
   const items: ReviewListItem[] = Array.isArray((pageData as any).items)
     ? (pageData as any).items
     : [];
+
   return { ...pageData, items };
 }

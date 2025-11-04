@@ -14,6 +14,7 @@ export type Article = {
   scrapCount: number;
   createdAt: string;
   updatedAt: string;
+  scrappedByMe: boolean;
 };
 
 export type ArticlePreview = Pick<
