@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { QUERY_KEYS } from '@/constants/querykeys';
 import { useArticlePreviewsQuery } from '@/features/articles/hooks/useArticlePreviewsQuery';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { PlusIcon } from 'lucide-react';
+import { AlertCircle, PlusIcon, RotateCcwIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createArticle, fetchBatchJobState } from '../api/api';
 import type { JobState } from '../types/types';
@@ -19,6 +19,7 @@ export default function ArticleSection({ keywordId }: Props) {
   const queryClient = useQueryClient();
   const { isPending, isError, data } = useArticlePreviewsQuery(keywordId);
   const [jobState, setJobState] = useState<JobState>('unknown');
+  const [pollingError, setPollingError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationKey: [QUERY_KEYS.ARTICLE, { action: 'create' }],
@@ -30,12 +31,19 @@ export default function ArticleSection({ keywordId }: Props) {
 
   const handleCreateArticle = () => {
     setJobState('active');
+    setPollingError(null);
     mutation.mutate(keywordId);
   };
 
+  const handleRetryPolling = () => {
+    setPollingError(null);
+    setJobState('active');
+  };
+
   useEffect(() => {
-    // keywordId 변경 시 jobState 리셋
+    // keywordId 변경 시 jobState 및 에러 리셋
     setJobState('unknown');
+    setPollingError(null);
   }, [keywordId]);
 
   useEffect(() => {
@@ -77,7 +85,10 @@ export default function ArticleSection({ keywordId }: Props) {
           }
         } catch (error) {
           console.error('Failed to fetch job state:', error);
-          // 에러 발생 시 계속 재시도
+          setPollingError(
+            'Article 생성 상태를 확인하는 중 오류가 발생했습니다.'
+          );
+          setJobState('unknown');
         }
       }, 10000); // 10초마다 폴링
     }
@@ -114,13 +125,18 @@ export default function ArticleSection({ keywordId }: Props) {
         </Button>
       </div>
       {data.length === 0 ? (
-        jobState === 'active' ? (
+        pollingError ? (
+          <ArticlePollingError
+            message={pollingError}
+            onRetry={handleRetryPolling}
+          />
+        ) : jobState === 'active' ? (
           <ArticleCreatingLoader />
         ) : (
           <p className='text-center'>등록된 Article이 없습니다.</p>
         )
       ) : (
-        <ul className='space-y-3 divide-y'>
+        <ul className='space-y-3 divide-y border shadow-sm p-4 rounded-md'>
           {data.map((article) => (
             <li>
               <ArticleItem
@@ -193,6 +209,26 @@ function ArticleCreatingLoader() {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function ArticlePollingError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className='space-y-4 text-center py-8 border shadow-sm rounded-md'>
+      <div className='flex justify-center'>
+        <AlertCircle className='w-12 h-12 text-destructive' />
+      </div>
+      <p className='text-destructive font-medium'>{message}</p>
+      <Button type='button' variant={'primary_semibold'} onClick={onRetry}>
+        재시도 <RotateCcwIcon strokeWidth={3} />
+      </Button>
     </div>
   );
 }

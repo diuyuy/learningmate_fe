@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
-import {
-  Trophy,
-  Bookmark,
-  MessageSquare,
-  User,
-  HelpCircle,
-} from 'lucide-react';
-import Sidebar from '@/features/my/components/Sidebar';
-import MyProfile from '@/features/my/components/MyProfile';
 import MyAchievement from '@/features/my/components/MyAchievement';
-import MyScrap from '@/features/my/components/MyScrap';
-import MyReview from '@/features/my/components/MyReview';
+import MyProfile from '@/features/my/components/MyProfile';
 import MyQuiz from '@/features/my/components/MyQuiz';
+import MyReview from '@/features/my/components/MyReview';
+import MyScrap from '@/features/my/components/MyScrap';
+import Sidebar from '@/features/my/components/Sidebar';
+import {
+  Bookmark,
+  HelpCircle,
+  MessageSquare,
+  Trophy,
+  User,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 const PAGES = {
   achievement: {
@@ -41,7 +41,7 @@ function getInitialPage(): PageKey {
 export default function MyPage() {
   const [active, setActive] = useState<PageKey>(getInitialPage);
   const ActiveView = useMemo(() => PAGES[active].component, [active]);
-  const ActiveIcon = PAGES[active].icon;
+  // const ActiveIcon = PAGES[active].icon;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

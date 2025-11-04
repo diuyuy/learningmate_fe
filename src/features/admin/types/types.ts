@@ -101,6 +101,7 @@ export const KeywordInfoSchema = z.object({
     z.literal('사회'),
   ]),
   description: z.string().nonempty().max(1320),
+  date: z.string().optional(),
 });
 
 export type KeywordInfoForm = z.infer<typeof KeywordInfoSchema>;

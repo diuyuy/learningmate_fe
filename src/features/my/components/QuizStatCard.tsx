@@ -1,5 +1,3 @@
-import { Trophy } from 'lucide-react';
-
 type Props = {
   correctCounts?: number;
   totalCounts?: number;

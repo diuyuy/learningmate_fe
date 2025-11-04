@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { KeywordWithVideo } from '@/features/keywords/types/types';
+import { formatKST } from '@/lib/timezone';
 import { createColumnHelper } from '@tanstack/react-table';
 
 const columnHelper = createColumnHelper<KeywordWithVideo>();
@@ -38,6 +39,14 @@ export const createKeywordColumns = (
       header: '이름',
       size: 180,
     }),
+    columnHelper.accessor('date', {
+      header: '날짜',
+      cell: ({ getValue }) => {
+        const date = getValue();
+        return date ? formatKST(date, 'yyyy-MM-dd') : '-';
+      },
+      size: 72,
+    }),
     columnHelper.accessor('category.name', {
       header: '카테고리',
       size: 60,
@@ -46,6 +55,7 @@ export const createKeywordColumns = (
       header: '설명',
       size: 300,
     }),
+
     columnHelper.display({
       id: '상세 보기',
       header: '상세 보기',
