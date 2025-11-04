@@ -7,6 +7,7 @@ export default function MyQuiz() {
 
   return (
     <div className='space-y-4'>
+      <h3 className='text-lg font-bold tracking-tight'>퀴즈</h3>
       {/* 퀴즈 성과 (풀 너비) */}
       <QuizStatCard
         correctCounts={data?.correctCounts ?? 0}

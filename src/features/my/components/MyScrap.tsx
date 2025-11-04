@@ -125,7 +125,8 @@ export default function MyScrap() {
   return (
     <section className='space-y-4'>
       {/* 헤더(정렬) */}
-      <header className='flex items-center justify-end'>
+      <header className='flex items-center justify-between'>
+        <h3 className='text-lg font-bold tracking-tight'>스크랩</h3>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

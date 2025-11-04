@@ -32,6 +32,7 @@ export default function MyProfile() {
 
   return (
     <section className='bg-white border-2 border-yellow-400 rounded-2xl shadow-sm p-6 md:p-8'>
+      <h3 className='mb-4 text-lg font-semibold'>프로필</h3>
       <div className='mt-6 space-y-6'>
         <ProfileImageField
           imgUrl={member.imageUrl}
