@@ -10,9 +10,9 @@ export default function EditArticlePage() {
   }
 
   return (
-    <main className='mx-4 md:mx-auto md:w-[85%] flex flex-col gap-8'>
-      <h1 className='text-3xl font-bold'>Edit Article & Quiz</h1>
-      <div className='flex-wrap md:flex-nowrap md:flex md:justify-between gap-8'>
+    <main className='mx-auto px-4 py-6 max-w-7xl'>
+      <h1 className='text-3xl font-bold mb-8'>Edit Article & Quiz</h1>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
         <EditArticleSection keywordId={+keywordId} articleId={+articleId} />
         <EditQuizSection articleId={+articleId} />
       </div>
