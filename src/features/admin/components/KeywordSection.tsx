@@ -11,11 +11,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { KeywordWithVideo } from '@/features/keywords/types/types';
+import type { KeywordCategory } from '@/types/types';
 import { debounce } from '@/lib/utils';
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type RowSelectionState,
 } from '@tanstack/react-table';
 import {
   ChevronLeftIcon,
@@ -34,7 +36,7 @@ import {
 import { useSearchParams } from 'react-router';
 import { useKeywordsQuery } from '../hooks/useKeywordsQuery';
 import { useWindowSize } from '../hooks/useWindowSize';
-import { useKeywordTableStore } from '../store/keywordTableStore';
+import type { PaginationState } from '../types/types';
 import { createKeywordColumns } from './createKeywordColumns';
 import KeywordDetailDialog from './KeywordDetailDialog';
 import KeywordFilterDropdown from './KeywordFilterDropdown';
@@ -58,25 +60,27 @@ const generatePageNumbers = (currentPage: number, totalPages: number) => {
 
 const PAGE_SIZE = 10;
 
-export default function KeywordSection() {
+type SortOrder = 'asc' | 'desc';
+
+type KeywordSectionProps = {
+  onKeywordSelect: (keyword: KeywordWithVideo | undefined) => void;
+};
+
+export default function KeywordSection({
+  onKeywordSelect,
+}: KeywordSectionProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Zustand store에서 상태 가져오기
-  const pagination = useKeywordTableStore((state) => state.pagination);
-  const setPagination = useKeywordTableStore((state) => state.setPagination);
-  const rowSelection = useKeywordTableStore((state) => state.rowSelection);
-  const setRowSelection = useKeywordTableStore(
-    (state) => state.setRowSelection
-  );
-  const filteringQuery = useKeywordTableStore((state) => state.filteringQuery);
-  const setFilteringQuery = useKeywordTableStore(
-    (state) => state.setFilteringQuery
-  );
-  const filteringCategory = useKeywordTableStore(
-    (state) => state.filteringCategory
-  );
-  const sortOrder = useKeywordTableStore((state) => state.sortOrder);
-  const setKeyword = useKeywordTableStore((state) => state.setKeyword);
+  // useState로 상태 관리
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [filteringQuery, setFilteringQuery] = useState('');
+  const [filteringCategory, setFilteringCategory] =
+    useState<KeywordCategory | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   // Query 호출
   const { isPending, isError, data } = useKeywordsQuery(
@@ -96,11 +100,28 @@ export default function KeywordSection() {
   };
 
   const handleQueryChange = useCallback(
-    debounce((e: ChangeEvent<HTMLInputElement>) =>
-      setFilteringQuery(e.target.value)
-    ),
-    [setFilteringQuery]
+    debounce((e: ChangeEvent<HTMLInputElement>) => {
+      setFilteringQuery(e.target.value);
+      // 검색어 변경 시 첫 페이지로 이동하고 첫 번째 행 선택
+      setPagination({ pageIndex: 0, pageSize: 10 });
+      setRowSelection({ '0': true });
+    }, 500),
+    []
   );
+
+  const handleFilteringCategoryChange = (category: KeywordCategory | null) => {
+    setFilteringCategory(category);
+    // 카테고리 변경 시 첫 페이지로 이동하고 첫 번째 행 선택
+    setPagination({ pageIndex: 0, pageSize: 10 });
+    setRowSelection({ '0': true });
+  };
+
+  const handleSortOrderChange = (order: SortOrder) => {
+    setSortOrder(order);
+    // 정렬 변경 시 첫 페이지로 이동하고 첫 번째 행 선택
+    setPagination({ pageIndex: 0, pageSize: 10 });
+    setRowSelection({ '0': true });
+  };
 
   const { width } = useWindowSize();
 
@@ -181,13 +202,13 @@ export default function KeywordSection() {
 
   useEffect(() => {
     const keyword = table.getSelectedRowModel().rows.at(0)?.original;
-    setKeyword(keyword);
+    onKeywordSelect(keyword);
 
     // Update searchParams when a keyword is selected
     if (keyword) {
       setSearchParams({ keywordId: String(keyword.id) });
     }
-  }, [rowSelection, keywords, setKeyword, table, setSearchParams]);
+  }, [rowSelection, keywords, onKeywordSelect, table, setSearchParams]);
 
   return (
     <section>
@@ -207,8 +228,14 @@ export default function KeywordSection() {
             </div>
           </div>
           <div className='flex gap-3'>
-            <KeywordSortDropdown />
-            <KeywordFilterDropdown />
+            <KeywordSortDropdown
+              sortOrder={sortOrder}
+              onSortOrderChange={handleSortOrderChange}
+            />
+            <KeywordFilterDropdown
+              filteringCategory={filteringCategory}
+              onFilteringCategoryChange={handleFilteringCategoryChange}
+            />
           </div>
         </div>
         <div className='overflow-hidden border rounded-md'>
