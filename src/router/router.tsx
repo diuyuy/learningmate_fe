@@ -1,4 +1,3 @@
-import { fetchMember } from '@/features/members/api/api';
 import AuthLayout from '@/layouts/AuthLayout';
 import ProtectedRoute from '@/layouts/ProtectedRoute';
 import RootLayout from '@/layouts/RootLayout';
@@ -6,6 +5,7 @@ import AdminPage from '@/pages/AdminPage';
 import ArticleDetailPage from '@/pages/ArticleDetailPage';
 import EditArticlePage from '@/pages/EditArticlePage';
 import ErrorPage from '@/pages/ErrorPage';
+import IndexPage from '@/pages/IndexPage';
 import LandingPage from '@/pages/LandingPage';
 import LearningPage from '@/pages/LearningPage';
 import LoginPage from '@/pages/LoginPage';
@@ -20,8 +20,12 @@ import { createBrowserRouter } from 'react-router';
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <IndexPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/landing',
     element: <LandingPage />,
-    loader: fetchMember,
     errorElement: <ErrorPage />,
   },
   {

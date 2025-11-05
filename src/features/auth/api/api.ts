@@ -43,7 +43,7 @@ export const validateAuthCode = async (email: string, authCode: string) => {
 };
 
 export const requestResetLink = async (email: string) => {
-  await api.post('/auth/passwd-resets', {
+  await api.post('/auth/password-resets', {
     email,
   });
 };
@@ -51,5 +51,5 @@ export const requestResetLink = async (email: string) => {
 export const resetPassword = async (
   passwordResetRequest: PasswdResetRequest
 ) => {
-  await api.patch('/auth/passwd-resets', passwordResetRequest);
+  await api.patch('/auth/password-resets', passwordResetRequest);
 };

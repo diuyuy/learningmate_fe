@@ -43,6 +43,7 @@ export default function PasswordResetsPage() {
       await resetPassword({ password: data.password, authToken });
       setDialogOpen(true);
     } catch (error) {
+      console.error(error);
       alert('예상치 못한 에러가 발생했습니다. 다시 시도해 주세요.');
       navigate(ROUTE_PATHS.PASSWORD_RESETS);
     }

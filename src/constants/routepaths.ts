@@ -5,7 +5,7 @@ export const ROUTE_PATHS = {
   MY: '/my',
   LOGIN: '/login',
   SIGNUP: '/signup',
-  LANDING: '/',
+  LANDING: '/landing',
   PASSWORD_RESETS: '/password-resets',
   EDIT_ARTICLE: (keywordId: number, articleId: number) =>
     `/admin/keywords/${keywordId}/articles/${articleId}`,
