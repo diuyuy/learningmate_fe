@@ -1,21 +1,20 @@
 import AchievementSummary from '@/features/my/components/AchievementSummary';
+import CategoryPie from '@/features/my/components/CategoryPie';
+import SectionHeader from '@/features/my/components/SectionHeader';
 
 import {
   useStudyAchievement,
   useStudyCategoryStats,
 } from '@/features/my/hooks/useStudyAchievement';
-import CategoryPie from './CategoryPie';
+import { TOKENS } from '../config/PageMeta';
 
 export default function MyAchievement() {
-  // /api/v1/members/me/study-achivements
   const achievementQ = useStudyAchievement();
-  // /api/v1/members/me/study-category-statistics
   const categoryStatsQ = useStudyCategoryStats();
 
   return (
-    <div className='space-y-4 md:space-y-6'>
-      {/* 실제 화면 카드들 */}
-      <h3 className='mb-4 text-lg font-semibold'>학습 성취도</h3>
+    <section className={TOKENS.sectionGapY}>
+      <SectionHeader page='achievement' />
       <AchievementSummary
         achievement={achievementQ.data}
         isLoading={achievementQ.isLoading}
@@ -24,6 +23,6 @@ export default function MyAchievement() {
         stats={categoryStatsQ.data}
         isLoading={categoryStatsQ.isLoading}
       />
-    </div>
+    </section>
   );
 }

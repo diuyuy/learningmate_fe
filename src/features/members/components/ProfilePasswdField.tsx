@@ -18,34 +18,27 @@ import { useForm } from 'react-hook-form';
 import { updatePasswd } from '../api/api';
 import type { Member } from '../types/types';
 
-type Props = {
-  updateMember: (member: Member) => void;
-};
+type Props = { updateMember: (member: Member) => void };
 
 export default function ProfilePasswdField({ updateMember }: Props) {
   const [isForm, toggleSetting] = useReducer((pre) => !pre, false);
 
-  return (
-    <>
-      <div className='flex items-start'>
-        <div className='w-28 font-semibold'>비밀번호: </div>
-        {isForm ? (
-          <ProfilePasswordFormField
-            updateMember={updateMember}
-            toggleSetting={toggleSetting}
-          />
-        ) : (
-          <div className='flex w-full justify-between items-start'>
-            <span className='tracking-widest select-none font-bold'>
-              ************
-            </span>
-            <Button variant={'primary_semibold'} onClick={toggleSetting}>
-              설정
-            </Button>
-          </div>
-        )}
-      </div>
-    </>
+  return isForm ? (
+    <ProfilePasswordFormField
+      updateMember={updateMember}
+      toggleSetting={toggleSetting}
+    />
+  ) : (
+    <div className='flex w-full items-start justify-between'>
+      <span className='select-none tracking-wider'>************</span>
+      <Button
+        variant={'outline_semibold'}
+        onClick={toggleSetting}
+        className='rounded-lg'
+      >
+        변경
+      </Button>
+    </div>
   );
 }
 
@@ -60,10 +53,7 @@ function ProfilePasswordFormField({
 }: PasswdFieldProps) {
   const form = useForm<PasswordResetForm>({
     resolver: zodResolver(PasswordResetSchema),
-    defaultValues: {
-      password: '',
-      password2: '',
-    },
+    defaultValues: { password: '', password2: '' },
   });
 
   const onSubmit = async (data: PasswordResetForm) => {
@@ -75,65 +65,64 @@ function ProfilePasswordFormField({
       console.error(error);
     }
   };
+
   return (
-    <>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='w-full flex flex-col gap-2 justify-end'
-        >
-          <FormField
-            control={form.control}
-            name='password'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='text-sm font-semibold'>
-                  새 비밀번호
-                </FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    autoComplete='password'
-                    placeholder='비밀번호를 입력하세요...'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='password2'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='text-sm font-semibold mt-2'>
-                  새 비밀번호 확인
-                </FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    autoComplete='password'
-                    placeholder='비밀번호를 입력하세요...'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className='flex gap-2 justify-end'>
-            <Button
-              type='button'
-              variant={'ghost_semibold'}
-              onClick={toggleSetting}
-            >
-              취소
-            </Button>
-            <Button type='submit' variant={'secondary_semibold'}>
-              비밀번호 변경
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className='flex w-full flex-col gap-2'
+      >
+        <FormField
+          control={form.control}
+          name='password'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className='text-sm font-semibold'>
+                새 비밀번호
+              </FormLabel>
+              <FormControl>
+                <PasswordInput
+                  autoComplete='password'
+                  placeholder='비밀번호를 입력하세요...'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='password2'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className='text-sm font-semibold'>
+                새 비밀번호 확인
+              </FormLabel>
+              <FormControl>
+                <PasswordInput
+                  autoComplete='password'
+                  placeholder='비밀번호를 입력하세요...'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className='flex justify-end gap-2'>
+          <Button
+            type='button'
+            variant={'ghost_semibold'}
+            onClick={toggleSetting}
+          >
+            취소
+          </Button>
+          <Button type='submit' variant={'secondary_semibold'}>
+            비밀번호 변경
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
