@@ -1,10 +1,10 @@
 import { api } from '@/lib/axios';
 import type { Member, PasswdUpdateReq } from '../types/types';
 
-export const fetchMember = async () => {
+export const fetchMember = async (): Promise<Member | null> => {
   try {
     const response = await api.get('/members/me');
-    return response.data.result as Member;
+    return response.data.result;
   } catch (error) {
     return null;
   }
