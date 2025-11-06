@@ -11,7 +11,7 @@ import {
   MenuIcon,
   UserStarIcon,
 } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,11 +25,13 @@ import { Skeleton } from './ui/skeleton';
 
 export default function HeaderDropDown() {
   const { logout, member } = useSession();
+  const navigate = useNavigate();
   const { isPending, data: todaysKeyword } = useTodaysKeywordQuery();
 
   const handleLogout = async () => {
     await signOut();
 
+    navigate(ROUTE_PATHS.LANDING);
     logout();
   };
 
