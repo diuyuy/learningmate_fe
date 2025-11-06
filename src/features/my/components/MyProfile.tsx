@@ -5,10 +5,10 @@ import ProfileImageField from '@/features/members/components/ProfileImageField';
 import ProfileNickNameField from '@/features/members/components/ProfileNicknameField';
 import ProfilePasswdField from '@/features/members/components/ProfilePasswdField';
 import WithdrawalSuccessDialog from '@/features/members/components/WithdrawalSuccessDialog';
+import SectionHeader from '@/features/my/components/SectionHeader';
 import { useDeleteMemberMutation } from '@/hooks/useDeleteMemberMutation';
 import { useReducer } from 'react';
-import SectionHeader from '@/features/my/components/SectionHeader';
-import { TOKENS } from '../config/PageMeta';
+import { TOKENS } from '../config/pageMeta';
 
 export default function MyProfile() {
   const { member, updateMember, onAccountDeleted } = useSession();

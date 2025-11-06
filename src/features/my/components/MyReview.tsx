@@ -1,5 +1,3 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { SlidersHorizontal, Check } from 'lucide-react';
 import ReviewCard from '@/components/ui/ReviewCard';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,13 +7,15 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { ReviewListItem } from '@/features/reviews/types/types';
+import SectionHeader from '@/features/my/components/SectionHeader';
 import {
   useInfiniteMyReviews,
   type MyReviewSort,
 } from '@/features/my/hooks/useInfiniteMyReviews';
-import SectionHeader from '@/features/my/components/SectionHeader';
-import { TOKENS } from '../config/PageMeta';
+import type { ReviewListItem } from '@/features/reviews/types/types';
+import { Check, SlidersHorizontal } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { TOKENS } from '../config/pageMeta';
 
 const PAGE_SIZE = 10;
 const MOBILE_BREAKPOINT = 768;

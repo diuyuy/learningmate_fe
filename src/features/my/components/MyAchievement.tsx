@@ -6,7 +6,7 @@ import {
   useStudyAchievement,
   useStudyCategoryStats,
 } from '@/features/my/hooks/useStudyAchievement';
-import { TOKENS } from '../config/PageMeta';
+import { TOKENS } from '../config/pageMeta';
 
 export default function MyAchievement() {
   const achievementQ = useStudyAchievement();

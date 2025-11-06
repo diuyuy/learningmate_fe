@@ -1,4 +1,5 @@
-import { PAGE_META, type PageKey } from '../config/PageMeta';
+import type { PageKey } from '@/pages/MyPage';
+import { PAGE_META } from '../config/pageMeta';
 
 type Props = {
   page: PageKey;

@@ -1,9 +1,11 @@
 import type { Member } from '@/features/members/types/types';
-import { api } from '@/lib/axios';
+import { api, publicApi } from '@/lib/axios';
 import type { LoginForm, PasswdResetRequest, SignUpForm } from '../types/types';
 
 export const login = async (loginForm: LoginForm) => {
-  const response = await api.post('/auth/sign-in', loginForm);
+  const response = await publicApi.post('/auth/sign-in', loginForm, {
+    withCredentials: true,
+  });
 
   return response.data.result as Member;
 };
@@ -13,24 +15,24 @@ export const signOut = async () => {
 };
 
 export const signUp = async (signUpForm: SignUpForm) => {
-  await api.post('/auth/sign-up', signUpForm);
+  await publicApi.post('/auth/sign-up', signUpForm);
 };
 
 export const checkEmailExists = async (email: string) => {
-  const response = await api.get(`/auth/emails/existence?email=${email}`);
+  const response = await publicApi.get(`/auth/emails/existence?email=${email}`);
 
   return response.data.result as boolean;
 };
 
 export const requestAuthCode = async (email: string) => {
-  await api.post('/auth/send-auth-code', {
+  await publicApi.post('/auth/send-auth-code', {
     email,
   });
 };
 
 export const validateAuthCode = async (email: string, authCode: string) => {
   try {
-    await api.post('/auth/auth-code/validate', {
+    await publicApi.post('/auth/auth-code/validate', {
       email,
       authCode,
     });
@@ -43,7 +45,7 @@ export const validateAuthCode = async (email: string, authCode: string) => {
 };
 
 export const requestResetLink = async (email: string) => {
-  await api.post('/auth/password-resets', {
+  await publicApi.post('/auth/password-resets', {
     email,
   });
 };
@@ -51,5 +53,7 @@ export const requestResetLink = async (email: string) => {
 export const resetPassword = async (
   passwordResetRequest: PasswdResetRequest
 ) => {
-  await api.patch('/auth/password-resets', passwordResetRequest);
+  await publicApi.patch('/auth/password-resets', passwordResetRequest, {
+    withCredentials: true,
+  });
 };

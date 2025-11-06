@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,20 +6,20 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { SlidersHorizontal, Check } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, SlidersHorizontal } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import ScrapCard from '@/features/my/components/ScrapCard';
-import { useInfiniteMyScraps } from '@/features/my/hooks/useInfiniteMyScraps';
 import {
   deleteArticleScrap,
   postArticleScrap,
   type MyScrapSort,
 } from '@/features/my/api/scraps';
-import type { ScrapItem } from '@/features/my/types/scraps';
+import ScrapCard from '@/features/my/components/ScrapCard';
 import SectionHeader from '@/features/my/components/SectionHeader';
-import { TOKENS } from '../config/PageMeta';
+import { useInfiniteMyScraps } from '@/features/my/hooks/useInfiniteMyScraps';
+import type { ScrapItem } from '@/features/my/types/scraps';
+import { TOKENS } from '../config/pageMeta';
 
 const GRID_COLS = 'md:grid-cols-2';
 const THROTTLE_MS = 400;
