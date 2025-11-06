@@ -81,6 +81,9 @@ export default function ArticleSection({ keywordId }: Props) {
           if (currJobState === 'failed') {
             localStorage.removeItem(batchJobKey);
             setJobState(currJobState);
+            setPollingError(
+              'Article 생성 상태를 확인하는 중 오류가 발생했습니다.'
+            );
             return;
           }
         } catch (error) {

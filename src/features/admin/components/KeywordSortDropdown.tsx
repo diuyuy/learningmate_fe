@@ -9,14 +9,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ArrowDownUpIcon } from 'lucide-react';
-import { useKeywordTableStore } from '../store/keywordTableStore';
 
-export default function KeywordSortDropdown() {
-  const sortOrder = useKeywordTableStore((state) => state.sortOrder);
-  const setSortOrder = useKeywordTableStore((state) => state.setSortOrder);
+type SortOrder = 'asc' | 'desc';
 
+type KeywordSortDropdownProps = {
+  sortOrder: SortOrder;
+  onSortOrderChange: (order: SortOrder) => void;
+};
+
+export default function KeywordSortDropdown({
+  sortOrder,
+  onSortOrderChange,
+}: KeywordSortDropdownProps) {
   const handleValueChange = (value: string) => {
-    setSortOrder(value as 'asc' | 'desc');
+    onSortOrderChange(value as SortOrder);
   };
 
   return (

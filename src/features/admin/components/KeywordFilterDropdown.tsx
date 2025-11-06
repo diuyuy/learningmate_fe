@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { KeywordCategory } from '@/types/types';
 import { SlidersHorizontalIcon } from 'lucide-react';
-import { useKeywordTableStore } from '../store/keywordTableStore';
 
 const CATEGORIES = [
   { value: '과학', label: '과학' },
@@ -21,19 +20,20 @@ const CATEGORIES = [
   { value: '경영', label: '경영' },
 ] as const;
 
-export default function KeywordFilterDropdown() {
-  const filteringCategory = useKeywordTableStore(
-    (state) => state.filteringCategory
-  );
-  const setFilteringCategory = useKeywordTableStore(
-    (state) => state.setFilteringCategory
-  );
+type KeywordFilterDropdownProps = {
+  filteringCategory: KeywordCategory | null;
+  onFilteringCategoryChange: (category: KeywordCategory | null) => void;
+};
 
+export default function KeywordFilterDropdown({
+  filteringCategory,
+  onFilteringCategoryChange,
+}: KeywordFilterDropdownProps) {
   const handleValueChange = (value: string) => {
     if (value === 'all') {
-      setFilteringCategory(null);
+      onFilteringCategoryChange(null);
     } else {
-      setFilteringCategory(value as KeywordCategory);
+      onFilteringCategoryChange(value as KeywordCategory);
     }
   };
 
