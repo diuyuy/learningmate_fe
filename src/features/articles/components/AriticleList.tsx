@@ -2,18 +2,19 @@ import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useArticlePreviewsQuery } from '../hooks/useArticlePreviewsQuery';
 import ArticleCard from './ArticleCard';
+import type { Keyword } from '@/features/keywords/types/types';
 
 type Props = {
-  keywordId: number;
+  keyword: Keyword;
 };
 
-export default function ArticleList({ keywordId }: Props) {
+export default function ArticleList({ keyword }: Props) {
   const {
     isPending,
     isError,
     data: articlePreivews,
     error,
-  } = useArticlePreviewsQuery(keywordId);
+  } = useArticlePreviewsQuery(keyword.id);
 
   if (isError) {
     return <div>{error.message}</div>;
@@ -54,6 +55,7 @@ export default function ArticleList({ keywordId }: Props) {
               return (
                 <ArticleCard
                   key={articlePreview.id}
+                  keyword={keyword}
                   articlePreview={articlePreview}
                 />
               );
