@@ -20,6 +20,7 @@ export type ReviewListItem = {
   content1: string;
   memberId: number;
   nickname: string;
+  imageUrl: string | null;
   title: string;
   likeCount: number;
   likedByMe: boolean;
