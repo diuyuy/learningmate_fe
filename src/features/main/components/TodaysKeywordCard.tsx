@@ -15,8 +15,8 @@ export default function TodaysKeywordCard({
   keywordDesc: string;
 }) {
   return (
-    <Card className='border-0 bg-transparent shadow-none'>
-      <CardHeader className='items-center px-0 pt-2 pb-4'>
+    <Card className='border-0 bg-transparent shadow-none sm:py-2'>
+      <CardHeader className='items-center px-0 pt-1 pb-1'>
         <CardTitle className='flex items-center justify-center gap-2 text-base font-extrabold text-amber-950'>
           <FaSearch className='h-4 w-4' />
           오늘의 키워드

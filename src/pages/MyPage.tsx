@@ -14,15 +14,15 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 
 const PAGES = {
+  profile: { label: '프로필', icon: User, component: <MyProfile /> },
   achievement: {
     label: '학습 성취도',
     icon: Trophy,
     component: <MyAchievement />,
   },
-  scrap: { label: '스크랩', icon: Bookmark, component: <MyScrap /> },
-  review: { label: '내 리뷰', icon: MessageSquare, component: <MyReview /> },
-  profile: { label: '프로필', icon: User, component: <MyProfile /> },
   quiz: { label: '퀴즈', icon: HelpCircle, component: <MyQuiz /> },
+  review: { label: '내 리뷰', icon: MessageSquare, component: <MyReview /> },
+  scrap: { label: '스크랩', icon: Bookmark, component: <MyScrap /> },
 } as const;
 
 export type PageKey = keyof typeof PAGES;
@@ -41,7 +41,6 @@ function getInitialPage(): PageKey {
 export default function MyPage() {
   const [active, setActive] = useState<PageKey>(getInitialPage);
   const ActiveView = useMemo(() => PAGES[active].component, [active]);
-  // const ActiveIcon = PAGES[active].icon;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -57,10 +56,6 @@ export default function MyPage() {
         <Sidebar active={active} onSelect={setActive} pages={PAGES} />
 
         <section className='rounded-2xl border bg-white p-4 shadow-sm md:p-6'>
-          {/* <div className='mb-4 flex items-center gap-2 text-lg font-semibold md:text-2xl'>
-            <ActiveIcon className='h-6 w-6' />
-            {PAGES[active].label}
-          </div> */}
           <div className='min-h-[420px]'>{ActiveView}</div>
         </section>
       </div>
