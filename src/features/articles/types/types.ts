@@ -6,7 +6,10 @@ export type Article = {
   summary: string;
   scrapCount: number;
   views: number;
-  keywordId: number;
+  keyword: {
+    id: number;
+    name: string;
+  };
   scrappedByMe: boolean;
 };
 

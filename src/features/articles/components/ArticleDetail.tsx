@@ -1,12 +1,21 @@
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useState } from 'react';
 import { FaRegBookmark, FaBookmark } from 'react-icons/fa6';
-import { RiRobot2Line } from 'react-icons/ri';
+import { RiNewspaperLine, RiRobot2Line } from 'react-icons/ri';
 import { useParams } from 'react-router';
 import { useArticleQuery } from '../hooks/useArticleQuery';
 import { ArticleModal } from './ArticleModal';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postArticleScrap, deleteArticleScrap } from '@/features/my/api/scraps';
+import { Separator } from '@/components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 type Props = {
   /** 모달 내에서 직접 사용할 때 articleId를 props로 전달 (라우터 없이도 동작) */
@@ -53,7 +62,6 @@ export default function ArticleDetail({
     },
 
     onSuccess: (_data, next) => {
-      // ✅ 부모(목록)에 “해당 기사 스크랩 상태 바뀜” 알림
       onScrapChange?.(articleId, next);
     },
 
@@ -62,51 +70,150 @@ export default function ArticleDetail({
     },
   });
 
-  if (isError) return <div>에러가 발생했습니다...{error.message}</div>;
-  if (isPending || !article) return <div />;
+  if (isError) return <div>에러가 발생했습니다... {error.message}</div>;
+  if (isPending || !article)
+    return (
+      <div className='animate-pulse space-y-4 px-5'>
+        <div className='h-8 w-2/3 rounded bg-muted' />
+        <div className='h-4 w-full rounded bg-muted' />
+        <div className='h-4 w-11/12 rounded bg-muted' />
+        <div className='h-4 w-4/5 rounded bg-muted' />
+      </div>
+    );
 
   const scrapped = Boolean(article.scrappedByMe);
-
+  const publishedLabel = format(
+    new Date(article.publishedAt),
+    'yyyy-MM-dd (EEE)',
+    { locale: ko }
+  );
   return (
-    <article className='mt-1 flex w-full flex-col gap-5'>
-      <header className='mx-auto w-full px-5'>
-        <div className='flex min-h-12 items-center justify-center bg-gray-300 text-lg font-extrabold md:text-xl'>
-          {article.title}
-        </div>
-      </header>
+    <TooltipProvider delayDuration={200}>
+      <article className='mx-auto mt-2 w-full max-w-5xl px-5'>
+        <header className='w-full mt-4'>
+          {' '}
+          {/* ← 위 여백 추가 */}
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <h1 className='text-balance text-xl font-extrabold leading-tight md:text-2xl'>
+              {article.title}
+            </h1>
 
-      <section className='mt-6 flex w-full flex-wrap justify-between gap-3 px-5 md:flex-nowrap'>
-        <div className='order-1 flex w-1/3 justify-start md:order-none md:w-1/5'>
-          <div className='flex flex-col items-center justify-start'>
-            <Avatar className='h-16 w-16 md:h-20 md:w-20'>
-              <AvatarImage src='https://github.com/shadcn.png' alt='reporter' />
-            </Avatar>
-            <div className='mt-2 text-sm font-bold'>{article.reporter}</div>
+            {/* 제목 오른쪽: 키워드 뱃지 + 날짜 뱃지 */}
+            <div className='flex items-center gap-2'>
+              {/* 키워드 뱃지 */}
+              {article.keyword?.name && (
+                <span className='inline-flex items-center gap-1.5 rounded-full bg-yellow-50 px-2.5 py-1 text-xs font-medium text-yellow-800 ring-1 ring-yellow-200'>
+                  <RiNewspaperLine className='h-3.5 w-3.5 text-yellow-700' />
+                  <span>{article.keyword.name}</span>
+                </span>
+              )}
+
+              {/* 날짜 뱃지 */}
+              <span
+                className='inline-flex items-center gap-1.5 rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-200'
+                title={publishedLabel}
+              >
+                {publishedLabel}
+              </span>
+            </div>
           </div>
-        </div>
+          <Separator className='mt-4' />
+        </header>
 
-        <div className='order-3 w-full md:order-none'>
-          <p className='whitespace-pre-line leading-relaxed'>
-            {article.content}
-          </p>
-        </div>
+        {/* 본문 + 우측 액션 레일 레이아웃 */}
+        <section className='relative mt-5 grid grid-cols-1 gap-6 md:grid-cols-[1fr_56px]'>
+          {/* 본문 */}
+          <div>
+            <div className='prose prose-neutral max-w-none whitespace-pre-line leading-relaxed dark:prose-invert'>
+              {article.content}
+            </div>
 
-        <div className='order-2 mt-3 flex w-1/3 items-start justify-end gap-5 md:order-none md:mt-0 md:w-1/5'>
+            {/* 모바일 액션 바 */}
+            <div className='mt-6 flex items-center justify-end gap-3 md:hidden'>
+              <ActionButtons
+                scrapped={scrapped}
+                onOpenModal={() => setIsModalOpen(true)}
+                onToggleScrap={() => toggleScrap.mutate(!scrapped)}
+                isLoading={toggleScrap.isPending}
+              />
+            </div>
+          </div>
+
+          {/* 데스크톱 우측 고정 액션 레일 */}
+          <aside className='sticky top-24 hidden h-fit md:block'>
+            <div
+              className={cn(
+                'flex w-14 flex-col items-center justify-start gap-3 rounded-2xl border bg-background p-2 shadow-sm',
+                'md:w-14'
+              )}
+            >
+              <ActionButtons
+                vertical
+                scrapped={scrapped}
+                onOpenModal={() => setIsModalOpen(true)}
+                onToggleScrap={() => toggleScrap.mutate(!scrapped)}
+                isLoading={toggleScrap.isPending}
+              />
+            </div>
+          </aside>
+        </section>
+
+        {/* 요약 모달 */}
+        <ArticleModal
+          summary={article.summary}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      </article>
+    </TooltipProvider>
+  );
+}
+
+/** 아이콘 액션 묶음: 재사용 가능 & 모바일/데스크톱 공용 */
+function ActionButtons({
+  vertical = false,
+  scrapped,
+  onOpenModal,
+  onToggleScrap,
+  isLoading,
+}: {
+  vertical?: boolean;
+  scrapped: boolean;
+  onOpenModal: () => void;
+  onToggleScrap: () => void;
+  isLoading: boolean;
+}) {
+  return (
+    <div className={cn('flex gap-3', vertical ? 'flex-col' : 'flex-row')}>
+      {/* AI 요약 모달 열기 */}
+      <Tooltip>
+        <TooltipTrigger asChild>
           <button
             type='button'
-            className='text-2xl'
-            onClick={() => setIsModalOpen(true)}
+            className='inline-flex h-10 w-10 items-center justify-center rounded-full border text-xl shadow-sm transition hover:bg-muted/60'
+            onClick={onOpenModal}
+            title='AI 요약 보기'
           >
             <RiRobot2Line />
           </button>
+        </TooltipTrigger>
+        <TooltipContent>AI 요약 보기</TooltipContent>
+      </Tooltip>
 
+      {/* 스크랩 토글 */}
+      <Tooltip>
+        <TooltipTrigger asChild>
           <button
             type='button'
             aria-pressed={scrapped}
+            aria-label={scrapped ? '스크랩 취소' : '스크랩'}
             title={scrapped ? '스크랩 취소' : '스크랩'}
-            className='text-2xl'
-            onClick={() => toggleScrap.mutate(!scrapped)}
-            disabled={toggleScrap.isPending}
+            className={cn(
+              'inline-flex h-10 w-10 items-center justify-center rounded-full border text-xl shadow-sm transition hover:bg-muted/60',
+              scrapped && 'ring-1 ring-yellow-500/40'
+            )}
+            onClick={onToggleScrap}
+            disabled={isLoading}
           >
             {scrapped ? (
               <FaBookmark className='text-yellow-500' />
@@ -114,16 +221,9 @@ export default function ArticleDetail({
               <FaRegBookmark />
             )}
           </button>
-        </div>
-      </section>
-
-      <div className='w-full px-2'>
-        <ArticleModal
-          summary={article.summary}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
-      </div>
-    </article>
+        </TooltipTrigger>
+        <TooltipContent>{scrapped ? '스크랩 취소' : '스크랩'}</TooltipContent>
+      </Tooltip>
+    </div>
   );
 }

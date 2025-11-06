@@ -9,12 +9,14 @@ import { ROUTE_PATHS } from '@/constants/routepaths';
 import { useFormattedDate } from '@/features/reviews/hooks/useFormattedDate';
 import { Link } from 'react-router';
 import type { ArticlePreview } from '../types/types';
+import type { Keyword } from '@/features/keywords/types/types';
 
 type Props = {
   articlePreview: ArticlePreview;
+  keyword: Keyword;
 };
 
-export default function ArticleCard({ articlePreview }: Props) {
+export default function ArticleCard({ articlePreview, keyword }: Props) {
   const date = useFormattedDate(articlePreview.publishedAt, {
     year: 'numeric',
     month: 'long',
@@ -56,6 +58,7 @@ export default function ArticleCard({ articlePreview }: Props) {
                   <path d='M11 10h6' />
                   <path d='M11 14h6' />
                 </svg>
+                {keyword.name}
               </span>
             </div>
 

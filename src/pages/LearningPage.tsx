@@ -64,7 +64,7 @@ export default function LearningPage() {
             {showSkeleton ? (
               <Skeleton className='w-full' />
             ) : (
-              <ArticleList keywordId={todaysKeyword.keyword.id} />
+              <ArticleList keyword={todaysKeyword.keyword} />
             )}
           </section>
 
