@@ -76,7 +76,7 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type='submit' className='mt-2'>
+        <Button type='submit' variant={'primary_semibold'} className='mt-2'>
           로그인
         </Button>
       </form>
