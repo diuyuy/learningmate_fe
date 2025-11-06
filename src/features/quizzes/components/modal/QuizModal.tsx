@@ -10,17 +10,25 @@ import {
 import { useSession } from '@/features/auth/context/useSession';
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import { CheckIcon, XIcon } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import {
+  CheckIcon,
+  XIcon,
+  ShieldCheck,
+  AlarmClock,
+  ListOrdered,
+  HelpCircle,
+  Loader2,
+  ChevronRight,
+  Trophy,
+  PartyPopper,
+} from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import { solveQuiz } from '../../api/api';
 import { useQuizQuery } from '../../hooks/useQuizQuery';
 import { type QuizChoiceArr, type QuizSolveResponse } from '../../types/types';
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-};
+type Props = { isOpen: boolean; onClose: () => void };
 
 export default function QuizModal({ isOpen, onClose }: Props) {
   const { member } = useSession();
@@ -29,9 +37,9 @@ export default function QuizModal({ isOpen, onClose }: Props) {
   const memberId = member.id;
   const { articleId } = useParams();
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
-  const [finished, setFinished] = useState(false);
-  const [currentResult, setCurrentResult] =
-    useState<QuizSolveResponse | null>();
+  const [currentResult, setCurrentResult] = useState<QuizSolveResponse | null>(
+    null
+  );
 
   if (!articleId) return <div>ArticleID Error</div>;
 
@@ -43,7 +51,37 @@ export default function QuizModal({ isOpen, onClose }: Props) {
     return <div className='text-red-500'>{msg}</div>;
   }
 
-  // 퀴즈 응답 question1~4 배열 형태로 가공
+  // ------------------------------
+  // LocalStorage Keys (사용자+기사별)
+  // ------------------------------
+  const baseKey = `quiz:${memberId}:${articleId}`;
+  const progressKey = `${baseKey}:idx`;
+  const finishedKey = `${baseKey}:finished`;
+
+  // ✅ 다시풀기 키 v2 (기사별 1회 제한)
+  const retryKey = `quizRetryUsed:v2:${memberId}:${articleId}`;
+
+  // (선택) 과거 전역/구버전 키 정리
+  useEffect(() => {
+    try {
+      // 전역/사용자 전역 키 제거
+      localStorage.removeItem('quizRetryUsed');
+      localStorage.removeItem(`quizRetryUsed:${memberId}`);
+      // 구버전 기사별 키가 있었다면 v2로 마이그레이션 (옵션)
+      const legacyPerArticle = localStorage.getItem(
+        `quizRetryUsed:${memberId}:${articleId}`
+      );
+      if (legacyPerArticle === '1') {
+        localStorage.setItem(retryKey, '1');
+        localStorage.removeItem(`quizRetryUsed:${memberId}:${articleId}`);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memberId, articleId]);
+
+  // ------------------------------
+  // 데이터 가공
+  // ------------------------------
   const quizzes: QuizChoiceArr[] = useMemo(() => {
     const list = data ?? [];
     return list.map((q) => ({
@@ -53,21 +91,92 @@ export default function QuizModal({ isOpen, onClose }: Props) {
     }));
   }, [data]);
 
-  const [idx, setIdx] = useState(0);
+  const total = quizzes.length;
+
+  // ------------------------------
+  // 진행/완료/다시풀기 복원
+  // ------------------------------
+  const [idx, setIdx] = useState<number>(() => {
+    try {
+      const s = localStorage.getItem(progressKey);
+      return s ? Math.max(0, parseInt(s, 10) || 0) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [finished, setFinished] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(finishedKey) === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  const [retryUsed, setRetryUsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(retryKey) === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  // 모달 열릴 때 최신 저장값 동기화
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const s = localStorage.getItem(progressKey);
+      setIdx(s ? Math.max(0, parseInt(s, 10) || 0) : 0);
+      setFinished(localStorage.getItem(finishedKey) === '1');
+      setRetryUsed(localStorage.getItem(retryKey) === '1');
+    } catch {}
+  }, [isOpen, progressKey, finishedKey, retryKey]);
+
   const current = quizzes[idx];
 
+  // 진행률: 제출 확정된 문제 수만 반영
+  const solvedCount = idx + (currentResult ? 1 : 0);
+  const progressPct = total > 0 ? Math.round((solvedCount / total) * 100) : 0;
+
+  // ------------------------------
+  // 동작 로직
+  // ------------------------------
   const goNext = () => {
-    // 마지막이면 종료
-    if (idx === quizzes.length - 1) {
+    if (idx === total - 1) {
       setFinished(true);
+      try {
+        localStorage.setItem(finishedKey, '1');
+        localStorage.setItem(progressKey, String(total)); // 끝으로 저장
+      } catch {}
       setSelectedChoice(null);
       setCurrentResult(null);
       return;
     }
-    // 다음 문제로
-    setIdx((i) => i + 1);
+    const next = idx + 1;
+    setIdx(next);
+    try {
+      localStorage.setItem(progressKey, String(next));
+    } catch {}
     setSelectedChoice(null);
     setCurrentResult(null);
+  };
+
+  const resetAll = () => {
+    // 다시 풀기 1회 제한 (기사별)
+    if (retryUsed) return;
+    try {
+      localStorage.setItem(retryKey, '1'); // 이번 기사에 대한 1회 사용 기록
+    } catch {}
+    setRetryUsed(true);
+
+    setIdx(0);
+    setFinished(false);
+    setSelectedChoice(null);
+    setCurrentResult(null);
+    try {
+      localStorage.setItem(progressKey, '0');
+      localStorage.removeItem(finishedKey);
+    } catch {}
   };
 
   const solveMutation = useMutation({
@@ -75,9 +184,9 @@ export default function QuizModal({ isOpen, onClose }: Props) {
       solveQuiz(
         {
           memberId: +memberId,
-          memberAnswer: (choiceIdx + 1).toString(),
+          memberAnswer: (choiceIdx + 1).toString(), // 1-based
         },
-        +articleId,
+        +articleId!,
         current.id
       ),
     onSuccess: (result) => {
@@ -87,104 +196,251 @@ export default function QuizModal({ isOpen, onClose }: Props) {
         status: result.status,
       });
     },
-    onError: () => {
-      alert('퀴즈 제출 중 오류가 발생했습니다.');
-    },
+    onError: () => alert('퀴즈 제출 중 오류가 발생했습니다.'),
   });
 
+  // Enter로 제출/다음
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!isOpen || !current || finished) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!currentResult) {
+          if (selectedChoice == null) return;
+          solveMutation.mutate(selectedChoice);
+        } else {
+          goNext();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, current, currentResult, selectedChoice, solveMutation, finished]);
+
+  // UI 파생값(정답 하이라이트는 “맞춘 경우”에만)
+  const isAnswered = Boolean(currentResult);
+  const userCorrect = isAnswered && currentResult?.status === '정답';
+  const correctIdx = isAnswered ? Number(currentResult!.answer) - 1 : -1;
+
   return (
-    <>
-      <Dialog
-        open={isOpen}
-        onOpenChange={(open) => {
-          if (!open) onClose();
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle>Quiz</DialogTitle>
-          <DialogDescription>QUIZ</DialogDescription>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className='max-w-xl md:max-w-2xl'>
+        {/* 헤더 */}
+        <DialogHeader className='space-y-1'>
+          <DialogTitle className='flex items-center gap-2 text-xl font-extrabold'>
+            <ShieldCheck className='h-5 w-5 text-amber-500' />
+            실시간 퀴즈
+          </DialogTitle>
+          {!finished && (
+            <DialogDescription className='flex items-center gap-3'>
+              <span className='inline-flex items-center gap-1 text-zinc-600'>
+                <AlarmClock className='h-4 w-4' />
+                최근 기사 기반 학습
+              </span>
+              <span className='inline-flex items-center gap-1 text-zinc-600'>
+                <ListOrdered className='h-4 w-4' />총 {total}문제
+              </span>
+            </DialogDescription>
+          )}
         </DialogHeader>
-        <DialogContent>
-          {isPending ? (
-            <div>로딩 중...</div>
-          ) : finished ? (
-            <div className='text-center mt-5 text-lg font-semibold'>
-              🎉 모든 퀴즈를 다 푸셨습니다. 고생하셨어요!
-            </div>
-          ) : !current ? (
-            <div>퀴즈가 없습니다.</div>
-          ) : (
-            <div className='space-y-3 m-auto'>
-              <div className='text-sm opacity-70'>
-                {idx + 1} / {quizzes.length}
-              </div>
-              <div className='text-xl font-bold mb-3'>
-                {current.description}
-              </div>
 
-              <div className='list-decimal space-y-2 break-words'>
-                {current.choices.map((c, i) => (
-                  <li
-                    key={i}
-                    onClick={() => setSelectedChoice(i)}
-                    className={`border p-2 rounded shadow cursor-pointer 
-                                    ${selectedChoice === i ? 'border-yellow-500' : ''}`}
-                  >
-                    {c}
-                  </li>
-                ))}
-              </div>
+        {/* 진행바: 완료 화면에서는 숨김 */}
+        {!finished && (
+          <div className='mt-1'>
+            <div className='mb-1 flex items-center justify-between text-xs text-zinc-500'>
+              <span>
+                {Math.min(idx + 1, total)} / {total}
+              </span>
+              <span>{progressPct}%</span>
             </div>
-          )}
-          {currentResult && (
-            <>
-              {currentResult?.status === '정답' ? (
-                <div className='mt-3 flex items-center gap-2 rounded border border-green-200 bg-green-50 p-3 text-green-700'>
-                  <CheckIcon className='h-4 w-4' />
-                  <span>정답입니다!</span>
-                </div>
-              ) : (
-                <div className='mt-3 flex items-center gap-2 rounded border border-red-200 bg-red-50 p-3 text-red-700'>
-                  <XIcon className='h-4 w-4' />
-                  <span>오답입니다!</span>
-                </div>
-              )}
+            <div className='h-2 w-full overflow-hidden rounded-full bg-zinc-100'>
+              <div
+                className='h-full rounded-full bg-amber-400 transition-[width] duration-300'
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
+        )}
 
-              {currentResult?.status === '정답' && (
-                <div className='mt-3 rounded border border-gray-200 bg-gray-50 p-3 text-sm'>
-                  <div className='mb-1 font-semibold'>해설</div>
-                  <p className='whitespace-pre-wrap'>
-                    {currentResult.explanation}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-          <DialogFooter>
-            {!finished && (
-              <>
-                {!currentResult && (
+        {/* 본문 */}
+        {isPending ? (
+          <div className='flex h-32 items-center justify-center text-zinc-500'>
+            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+            로딩 중...
+          </div>
+        ) : finished ? (
+          // 완료 화면
+          <div className='relative py-10'>
+            <div className='pointer-events-none absolute inset-0 opacity-10 [background:radial-gradient(40%_40%_at_50%_0%,#f59e0b,transparent_70%)]' />
+            <div className='relative flex flex-col items-center gap-4'>
+              <div className='inline-flex items-center justify-center rounded-full bg-amber-100 p-4 shadow-inner'>
+                <Trophy className='h-10 w-10 text-amber-500' />
+              </div>
+              <h3 className='text-xl font-extrabold tracking-tight'>
+                모든 퀴즈를 다 푸셨습니다. 고생하셨어요!
+              </h3>
+              <p className='text-sm text-zinc-600 -mt-2'>
+                🎉 꾸준함이 실력을 만듭니다. 다음 학습도 이어가볼까요?
+              </p>
+
+              <div className='mt-2 flex items-center gap-2'>
+                <Button onClick={onClose} className='px-5'>
+                  닫기
+                </Button>
+                {/* 다시풀기: 이 기사에서 아직 1회 안썼을 때만 노출 */}
+                {!retryUsed && (
                   <Button
-                    onClick={() => {
-                      if (selectedChoice == null) {
-                        alert('답을 선택해주세요!');
-                        return;
-                      }
-                      solveMutation.mutate(selectedChoice);
-                    }}
-                    disabled={solveMutation.isPending || !current}
+                    variant='outline'
+                    onClick={resetAll}
+                    className='px-5'
+                    title='처음부터 다시 풀기 (이 기사에서 1회)'
                   >
-                    {' '}
-                    제출
+                    다시 풀기
                   </Button>
                 )}
+              </div>
+            </div>
 
-                {currentResult && <Button onClick={goNext}>다음 문제</Button>}
-              </>
+            <PartyPopper className='pointer-events-none absolute -left-2 top-2 h-5 w-5 rotate-12 text-amber-400 opacity-70' />
+            <PartyPopper className='pointer-events-none absolute -right-2 top-2 h-5 w-5 -rotate-12 text-amber-400 opacity-70' />
+          </div>
+        ) : !current ? (
+          <div className='py-10 text-center text-sm text-zinc-500'>
+            퀴즈가 없습니다.
+          </div>
+        ) : (
+          <div className='mt-4 space-y-4'>
+            {/* 문제 */}
+            <div className='flex items-start gap-2'>
+              <HelpCircle className='mt-0.5 h-5 w-5 shrink-0 text-amber-500' />
+              <h3 className='text-lg font-bold leading-7'>
+                {current.description}
+              </h3>
+            </div>
+
+            {/* 보기 */}
+            <div className='grid gap-2'>
+              {current.choices.map((c, i) => {
+                const isSelected = selectedChoice === i;
+
+                // 초록 하이라이트: 맞춘 경우에만
+                const showCorrect =
+                  isAnswered && userCorrect && i === correctIdx;
+                // 오답이면 내 선택만 빨강
+                const showWrong = isAnswered && !userCorrect && isSelected;
+
+                return (
+                  <button
+                    key={i}
+                    type='button'
+                    onClick={() => !isAnswered && setSelectedChoice(i)}
+                    className={[
+                      'group flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition',
+                      isAnswered
+                        ? showCorrect
+                          ? 'border-emerald-400 bg-emerald-50'
+                          : showWrong
+                            ? 'border-rose-400 bg-rose-50'
+                            : 'border-zinc-200 bg-white opacity-70'
+                        : isSelected
+                          ? 'border-amber-400 bg-amber-50 ring-2 ring-amber-100'
+                          : 'border-zinc-200 bg-white hover:border-amber-300 hover:bg-amber-50/40',
+                    ].join(' ')}
+                    aria-pressed={isSelected}
+                    disabled={isAnswered}
+                  >
+                    <span
+                      className={[
+                        'grid h-6 w-6 place-items-center rounded-full text-xs font-semibold',
+                        isAnswered
+                          ? showCorrect
+                            ? 'bg-emerald-500 text-white'
+                            : showWrong
+                              ? 'bg-rose-500 text-white'
+                              : 'bg-zinc-200 text-zinc-600'
+                          : isSelected
+                            ? 'bg-amber-500 text-white'
+                            : 'bg-zinc-200 text-zinc-600',
+                      ].join(' ')}
+                    >
+                      {i + 1}
+                    </span>
+
+                    <span className='flex-1'>{c}</span>
+
+                    {showCorrect && (
+                      <span className='inline-flex items-center gap-1 text-xs font-medium text-emerald-600'>
+                        <CheckIcon className='h-4 w-4' />
+                        정답
+                      </span>
+                    )}
+                    {showWrong && (
+                      <span className='inline-flex items-center gap-1 text-xs font-medium text-rose-600'>
+                        <XIcon className='h-4 w-4' />내 선택
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 결과/해설 */}
+            {currentResult && (
+              <div className='space-y-3'>
+                {currentResult.status === '정답' ? (
+                  <div className='flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-700'>
+                    <CheckIcon className='h-4 w-4' />
+                    정답입니다!
+                  </div>
+                ) : (
+                  <div className='flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 p-3 text-rose-700'>
+                    <XIcon className='h-4 w-4' />
+                    오답입니다.
+                  </div>
+                )}
+
+                {currentResult.status === '정답' && (
+                  <div className='rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm'>
+                    <div className='mb-1 font-semibold'>해설</div>
+                    <p className='whitespace-pre-wrap'>
+                      {currentResult.explanation}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 푸터 */}
+        {!isPending && !finished && (
+          <DialogFooter className='mt-4'>
+            {!currentResult ? (
+              <Button
+                onClick={() => {
+                  if (selectedChoice == null) {
+                    alert('답을 선택해주세요!');
+                    return;
+                  }
+                  solveMutation.mutate(selectedChoice);
+                }}
+                disabled={solveMutation.isPending || !current}
+                className='gap-2'
+              >
+                {solveMutation.isPending && (
+                  <Loader2 className='h-4 w-4 animate-spin' />
+                )}
+                제출
+              </Button>
+            ) : (
+              <Button onClick={goNext} className='gap-2'>
+                {idx === total - 1 ? '다음' : '다음 문제'}
+                <ChevronRight className='h-4 w-4' />
+              </Button>
             )}
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
