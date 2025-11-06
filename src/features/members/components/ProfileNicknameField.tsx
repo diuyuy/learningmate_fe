@@ -24,26 +24,25 @@ export default function ProfileNickNameField({
 }: Props) {
   const [isForm, toggleSetting] = useReducer((prev) => !prev, false);
 
-  return (
-    <>
-      <div className='flex items-start'>
-        <div className='w-28 font-semibold'>닉네임: </div>
-        {isForm ? (
-          <NicknameFormFiled
-            nickname={nickname}
-            updateMember={updateMember}
-            toggleSetting={toggleSetting}
-          />
-        ) : (
-          <div className='flex w-full justify-between items-start'>
-            <span className='font-bold'>{nickname ?? '익명의 사용자'}</span>
-            <Button variant={'primary_semibold'} onClick={toggleSetting}>
-              설정
-            </Button>
-          </div>
-        )}
-      </div>
-    </>
+  return isForm ? (
+    <NicknameFormFiled
+      nickname={nickname}
+      updateMember={updateMember}
+      toggleSetting={toggleSetting}
+    />
+  ) : (
+    <div className='flex w-full items-start justify-between'>
+      <span className='truncate text-base font-semibold'>
+        {nickname ?? '익명의 사용자'}
+      </span>
+      <Button
+        variant={'outline_semibold'}
+        onClick={toggleSetting}
+        className='rounded-lg'
+      >
+        수정
+      </Button>
+    </div>
   );
 }
 
@@ -60,9 +59,7 @@ function NicknameFormFiled({
 }: NickNameFieldProp) {
   const form = useForm<NicknameForm>({
     resolver: zodResolver(NicknameSchema),
-    defaultValues: {
-      nickname: nickname ?? '',
-    },
+    defaultValues: { nickname: nickname ?? '' },
   });
 
   const onSubmit = async (data: NicknameForm) => {
@@ -79,7 +76,7 @@ function NicknameFormFiled({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className='w-full flex flex-col justify-end gap-2'
+        className='flex w-full flex-col gap-2'
       >
         <FormField
           control={form.control}
@@ -97,7 +94,7 @@ function NicknameFormFiled({
             </FormItem>
           )}
         />
-        <div className='flex justify-end gap-3'>
+        <div className='flex justify-end gap-2'>
           <Button
             type='button'
             variant={'ghost_semibold'}

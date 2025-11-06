@@ -1,4 +1,3 @@
-// src/features/my/components/MyReview.tsx
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { SlidersHorizontal, Check } from 'lucide-react';
 import ReviewCard from '@/components/ui/ReviewCard';
@@ -15,15 +14,15 @@ import {
   useInfiniteMyReviews,
   type MyReviewSort,
 } from '@/features/my/hooks/useInfiniteMyReviews';
+import SectionHeader from '@/features/my/components/SectionHeader';
+import { TOKENS } from '../config/PageMeta';
 
 const PAGE_SIZE = 10;
 const MOBILE_BREAKPOINT = 768;
 const THROTTLE_DELAY = 500;
 
 export default function MyReview() {
-  // ✅ 정렬 상태: 'latest' | 'liked' → 훅에 그대로 전달되어 서버 sort로 매핑됨
   const [sortUI, setSortUI] = useState<MyReviewSort>('latest');
-
   const {
     data,
     fetchNextPage,
@@ -51,11 +50,9 @@ export default function MyReview() {
     return () => window.removeEventListener('resize', handle);
   }, []);
 
-  // ✅ 무한 스크롤(모바일). 정렬이 바뀌면 observer를 재설치.
   useEffect(() => {
     if (!isMobile || !loadMoreRef.current) return;
     const el = loadMoreRef.current;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (
@@ -74,12 +71,10 @@ export default function MyReview() {
       },
       { threshold: 0.5 }
     );
-
     observer.observe(el);
     return () => observer.unobserve(el);
   }, [isMobile, fetchNextPage, hasNextPage, isFetchingNextPage, sortUI]);
 
-  // ✅ 정렬 변경 시 상단으로 스크롤(체감 UX)
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }, [sortUI]);
@@ -98,10 +93,9 @@ export default function MyReview() {
   const isPending = isLoading || isFetchingNextPage;
 
   return (
-    <article className='w-full'>
-      <header className='mb-3 flex items-center justify-between border-b pb-2'>
-        <h3 className='text-lg font-bold tracking-tight'>내 리뷰</h3>
-        {/* ✅ 정렬 드롭다운(요청에 실제 반영) */}
+    <section className={TOKENS.sectionGapY}>
+      <div className='flex items-center justify-between'>
+        <SectionHeader page='review' />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -134,9 +128,10 @@ export default function MyReview() {
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-      </header>
+      </div>
 
-      <section className='flex flex-col gap-4'>
+      {/* 리스트 카드 컨테이너는 필요 시 카드로 감쌀 수도 있음 */}
+      <div className='flex flex-col gap-4'>
         {items.length === 0 && isPending ? (
           <div>Loading...</div>
         ) : items.length === 0 ? (
@@ -152,7 +147,6 @@ export default function MyReview() {
           className='my-3 flex items-center justify-center'
         >
           {isPending && <span className='mr-2'>Loading...</span>}
-
           {!isMobile && hasNextPage && (
             <Button
               className='w-32 cursor-pointer'
@@ -162,12 +156,11 @@ export default function MyReview() {
               더보기
             </Button>
           )}
-
           {!hasNextPage && items.length >= PAGE_SIZE && (
             <span className='ml-2 text-gray-400'>마지막 리뷰입니다.</span>
           )}
         </div>
-      </section>
-    </article>
+      </div>
+    </section>
   );
 }

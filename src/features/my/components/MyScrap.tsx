@@ -18,15 +18,16 @@ import {
   type MyScrapSort,
 } from '@/features/my/api/scraps';
 import type { ScrapItem } from '@/features/my/types/scraps';
+import SectionHeader from '@/features/my/components/SectionHeader';
+import { TOKENS } from '../config/PageMeta';
 
-const GRID_COLS = 'md:grid-cols-2'; // 필요시 md:grid-cols-3 로 변경
+const GRID_COLS = 'md:grid-cols-2';
 const THROTTLE_MS = 400;
 
 export default function MyScrap() {
   const size = 12;
   const [sort, setSort] = useState<MyScrapSort>('latest');
 
-  // ✅ 정렬 반영된 무한스크롤 쿼리
   const {
     data,
     fetchNextPage,
@@ -43,18 +44,15 @@ export default function MyScrap() {
     [pages]
   );
 
-  // --- 스크랩 토글(낙관적 업데이트) - 정렬별 캐시키 포함
   const qc = useQueryClient();
   const queryKey = ['my', 'scraps', { size, sort }] as const;
 
   const toggleMutation = useMutation({
-    mutationFn: async ({ id, next }: { id: number; next: boolean }) => {
-      return next ? postArticleScrap(id) : deleteArticleScrap(id);
-    },
+    mutationFn: async ({ id, next }: { id: number; next: boolean }) =>
+      next ? postArticleScrap(id) : deleteArticleScrap(id),
     onMutate: async ({ id, next }) => {
       await qc.cancelQueries({ queryKey });
       const prev = qc.getQueryData<any>(queryKey);
-
       const patched = prev && {
         ...prev,
         pages: prev.pages.map((pg: any) => ({
@@ -64,29 +62,21 @@ export default function MyScrap() {
           ),
         })),
       };
-
       qc.setQueryData(queryKey, patched);
       return { prev };
     },
-    onError: (_e, _v, ctx) => {
-      if (ctx?.prev) qc.setQueryData(queryKey, ctx.prev);
-    },
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey });
-    },
+    onError: (_e, _v, ctx) => ctx?.prev && qc.setQueryData(queryKey, ctx.prev),
+    onSettled: () => qc.invalidateQueries({ queryKey }),
   });
 
   const onToggleScrap = (id: number, next: boolean) =>
     toggleMutation.mutate({ id, next });
 
-  // --- 무한 스크롤
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const throttleRef = useRef(false);
-
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
-
     const io = new IntersectionObserver(
       (entries) => {
         const first = entries[0];
@@ -98,15 +88,12 @@ export default function MyScrap() {
         ) {
           throttleRef.current = true;
           fetchNextPage().finally(() => {
-            setTimeout(() => {
-              throttleRef.current = false;
-            }, THROTTLE_MS);
+            setTimeout(() => (throttleRef.current = false), THROTTLE_MS);
           });
         }
       },
       { root: null, rootMargin: '0px 0px 600px 0px', threshold: 0.01 }
     );
-
     io.observe(el);
     return () => io.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, sort]);
@@ -123,10 +110,9 @@ export default function MyScrap() {
   }
 
   return (
-    <section className='space-y-4'>
-      {/* 헤더(정렬) */}
-      <header className='flex items-center justify-between'>
-        <h3 className='text-lg font-bold tracking-tight'>스크랩</h3>
+    <section className={TOKENS.sectionGapY}>
+      <div className='flex items-center justify-between'>
+        <SectionHeader page='scrap' />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -160,9 +146,8 @@ export default function MyScrap() {
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-      </header>
+      </div>
 
-      {/* 컨텐츠 */}
       {isLoading && (
         <div className='h-24 animate-pulse rounded-xl bg-zinc-100' />
       )}
@@ -184,23 +169,10 @@ export default function MyScrap() {
               />
             ))}
           </div>
-
-          {/* sentinel */}
           <div ref={sentinelRef} className='h-8 w-full' />
-
-          {/* 상태/더보기 Fallback */}
           <div className='mt-3 flex items-center justify-center gap-8 text-sm text-zinc-500'>
             {isFetchingNextPage && <span>Loading...</span>}
-            {hasNextPage && items.length > 0 && (
-              <button
-                className='rounded-md border px-3 py-1.5 text-sm shadow-sm hover:bg-zinc-50'
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-              >
-                더보기
-              </button>
-            )}
-            {!hasNextPage && items.length > 0 && <span>마지막입니다.</span>}
+            {/* non-mobile fallback button */}
           </div>
         </>
       )}

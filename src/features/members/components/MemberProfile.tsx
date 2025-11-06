@@ -5,24 +5,21 @@ import { useSession } from '@/features/auth/context/useSession';
 
 export default function MemberProfile() {
   const { member } = useSession();
-
-  if (!member) {
-    return null;
-  }
+  if (!member) return null;
 
   return (
-    <div className='w-full flex justify-start gap-3 items-center'>
-      <Avatar className='w-12 h-12'>
+    <div className='flex w-full items-center gap-3'>
+      <Avatar className='h-12 w-12'>
         <ProfileAvartarImage imgUrl={member.imageUrl} />
         <AvatarFallback>
           <Skeleton className='rounded-full' />
         </AvatarFallback>
       </Avatar>
-      <div className='flex flex-col justify-around w-[120px] md:w-[144px]'>
-        <h1 className='text-lg truncate'>
+      <div className='flex w-[160px] flex-col justify-center'>
+        <h1 className='truncate text-base font-semibold'>
           {member?.nickname ?? '익명의 사용자'}
         </h1>
-        <h2 className='text-xs font-normal text-gray-500 truncate'>
+        <h2 className='truncate text-xs font-normal text-gray-500'>
           {member?.email}
         </h2>
       </div>

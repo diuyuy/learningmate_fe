@@ -1,22 +1,25 @@
 import QuizStatCard from '@/features/my/components/QuizStatCard';
 import IncorrectQuizList from '@/features/my/components/IncorrectQuizList';
 import { useQuizStatistics } from '@/features/my/hooks/useQuizStatistics';
+import SectionHeader from '@/features/my/components/SectionHeader';
+import { TOKENS } from '../config/PageMeta';
 
 export default function MyQuiz() {
   const { data, isLoading } = useQuizStatistics();
 
   return (
-    <div className='space-y-4'>
-      <h3 className='text-lg font-bold tracking-tight'>퀴즈</h3>
-      {/* 퀴즈 성과 (풀 너비) */}
+    <section className={TOKENS.sectionGapY}>
+      <SectionHeader page='quiz' />
+
+      {/* 성적 요약 → 카드 유지 */}
       <QuizStatCard
         correctCounts={data?.correctCounts ?? 0}
         totalCounts={data?.totalCounts ?? 0}
         isLoading={isLoading}
       />
 
-      {/* 틀린 문제 (아코디언) */}
+      {/* 틀린 문제 리스트 → 카드 wrapper 제거 */}
       <IncorrectQuizList />
-    </div>
+    </section>
   );
 }

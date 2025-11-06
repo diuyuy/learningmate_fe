@@ -7,6 +7,8 @@ import ProfilePasswdField from '@/features/members/components/ProfilePasswdField
 import WithdrawalSuccessDialog from '@/features/members/components/WithdrawalSuccessDialog';
 import { useDeleteMemberMutation } from '@/hooks/useDeleteMemberMutation';
 import { useReducer } from 'react';
+import SectionHeader from '@/features/my/components/SectionHeader';
+import { TOKENS } from '../config/PageMeta';
 
 export default function MyProfile() {
   const { member, updateMember, onAccountDeleted } = useSession();
@@ -18,7 +20,6 @@ export default function MyProfile() {
     (pre) => !pre,
     false
   );
-
   const mutation = useDeleteMemberMutation(setWithdrawSuccessDialog);
 
   const deleteAccount = () => {
@@ -26,48 +27,72 @@ export default function MyProfile() {
     setCheckWithdrawDialog();
   };
 
-  if (!member) {
-    return null;
-  }
+  if (!member) return null;
 
   return (
-    <section className='bg-white border-2 border-yellow-400 rounded-2xl shadow-sm p-6 md:p-8'>
-      <h3 className='mb-4 text-lg font-semibold'>프로필</h3>
-      <div className='mt-6 space-y-6'>
-        <ProfileImageField
-          imgUrl={member.imageUrl}
-          updateMember={updateMember}
-        />
+    <section className={TOKENS.sectionGapY}>
+      <SectionHeader page='profile' />
 
-        <ProfileNickNameField
-          nickname={member.nickname}
-          updateMember={updateMember}
-        />
+      {/* 왼 280px / 오 1fr, 카드 간격 동일 */}
+      <div className='grid grid-cols-1 gap-6 md:grid-cols-[280px,1fr]'>
+        {/* 왼쪽: 프로필 이미지 카드 */}
+        <aside className={`${TOKENS.card} ${TOKENS.cardPadding} text-center`}>
+          <div className='mb-3 text-sm font-medium text-neutral-600'>
+            프로필 이미지
+          </div>
+          <div className='flex flex-col items-center gap-3'>
+            <ProfileImageField
+              imgUrl={member.imageUrl}
+              updateMember={updateMember}
+            />
+          </div>
+        </aside>
 
-        <div className='flex items-center'>
-          <div className='w-28 font-semibold'>이메일: </div>
-          <div className='flex w-full justify-between items-center'>
-            <span className='font-bold underline'>{member.email} </span>
+        {/* 오른쪽: 정보 카드들 */}
+        <div className='space-y-6'>
+          <div className={`${TOKENS.card} ${TOKENS.cardPadding}`}>
+            <div className='text-sm font-medium text-neutral-500'>닉네임</div>
+            <div className='mt-2 flex items-center justify-between'>
+              <ProfileNickNameField
+                nickname={member.nickname}
+                updateMember={updateMember}
+              />
+            </div>
+          </div>
+
+          <div className={`${TOKENS.card} ${TOKENS.cardPadding}`}>
+            <div className='text-sm font-medium text-neutral-500'>이메일</div>
+            <div className='mt-2 flex items-center justify-between'>
+              <span className='break-all font-medium underline underline-offset-4'>
+                {member.email}
+              </span>
+            </div>
+          </div>
+
+          <div className={`${TOKENS.card} ${TOKENS.cardPadding}`}>
+            <div className='text-sm font-medium text-neutral-500'>비밀번호</div>
+            <div className='mt-2 flex items-center justify-between'>
+              <ProfilePasswdField updateMember={updateMember} />
+            </div>
           </div>
         </div>
-
-        <ProfilePasswdField updateMember={updateMember} />
       </div>
-      <div className='flex justify-end mr-2 mt-20'>
+
+      <div className='mt-8 flex justify-end'>
         <Button
-          variant={'outline_semibold'}
+          variant='outline_semibold'
           onClick={setCheckWithdrawDialog}
-          className='text-red-500 hover:text-red-500'
+          className='rounded-lg border-red-200 text-red-600 hover:border-red-300 hover:text-red-600'
         >
           회원 탈퇴
         </Button>
       </div>
+
       <CheckWithdrawDialog
         isOpen={isCheckWithdrawDialogOpen}
         setCheckWithdrawDialog={setCheckWithdrawDialog}
         deleteAccount={deleteAccount}
       />
-
       <WithdrawalSuccessDialog
         isOpen={isWithdrawSuccessDialogOpen}
         setWithdrawSuccessDialog={setWithdrawSuccessDialog}
