@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { IncorrectQuizItem } from '@/features/my/types/quiz';
 import * as Accordion from '@radix-ui/react-accordion';
 import { format } from 'date-fns';
@@ -10,14 +10,21 @@ import {
   XCircle,
   Newspaper,
 } from 'lucide-react';
-import * as Dialog from '@radix-ui/react-dialog';
 import { Button } from '@/components/ui/button';
+import ArticleDetailDialog from '@/features/articles/components/ArticleDetailDialog';
 
-type Props = { item: IncorrectQuizItem; value: string };
+type Props = {
+  item: IncorrectQuizItem;
+  value: string;
+  /** (옵션) 상세 모달 내에서 스크랩 상태 변경 시 상위 리스트 동기화가 필요하면 전달 */
+  onScrapChange?: (articleId: number, next: boolean) => void;
+};
 
-export default function IncorrectQuizItem({ item, value }: Props) {
-  const [open, setOpen] = useState(false);
-
+export default function IncorrectQuizItem({
+  item,
+  value,
+  onScrapChange,
+}: Props) {
   const options = useMemo(
     () =>
       [item.question1, item.question2, item.question3, item.question4].filter(
@@ -36,11 +43,8 @@ export default function IncorrectQuizItem({ item, value }: Props) {
       <Accordion.Header asChild>
         <Accordion.Trigger
           className='
-            flex w-full items-center gap-3 px-3 py-3 text-left
-            rounded-xl
-            transition
-            hover:bg-zinc-50
-            data-[state=open]:bg-zinc-50
+            flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition
+            hover:bg-zinc-50 data-[state=open]:bg-zinc-50
             [&[data-state=open]>svg.chev]:rotate-180
           '
         >
@@ -51,20 +55,24 @@ export default function IncorrectQuizItem({ item, value }: Props) {
               <XCircle className='h-5 w-5 text-rose-500' />
             )}
           </span>
+
           <span className='min-w-0 flex-1 truncate font-semibold'>
             {item.article.title}
           </span>
+
           <span className='hidden sm:inline-flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-0.5 text-[11px] text-yellow-800'>
             <Newspaper className='h-3.5 w-3.5' />
             {item.article.keyword?.name ?? '키워드'}
           </span>
+
           {item.article.keyword?.date && (
-            <span className='text-[11px] text-zinc-500 ml-2'>
+            <span className='ml-2 text-[11px] text-zinc-500'>
               {format(new Date(item.article.keyword.date), 'yyyy-MM-dd (E)', {
                 locale: ko,
               })}
             </span>
           )}
+
           {/* chevron */}
           <svg
             className='chev ml-2 h-4 w-4 transition-transform'
@@ -85,20 +93,18 @@ export default function IncorrectQuizItem({ item, value }: Props) {
       {/* 컨텐츠 */}
       <Accordion.Content
         className='
-          px-3 pb-3
-          data-[state=closed]:opacity-0 data-[state=open]:opacity-100
+          px-3 pb-3 transition-all duration-300 ease-out
           data-[state=closed]:-translate-y-1 data-[state=open]:translate-y-0
-          transition-all duration-300 ease-out
+          data-[state=closed]:opacity-0 data-[state=open]:opacity-100
         '
       >
-        {/* 불투명 카드로 감싸 비침 방지 */}
         <div className='rounded-xl border bg-white p-4 shadow-sm'>
           {/* 키워드 카드 */}
           <div className='mb-3 rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800'>
             <div className='font-semibold text-yellow-900'>
               {item.article.keyword?.name ?? '키워드'}
             </div>
-            <div className='text-yellow-800/80 text-xs'>
+            <div className='text-xs text-yellow-800/80'>
               {item.article.keyword?.description ?? '키워드 설명'}
             </div>
           </div>
@@ -114,6 +120,7 @@ export default function IncorrectQuizItem({ item, value }: Props) {
             {options.map((opt, i) => {
               const isCorrect = i === correctIdx;
               const isMine = i === myIdx;
+
               let cls =
                 'flex items-start gap-2 rounded-xl border px-3 py-2 text-sm';
               if (isCorrect) cls += ' border-emerald-500 bg-emerald-50';
@@ -149,10 +156,12 @@ export default function IncorrectQuizItem({ item, value }: Props) {
             <p className='mt-1'>{item.explanation}</p>
           </div>
 
-          {/* 기사 바로가기 (모달) */}
+          {/* 기사 바로가기: 공용 ArticleDetailDialog 재사용 */}
           <div className='mt-3'>
-            <Dialog.Root open={open} onOpenChange={setOpen}>
-              <Dialog.Trigger asChild>
+            <ArticleDetailDialog
+              articleId={item.article.id}
+              onScrapChange={onScrapChange}
+              trigger={
                 <Button
                   variant='outline'
                   size='sm'
@@ -160,31 +169,8 @@ export default function IncorrectQuizItem({ item, value }: Props) {
                 >
                   기사 바로가기 <ExternalLink className='ml-1 h-4 w-4' />
                 </Button>
-              </Dialog.Trigger>
-
-              <Dialog.Portal>
-                <Dialog.Overlay className='fixed inset-0 bg-black/40' />
-                <Dialog.Content className='fixed left-1/2 top-1/2 z-50 w-[95vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-white shadow-xl'>
-                  <div className='flex items-center justify-between border-b px-3 py-2'>
-                    <Dialog.Title className='text-sm font-semibold'>
-                      기사 보기
-                    </Dialog.Title>
-                    <Dialog.Close asChild>
-                      <button className='rounded p-1 hover:bg-zinc-100'>
-                        ✕
-                      </button>
-                    </Dialog.Close>
-                  </div>
-                  <div className='h-[75vh]'>
-                    <iframe
-                      title='article'
-                      src={`/article/${item.article.id}`}
-                      className='h-full w-full'
-                    />
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
+              }
+            />
           </div>
         </div>
       </Accordion.Content>
