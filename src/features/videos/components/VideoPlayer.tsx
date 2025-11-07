@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Clock, Award, Film, Tag } from 'lucide-react';
 import {
@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
-import { useVideoStore } from '../store/useVideoStore';
+import { useVideoStore, MISSION_TARGET } from '../store/useVideoStore';
 import { useSaveVideoMission } from '../hooks/useSaveVideoMission';
 
 declare global {
@@ -19,20 +19,15 @@ declare global {
   }
 }
 
-type Keyword = {
-  id: number;
-  name: string;
-};
+type Keyword = { id: number; name: string };
 
 type Props = {
-  /** 상위에서 todaysKeyword={todaysKeyword.keyword} 형태로 전달 */
   todaysKeyword: Keyword;
   videoId: string;
-  /** 키워드 아이콘 이미지 URL(선택) */
   keywordIconSrc?: string;
 };
 
-// mm:ss formatter
+// mm:ss
 const toMMSS = (s: number) => {
   const m = Math.floor(s / 60);
   const sec = Math.max(0, s % 60);
@@ -43,7 +38,6 @@ const toMMSS = (s: number) => {
 function ConfettiBurst({ show }: { show: boolean }) {
   const PARTICLES = 30;
   const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7'];
-
   return (
     <AnimatePresence>
       {show && (
@@ -77,33 +71,29 @@ export default function VideoPlayer({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<any>(null);
   const startTimeRef = useRef<number | null>(null);
-  const checkTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const watchdogRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const hasSavedRef = useRef(false);
 
-  const {
-    watchedSeconds,
-    duration,
-    lastTime,
-    isCompleted,
-    setTodaysKeywordId,
-    setWatchedSeconds,
-    setLastTime,
-    setDuration,
-    setIsCompleted,
-    ensureKstDay,
-  } = useVideoStore();
+  // 🚀 Zustand: 필요한 필드만 구독하여 리렌더 최소화
+  const watchedSeconds = useVideoStore((s) => s.watchedSeconds);
+  const duration = useVideoStore((s) => s.duration);
+  const lastTime = useVideoStore((s) => s.lastTime);
+  const isCompleted = useVideoStore((s) => s.isCompleted);
+
+  const setTodaysKeywordId = useVideoStore((s) => s.setTodaysKeywordId);
+  const setWatchedSeconds = useVideoStore((s) => s.setWatchedSeconds);
+  const setLastTime = useVideoStore((s) => s.setLastTime);
+  const setDuration = useVideoStore((s) => s.setDuration);
+  const ensureKstDay = useVideoStore((s) => s.ensureKstDay);
+  const completeOnce = useVideoStore((s) => s.completeOnce);
 
   const { mutate: saveMission, isPending: saving } = useSaveVideoMission(
     todaysKeyword.id
   );
 
   const [confetti, setConfetti] = useState(false);
-
-  // live UI refresh while playing
-  const [, forceTick] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => forceTick((v) => v + 1), 500);
-    return () => clearInterval(t);
-  }, []);
+  const [, forceTick] = useState(0); // 진행률 실시간 표시용(플레이 중에만 틱)
 
   // init daily & keyword
   useEffect(() => {
@@ -111,133 +101,115 @@ export default function VideoPlayer({
     setTodaysKeywordId(todaysKeyword.id);
   }, [todaysKeyword.id, ensureKstDay, setTodaysKeywordId]);
 
-  // derived (mission progress)
-  const missionTarget = 60;
+  // live 진행률 계산(스토어는 증분만 기록; UI는 재생 중에만 틱)
   const liveDiff = startTimeRef.current
     ? Math.floor((Date.now() - startTimeRef.current) / 1000)
     : 0;
   const liveWatched = isCompleted
-    ? missionTarget
-    : Math.min(missionTarget, watchedSeconds + liveDiff);
+    ? MISSION_TARGET
+    : Math.min(MISSION_TARGET, watchedSeconds + liveDiff);
   const progress = Math.min(
     100,
-    Math.round((liveWatched / missionTarget) * 100)
+    Math.round((liveWatched / MISSION_TARGET) * 100)
   );
-  const remainingSec = Math.max(0, missionTarget - liveWatched);
+  const remainingSec = Math.max(0, MISSION_TARGET - liveWatched);
   const remainingMMSS = useMemo(() => toMMSS(remainingSec), [remainingSec]);
   const durationMMSS = useMemo(
     () => (duration ? toMMSS(duration) : '0:00'),
     [duration]
   );
 
-  // ▶ 진행률 기반 상태 칩 색상
-  const getStatusClasses = () => {
-    if (isCompleted || progress >= 100) {
-      return {
-        chip: 'bg-emerald-600 text-white',
-        icon: 'text-white',
-        animated: false,
-      };
-    }
-    if (progress >= 30) {
-      return {
-        chip: 'bg-blue-100 text-blue-700',
-        icon: 'text-blue-500',
-        animated: true, // 살짝 펄스
-      };
-    }
-    return {
-      chip: 'bg-gray-100 text-gray-700',
-      icon: 'text-gray-500',
-      animated: true,
+  // 플레이 중에만 rAF 틱을 돌려서 진행률 UI 갱신(불필요한 타이머 제거)
+  const startRafTick = useCallback(() => {
+    if (rafRef.current) return;
+    const loop = () => {
+      rafRef.current = requestAnimationFrame(loop);
+      forceTick((v) => v + 1);
     };
-  };
-  const tone = getStatusClasses();
+    rafRef.current = requestAnimationFrame(loop);
+  }, []);
+  const stopRafTick = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
 
-  // status pill (animated)
-  const StatusPill = (
-    <>
-      {isCompleted || progress >= 100 ? (
-        <motion.span
-          initial={{ scale: 0.9, opacity: 0.6 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${tone.chip}`}
-        >
-          <CheckCircle2 className={`h-4 w-4 ${tone.icon}`} />
-          성공
-        </motion.span>
-      ) : (
-        <motion.span
-          animate={tone.animated ? { opacity: [0.7, 1, 0.7] } : undefined}
-          transition={
-            tone.animated ? { duration: 1.6, repeat: Infinity } : undefined
-          }
-          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${tone.chip}`}
-        >
-          <Clock className={`h-4 w-4 ${tone.icon}`} />
-          진행중
-        </motion.span>
-      )}
-    </>
-  );
-
+  // 안전 호출
   const safeGetCurrentTime = (player: any): number => {
     try {
-      if (player && typeof player.getCurrentTime === 'function') {
-        const v = player.getCurrentTime();
-        return Number.isFinite(v) ? v : 0;
-      }
-      if (
-        playerRef.current &&
-        typeof playerRef.current.getCurrentTime === 'function'
-      ) {
-        const v = playerRef.current.getCurrentTime();
-        return Number.isFinite(v) ? v : 0;
-      }
-    } catch {}
-    return 0;
+      const v =
+        player?.getCurrentTime?.() ??
+        playerRef.current?.getCurrentTime?.() ??
+        0;
+      return Number.isFinite(v) ? v : 0;
+    } catch {
+      return 0;
+    }
   };
-
   const safeGetDuration = (player: any): number | null => {
     try {
-      if (player && typeof player.getDuration === 'function') {
-        const v = player.getDuration();
-        return Number.isFinite(v) ? Math.floor(v) : null;
-      }
-      if (
-        playerRef.current &&
-        typeof playerRef.current.getDuration === 'function'
-      ) {
-        const v = playerRef.current.getDuration();
-        return Number.isFinite(v) ? Math.floor(v) : null;
-      }
-    } catch {}
-    return null;
+      const v =
+        player?.getDuration?.() ?? playerRef.current?.getDuration?.() ?? null;
+      return Number.isFinite(v) ? Math.floor(v) : null;
+    } catch {
+      return null;
+    }
   };
 
-  const startWatchdog = () => {
-    if (checkTimerRef.current) return;
-    checkTimerRef.current = setInterval(() => {
+  // ✅ 한 번만 성공/전송되도록 보장하는 완료 함수
+  const finishOnce = useCallback(() => {
+    const didComplete = completeOnce(); // 상태 내부에서 isCompleted 체크 + 클램프
+    if (!didComplete) return;
+
+    // 서버 전송도 한 번만
+    if (!hasSavedRef.current && !saving) {
+      hasSavedRef.current = true;
+      saveMission();
+    }
+
+    alert('오늘의 영상 시청 미션을 성공하셨습니다');
+    setConfetti(true);
+    setTimeout(() => setConfetti(false), 1600);
+  }, [completeOnce, saveMission, saving]);
+
+  // 미션 감시(800ms) — 완료/중복 가드 철저
+  const startWatchdog = useCallback(() => {
+    if (watchdogRef.current) return;
+    if (useVideoStore.getState().isCompleted) return;
+
+    watchdogRef.current = setInterval(() => {
+      // 진행 중에도 완료되었으면 즉시 종료
+      if (useVideoStore.getState().isCompleted) {
+        clearInterval(watchdogRef.current!);
+        watchdogRef.current = null;
+        return;
+      }
       const diff = startTimeRef.current
         ? Math.floor((Date.now() - startTimeRef.current) / 1000)
         : 0;
-      const total = watchedSeconds + diff;
-      if (total >= missionTarget) {
-        alert('오늘의 영상 시청 미션을 성공하셨습니다');
-        setIsCompleted(true);
-        if (!saving) saveMission();
-        setConfetti(true);
-        setTimeout(() => setConfetti(false), 1600);
-        clearInterval(checkTimerRef.current!);
-        checkTimerRef.current = null;
+      const total = useVideoStore.getState().watchedSeconds + diff;
+      if (total >= MISSION_TARGET) {
+        // 완료 처리(스토어 내부에서 클램프)
+        finishOnce();
+        clearInterval(watchdogRef.current!);
+        watchdogRef.current = null;
       }
     }, 800);
-  };
+  }, [finishOnce]);
 
-  const initPlayer = () => {
+  const stopWatchdog = useCallback(() => {
+    if (watchdogRef.current) {
+      clearInterval(watchdogRef.current);
+      watchdogRef.current = null;
+    }
+  }, []);
+
+  // 유튜브 플레이어 초기화
+  const initPlayer = useCallback(() => {
     const YT = (window as any).YT;
     if (!YT?.Player || !containerRef.current) return;
+
     playerRef.current = new YT.Player(containerRef.current, {
       videoId,
       host: 'https://www.youtube.com',
@@ -250,19 +222,22 @@ export default function VideoPlayer({
       },
       events: {
         onReady: (e: any) => {
-          // ← e 타입 명시
           const dur = safeGetDuration(e.target);
           if (dur !== null) setDuration(dur);
           if (lastTime) e.target.seekTo(lastTime, true);
         },
         onStateChange: (e: any) => {
-          // ← e 타입 명시
           const S = window.YT.PlayerState;
           if (e.data === S.PLAYING) {
+            // ✅ 이미 완료면 타이머/틱을 구동하지 않음
+            if (useVideoStore.getState().isCompleted) return;
+
             if (!startTimeRef.current) startTimeRef.current = Date.now();
             startWatchdog();
+            startRafTick();
           } else if (e.data === S.PAUSED || e.data === S.ENDED) {
-            if (startTimeRef.current) {
+            // 재생 세션 종료 시 증분 반영(완료가 아니면만)
+            if (!useVideoStore.getState().isCompleted && startTimeRef.current) {
               const diff = Math.floor(
                 (Date.now() - startTimeRef.current) / 1000
               );
@@ -270,16 +245,25 @@ export default function VideoPlayer({
               setLastTime(safeGetCurrentTime(e.target));
             }
             startTimeRef.current = null;
-            if (checkTimerRef.current) {
-              clearInterval(checkTimerRef.current);
-              checkTimerRef.current = null;
-            }
+            stopWatchdog();
+            stopRafTick();
           }
         },
       },
     });
-  };
+  }, [
+    lastTime,
+    setDuration,
+    setLastTime,
+    setWatchedSeconds,
+    startRafTick,
+    startWatchdog,
+    stopRafTick,
+    stopWatchdog,
+    videoId,
+  ]);
 
+  // 스크립트 로드 + 언마운트 정리
   useEffect(() => {
     if (window.YT?.Player) initPlayer();
     else {
@@ -295,21 +279,46 @@ export default function VideoPlayer({
       window.onYouTubeIframeAPIReady = initPlayer;
     }
     return () => {
+      // 세션 마무리
       if (startTimeRef.current) {
         const diff = Math.floor((Date.now() - startTimeRef.current) / 1000);
-        if (diff > 0) setWatchedSeconds(diff);
+        if (diff > 0 && !useVideoStore.getState().isCompleted)
+          setWatchedSeconds(diff);
         startTimeRef.current = null;
       }
-      if (checkTimerRef.current) {
-        clearInterval(checkTimerRef.current);
-        checkTimerRef.current = null;
-      }
+      stopWatchdog();
+      stopRafTick();
     };
-  }, [videoId]);
+  }, [initPlayer, setWatchedSeconds, stopRafTick, stopWatchdog]);
+
+  // 상태 칩 톤
+  const tone = useMemo(() => {
+    if (isCompleted || progress >= 100) {
+      return {
+        chip: 'bg-emerald-600 text-white',
+        icon: 'text-white',
+        animated: false,
+        label: '성공',
+      };
+    }
+    if (progress >= 30) {
+      return {
+        chip: 'bg-blue-100 text-blue-700',
+        icon: 'text-blue-500',
+        animated: true,
+        label: '진행중',
+      };
+    }
+    return {
+      chip: 'bg-gray-100 text-gray-700',
+      icon: 'text-gray-500',
+      animated: true,
+      label: '진행중',
+    };
+  }, [isCompleted, progress]);
 
   return (
     <>
-      {/* 소제목 + 설명 (여백 절반으로 축소) */}
       <div>
         <h3 className='text-base font-semibold mb-2 tracking-tight'>
           오늘의 영상
@@ -322,10 +331,8 @@ export default function VideoPlayer({
       <Card className='relative w-full overflow-hidden border-0 shadow-lg'>
         <ConfettiBurst show={confetti} />
 
-        {/* 🔻 위아래 gap 절반: 헤더/콘텐츠/푸터 패딩 조정 */}
         <CardHeader className='pt-1 pb-0'>
           <div className='flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs'>
-            {/* 오늘의 키워드 (앞으로) */}
             <div className='inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-gray-700'>
               {keywordIconSrc ? (
                 <img
@@ -339,11 +346,34 @@ export default function VideoPlayer({
               <span>{todaysKeyword.name}</span>
             </div>
 
-            {StatusPill}
+            {isCompleted || progress >= 100 ? (
+              <motion.span
+                initial={{ scale: 0.9, opacity: 0.6 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${tone.chip}`}
+              >
+                <CheckCircle2 className={`h-4 w-4 ${tone.icon}`} />
+                성공
+              </motion.span>
+            ) : (
+              <motion.span
+                animate={tone.animated ? { opacity: [0.7, 1, 0.7] } : undefined}
+                transition={
+                  tone.animated
+                    ? { duration: 1.6, repeat: Infinity }
+                    : undefined
+                }
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${tone.chip}`}
+              >
+                <Clock className={`h-4 w-4 ${tone.icon}`} />
+                {tone.label}
+              </motion.span>
+            )}
 
             <div className='inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-gray-700'>
               <Award className='h-4 w-4 text-amber-500' />
-              <span>미션: 60s</span>
+              <span>미션: {MISSION_TARGET}s</span>
             </div>
           </div>
         </CardHeader>
@@ -351,6 +381,7 @@ export default function VideoPlayer({
         <CardContent className='pt-2 pb-2'>
           <div className='relative aspect-video overflow-hidden rounded-2xl ring-1 ring-black/5'>
             <div ref={containerRef} className='h-full w-full' />
+            {/* 필요 시 로딩 스피너 등을 여기에 추가 가능 */}
           </div>
         </CardContent>
 

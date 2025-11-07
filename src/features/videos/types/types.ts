@@ -1,8 +1,13 @@
-import type { Keyword } from '@/features/keywords/types/types';
+import type { Keyword as RawKeyword } from '@/features/keywords/types/types';
+
+export type Keyword = {
+  id: number;
+  name: string;
+};
 
 export type Video = {
   id: number;
-  keyword: Keyword;
+  keyword: RawKeyword;
   link: string;
 };
 
