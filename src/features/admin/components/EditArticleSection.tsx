@@ -96,7 +96,9 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card className='shadow-sm'>
           <CardHeader>
-            <CardTitle className='text-xl font-semibold'>Article 수정</CardTitle>
+            <CardTitle className='text-xl font-semibold'>
+              Article 수정
+            </CardTitle>
             <CardAction>
               <Button
                 type='submit'
@@ -133,7 +135,7 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
                       <TextareaAutosize
                         {...field}
                         placeholder='Article Title...'
-                        className='w-full resize-none border border-input bg-background p-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all duration-200'
+                        className='w-full resize-none border border-input bg-background p-3 rounded-md focus-visible:outline-none'
                       />
                       {fieldState.error && (
                         <FieldError errors={[fieldState.error]} />
@@ -171,7 +173,7 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
                           contentRef.current = e;
                         }}
                         placeholder='Article Content...'
-                        className='w-full resize-none border border-input bg-background p-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-y-hidden transition-all duration-200'
+                        className='w-full resize-none border border-input bg-background p-3 rounded-md focus-visible:outline-none'
                       />
                       {fieldState.error && (
                         <FieldError errors={[fieldState.error]} />
@@ -205,7 +207,7 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
                       <TextareaAutosize
                         {...field}
                         placeholder='Article Summary...'
-                        className='w-full resize-none border border-input bg-background p-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all duration-200'
+                        className='w-full resize-none border border-input bg-background p-3 rounded-md focus-visible:outline-none'
                       />
                       {fieldState.error && (
                         <FieldError errors={[fieldState.error]} />
