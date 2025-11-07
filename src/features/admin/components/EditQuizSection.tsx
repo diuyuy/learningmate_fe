@@ -48,27 +48,41 @@ export default function EditQuizSection({ articleId }: Props) {
   if (isError) return <QuizSectionError />;
 
   return (
-    <section className='w-full max-w-2xl mx-auto'>
-      <Card>
+    <section className='w-full max-w-2xl mx-auto space-y-6'>
+      {/* 헤더 */}
+      <div className='space-y-2'>
+        <h2 className='text-3xl font-bold tracking-tight'>Quiz Editor</h2>
+        <p className='text-sm text-muted-foreground'>
+          Article과 관련된 퀴즈를 수정할 수 있습니다 (총 5개)
+        </p>
+      </div>
+
+      <Card className='shadow-sm'>
         <CardHeader>
-          <CardTitle className='text-xl'>Quiz</CardTitle>
+          <CardTitle className='text-xl font-semibold'>
+            Quiz {quizIdx + 1} / 5
+          </CardTitle>
           <CardAction>
-            <Button
-              type='button'
-              variant={'ghost'}
-              onClick={() => setQuizIdx((prev) => prev - 1)}
-              disabled={quizIdx === 0}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <Button
-              type='button'
-              variant={'ghost'}
-              onClick={() => setQuizIdx((prev) => prev + 1)}
-              disabled={quizIdx === 4}
-            >
-              <ChevronRightIcon />
-            </Button>
+            <div className='flex gap-2'>
+              <Button
+                type='button'
+                variant={'ghost'}
+                onClick={() => setQuizIdx((prev) => prev - 1)}
+                disabled={quizIdx === 0}
+                className='hover:bg-muted transition-colors duration-200'
+              >
+                <ChevronLeftIcon />
+              </Button>
+              <Button
+                type='button'
+                variant={'ghost'}
+                onClick={() => setQuizIdx((prev) => prev + 1)}
+                disabled={quizIdx === 4}
+                className='hover:bg-muted transition-colors duration-200'
+              >
+                <ChevronRightIcon />
+              </Button>
+            </div>
           </CardAction>
         </CardHeader>
         <CardContent>
@@ -92,21 +106,33 @@ export default function EditQuizSection({ articleId }: Props) {
 
 function QuizSectionSkeleton() {
   return (
-    <section className='w-full max-w-2xl'>
-      <Card>
+    <section className='w-full max-w-2xl mx-auto space-y-6'>
+      {/* 헤더 */}
+      <div className='space-y-2'>
+        <h2 className='text-3xl font-bold tracking-tight'>Quiz Editor</h2>
+        <p className='text-sm text-muted-foreground'>
+          Article과 관련된 퀴즈를 수정할 수 있습니다 (총 5개)
+        </p>
+      </div>
+
+      <Card className='shadow-sm'>
         <CardHeader>
-          <CardTitle className='text-xl'>Quiz</CardTitle>
+          <CardTitle className='text-xl font-semibold'>
+            <Skeleton className='h-7 w-24' />
+          </CardTitle>
           <CardAction>
-            <Button type='button' variant={'ghost'} disabled>
-              <ChevronLeftIcon />
-            </Button>
-            <Button type='button' variant={'ghost'} disabled>
-              <ChevronRightIcon />
-            </Button>
+            <div className='flex gap-2'>
+              <Button type='button' variant={'ghost'} disabled>
+                <ChevronLeftIcon />
+              </Button>
+              <Button type='button' variant={'ghost'} disabled>
+                <ChevronRightIcon />
+              </Button>
+            </div>
           </CardAction>
         </CardHeader>
         <CardContent>
-          <Card>
+          <Card className='shadow-sm'>
             <CardHeader>
               <Skeleton className='h-7 w-20' />
               <CardAction>
@@ -157,25 +183,24 @@ function QuizSectionSkeleton() {
 
 function QuizSectionError() {
   return (
-    <section className='w-full max-w-2xl'>
-      <Card>
-        <CardHeader>
-          <CardTitle className='text-xl'>Quiz</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='flex flex-col items-center justify-center gap-4 py-12'>
-            <AlertCircle className='h-12 w-12 text-destructive' />
-            <div className='text-center'>
-              <p className='text-lg font-semibold text-foreground'>
-                퀴즈를 불러올 수 없습니다
-              </p>
-              <p className='text-sm text-muted-foreground mt-2'>
-                잠시 후 다시 시도해주세요
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <section className='w-full max-w-2xl mx-auto space-y-6'>
+      {/* 헤더 */}
+      <div className='space-y-2'>
+        <h2 className='text-3xl font-bold tracking-tight'>Quiz Editor</h2>
+        <p className='text-sm text-muted-foreground'>
+          Article과 관련된 퀴즈를 수정할 수 있습니다 (총 5개)
+        </p>
+      </div>
+
+      <div className='flex flex-col items-center justify-center py-16 px-6 border border-destructive/20 rounded-lg bg-destructive/5 shadow-sm'>
+        <AlertCircle className='w-12 h-12 text-destructive mb-4' />
+        <h3 className='text-lg font-semibold text-destructive mb-2'>
+          퀴즈를 불러올 수 없습니다
+        </h3>
+        <p className='text-sm text-muted-foreground text-center'>
+          잠시 후 다시 시도해주세요
+        </p>
+      </div>
     </section>
   );
 }

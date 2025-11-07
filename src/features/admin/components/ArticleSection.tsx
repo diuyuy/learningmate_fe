@@ -112,9 +112,14 @@ export default function ArticleSection({ keywordId }: Props) {
   }
 
   return (
-    <section>
-      <div className='flex justify-between mb-8'>
-        <h2 className='text-2xl font-bold'>Articles</h2>
+    <section className='space-y-6'>
+      <div className='flex items-start justify-between gap-4'>
+        <div className='space-y-2'>
+          <h2 className='text-3xl font-bold tracking-tight'>Articles</h2>
+          <p className='text-sm text-muted-foreground'>
+            키워드와 관련된 Article을 관리할 수 있습니다
+          </p>
+        </div>
         <Button
           type='button'
           variant={'secondary'}
@@ -122,9 +127,9 @@ export default function ArticleSection({ keywordId }: Props) {
             data.length !== 0 || jobState === 'active' || mutation.isPending
           }
           onClick={handleCreateArticle}
-          className='font-semibold'
+          className='font-semibold shadow-sm hover:shadow transition-all duration-200 shrink-0'
         >
-          <PlusIcon /> Add new Article
+          <PlusIcon className='w-4 h-4' /> Add new Article
         </Button>
       </div>
       {data.length === 0 ? (
@@ -136,12 +141,17 @@ export default function ArticleSection({ keywordId }: Props) {
         ) : jobState === 'active' ? (
           <ArticleCreatingLoader />
         ) : (
-          <p className='text-center'>등록된 Article이 없습니다.</p>
+          <div className='flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-muted rounded-lg bg-muted/5'>
+            <p className='text-muted-foreground'>등록된 Article이 없습니다.</p>
+          </div>
         )
       ) : (
-        <ul className='space-y-3 divide-y border shadow-sm p-4 rounded-md'>
+        <ul className='space-y-3'>
           {data.map((article) => (
-            <li>
+            <li
+              key={article.id}
+              className='border rounded-lg p-4 bg-card shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary/20'
+            >
               <ArticleItem
                 keywordId={keywordId}
                 articleId={article.id}
@@ -157,22 +167,27 @@ export default function ArticleSection({ keywordId }: Props) {
 
 function ArticleSectionSkeleton() {
   return (
-    <section>
-      <div className='flex justify-between mb-8'>
-        <h2 className='text-2xl font-bold'>Articles</h2>
+    <section className='space-y-6'>
+      <div className='flex items-start justify-between gap-4'>
+        <div className='space-y-2'>
+          <h2 className='text-3xl font-bold tracking-tight'>Articles</h2>
+          <p className='text-sm text-muted-foreground'>
+            키워드와 관련된 Article을 관리할 수 있습니다
+          </p>
+        </div>
         <Button
           type='button'
           variant={'secondary'}
           disabled
-          className='font-semibold'
+          className='font-semibold shrink-0'
         >
-          <PlusIcon /> Add new Article
+          <PlusIcon className='w-4 h-4' /> Add new Article
         </Button>
       </div>
       <ul className='space-y-3'>
         {Array.from({ length: 5 }).map((_, index) => (
           <li key={index}>
-            <Skeleton className='h-12 w-full' />
+            <Skeleton className='h-16 w-full rounded-lg' />
           </li>
         ))}
       </ul>
@@ -182,33 +197,44 @@ function ArticleSectionSkeleton() {
 
 function ArticleSectionError() {
   return (
-    <section>
-      <div className='flex justify-between mb-8'>
-        <h2 className='text-2xl font-bold'>Articles</h2>
+    <section className='space-y-6'>
+      <div className='flex items-start justify-between gap-4'>
+        <div className='space-y-2'>
+          <h2 className='text-3xl font-bold tracking-tight'>Articles</h2>
+          <p className='text-sm text-muted-foreground'>
+            키워드와 관련된 Article을 관리할 수 있습니다
+          </p>
+        </div>
         <Button
           type='button'
           variant={'secondary'}
           disabled
-          className='font-semibold'
+          className='font-semibold shrink-0'
         >
-          <PlusIcon /> Add new Article
+          <PlusIcon className='w-4 h-4' /> Add new Article
         </Button>
       </div>
-      <div className='text-center'>예상치 못한 에러가 발생했습니다.</div>
+      <div className='flex flex-col items-center justify-center py-16 px-4 border border-destructive/20 rounded-lg bg-destructive/5'>
+        <AlertCircle className='w-10 h-10 text-destructive mb-3' />
+        <p className='text-destructive font-medium'>
+          예상치 못한 에러가 발생했습니다.
+        </p>
+      </div>
     </section>
   );
 }
 
 function ArticleCreatingLoader() {
   return (
-    <div className='space-y-4'>
-      <div className='text-center text-muted-foreground'>
-        Article을 생성하고 있습니다...
+    <div className='space-y-4 border rounded-lg p-6 bg-muted/5'>
+      <div className='flex items-center justify-center gap-2 text-muted-foreground'>
+        <div className='w-4 h-4 border-2 border-muted-foreground/20 border-t-muted-foreground rounded-full animate-spin' />
+        <span className='font-medium'>Article을 생성하고 있습니다...</span>
       </div>
       <ul className='space-y-3'>
         {Array.from({ length: 5 }).map((_, index) => (
           <li key={index}>
-            <Skeleton className='h-12 w-full' />
+            <Skeleton className='h-16 w-full rounded-lg' />
           </li>
         ))}
       </ul>
@@ -224,13 +250,18 @@ function ArticlePollingError({
   onRetry: () => void;
 }) {
   return (
-    <div className='space-y-4 text-center py-8 border shadow-sm rounded-md'>
+    <div className='flex flex-col items-center justify-center space-y-4 py-12 px-6 border border-destructive/20 rounded-lg bg-destructive/5 shadow-sm'>
       <div className='flex justify-center'>
         <AlertCircle className='w-12 h-12 text-destructive' />
       </div>
-      <p className='text-destructive font-medium'>{message}</p>
-      <Button type='button' variant={'primary_semibold'} onClick={onRetry}>
-        재시도 <RotateCcwIcon strokeWidth={3} />
+      <p className='text-destructive font-medium text-center'>{message}</p>
+      <Button
+        type='button'
+        variant={'primary_semibold'}
+        onClick={onRetry}
+        className='shadow-sm hover:shadow transition-all duration-200'
+      >
+        재시도 <RotateCcwIcon strokeWidth={3} className='w-4 h-4' />
       </Button>
     </div>
   );

@@ -10,9 +10,19 @@ export default function EditArticlePage() {
   }
 
   return (
-    <main className='mx-auto px-4 py-6 max-w-7xl'>
-      <h1 className='text-3xl font-bold mb-8'>Edit Article & Quiz</h1>
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+    <main className='mx-auto px-4 py-8 max-w-7xl flex flex-col gap-16'>
+      {/* 페이지 헤더 */}
+      <div className='space-y-3 border-b pb-6'>
+        <h1 className='text-4xl font-bold tracking-tight'>
+          Edit Article & Quiz
+        </h1>
+        <p className='text-base text-muted-foreground'>
+          Article의 내용과 관련 퀴즈를 수정할 수 있는 편집 페이지입니다
+        </p>
+      </div>
+
+      {/* 콘텐츠 영역 */}
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-12'>
         <EditArticleSection keywordId={+keywordId} articleId={+articleId} />
         <EditQuizSection articleId={+articleId} />
       </div>
