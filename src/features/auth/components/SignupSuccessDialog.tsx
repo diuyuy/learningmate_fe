@@ -7,17 +7,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ROUTE_PATHS } from '@/constants/routepaths';
 import { CheckCircle2 } from 'lucide-react';
 
-import { Link } from 'react-router';
+interface SignupSuccessDialogProps {
+  open: boolean;
+  onConfirm: () => void;
+}
 
-type Props = {
-  isOpen: boolean;
-};
-export default function PasswdResetSuccessDialog({ isOpen }: Props) {
+export default function SignupSuccessDialog({
+  open,
+  onConfirm,
+}: SignupSuccessDialogProps) {
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={open}>
       <DialogContent
         showCloseButton={false}
         onInteractOutside={(e) => e.preventDefault()}
@@ -30,16 +32,16 @@ export default function PasswdResetSuccessDialog({ isOpen }: Props) {
               <CheckCircle2 className='h-12 w-12 text-green-600' />
             </div>
           </div>
-          <DialogTitle className='text-2xl'>비밀번호 변경 완료!</DialogTitle>
+          <DialogTitle className='text-2xl'>회원가입 완료!</DialogTitle>
           <DialogDescription className='text-base text-center'>
-            비밀번호가 성공적으로 변경되었습니다.
+            회원가입이 성공적으로 완료되었습니다.
             <br />
-            새로운 비밀번호로 로그인해주세요.
+            로그인 페이지로 이동합니다.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className='sm:justify-center'>
-          <Button asChild className='w-full sm:w-auto px-8'>
-            <Link to={ROUTE_PATHS.LOGIN}>로그인 페이지로 이동</Link>
+          <Button onClick={onConfirm} className='w-full sm:w-auto px-8'>
+            확인
           </Button>
         </DialogFooter>
       </DialogContent>

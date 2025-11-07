@@ -1,19 +1,19 @@
 import { Button } from '@/components/ui/button';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { AxiosError } from 'axios';
+import { LockIcon, MailIcon } from 'lucide-react';
+import { Controller } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 import { login } from '../api/api';
 import { useSession } from '../context/useSession';
 import { useLoginForm } from '../hooks/useLoginForm';
-import type { LoginForm } from '../types/types';
+import type { LoginFormData } from '../types/types';
 import PasswordInput from './PasswordInput';
 
 export default function LoginForm() {
@@ -22,7 +22,7 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const { callbackUrl } = useParams();
 
-  const onSubmit = async (data: LoginForm) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
       const member = await login(data);
       provideSession(member);
@@ -37,49 +37,58 @@ export default function LoginForm() {
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className='flex flex-col gap-3 mx-auto w-full'
-      >
-        <FormField
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className='flex flex-col gap-3 mx-auto w-full'
+    >
+      <FieldGroup>
+        <Controller
           control={form.control}
           name='email'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className='font-semibold'>이메일</FormLabel>
-              <FormControl>
-                <Input
-                  autoComplete='email'
-                  placeholder='이메일을 입력하세요...'
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        ></FormField>
-        <FormField
-          control={form.control}
-          name='password'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className='font-semibold'>비밀번호</FormLabel>
-              <FormControl>
-                <PasswordInput
-                  placeholder='비밀번호를 입력하세요...'
-                  autoComplete='current-password'
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel
+                htmlFor='form-input-email'
+                className='flex gap-2 items-center font-semibold'
+              >
+                <MailIcon className='w-4 h-4' /> 이메일
+              </FieldLabel>
+              <Input
+                id='form-input-email'
+                autoComplete='email'
+                placeholder='이메일을 입력하세요...'
+                {...field}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
         />
-        <Button type='submit' variant={'primary_semibold'} className='mt-2'>
-          로그인
-        </Button>
-      </form>
-    </Form>
+        <Controller
+          control={form.control}
+          name='password'
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel
+                htmlFor='form-input-passwd'
+                className='flex gap-2 items-center font-semibold'
+              >
+                <LockIcon className='w-4 h-4' />
+                비밀번호
+              </FieldLabel>
+              <PasswordInput
+                id='form-input-passwd'
+                placeholder='비밀번호를 입력하세요...'
+                autoComplete='current-password'
+                {...field}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+      </FieldGroup>
+      <Button type='submit' variant={'primary_semibold'} className='mt-2'>
+        로그인
+      </Button>
+    </form>
   );
 }

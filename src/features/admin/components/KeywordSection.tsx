@@ -11,8 +11,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { KeywordWithVideo } from '@/features/keywords/types/types';
-import type { KeywordCategory } from '@/types/types';
 import { debounce } from '@/lib/utils';
+import type { KeywordCategory } from '@/types/types';
 import {
   flexRender,
   getCoreRowModel,
@@ -211,34 +211,53 @@ export default function KeywordSection({
   }, [rowSelection, keywords, onKeywordSelect, table, setSearchParams]);
 
   return (
-    <section>
-      <h2 className='text-2xl font-bold'>Keywords</h2>
-      <div className='my-2 flex flex-col gap-3'>
-        <div className='flex justify-between items-end'>
-          <div className='space-y-3'>
-            <Label htmlFor='input-query' className='mt-3 font-semibold'>
-              키워드 검색:
-            </Label>
-            <div className='relative max-w-80'>
-              <Input id='input-query' onChange={handleQueryChange} />
-              <SearchIcon
-                color='gray'
-                className='absolute right-2 top-1/2 -translate-y-1/2 size-4'
+    <section className='space-y-6'>
+      {/* 헤더 */}
+      <div className='space-y-2'>
+        <h2 className='text-3xl font-bold tracking-tight'>Keywords</h2>
+        <p className='text-sm text-muted-foreground'>
+          키워드를 검색하고 관리할 수 있습니다
+        </p>
+      </div>
+
+      <div className='space-y-4'>
+        <div className='bg-white rounded-lg border shadow-sm p-6'>
+          <div className='flex flex-col md:flex-row md:items-end md:justify-between gap-6'>
+            <div className='flex-1 space-y-2'>
+              <Label
+                htmlFor='input-query'
+                className='text-sm font-semibold text-foreground'
+              >
+                키워드 검색
+              </Label>
+              <div className='relative max-w-md'>
+                <Input
+                  id='input-query'
+                  onChange={handleQueryChange}
+                  placeholder='검색어를 입력하세요'
+                  className='pr-10'
+                />
+                <SearchIcon className='absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+              </div>
+            </div>
+
+            <div className='flex flex-wrap items-center gap-3'>
+              <div className='text-sm font-medium text-muted-foreground'>
+                정렬 및 필터:
+              </div>
+              <KeywordSortDropdown
+                sortOrder={sortOrder}
+                onSortOrderChange={handleSortOrderChange}
+              />
+              <KeywordFilterDropdown
+                filteringCategory={filteringCategory}
+                onFilteringCategoryChange={handleFilteringCategoryChange}
               />
             </div>
           </div>
-          <div className='flex gap-3'>
-            <KeywordSortDropdown
-              sortOrder={sortOrder}
-              onSortOrderChange={handleSortOrderChange}
-            />
-            <KeywordFilterDropdown
-              filteringCategory={filteringCategory}
-              onFilteringCategoryChange={handleFilteringCategoryChange}
-            />
-          </div>
         </div>
-        <div className='overflow-hidden border rounded-md'>
+        {/* 테이블 */}
+        <div className='overflow-hidden border rounded-lg bg-white shadow-sm'>
           <Table className='table-fixed'>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -318,7 +337,8 @@ export default function KeywordSection({
             </TableBody>
           </Table>
         </div>
-        <div className='flex gap-1 items-center justify-center flex-wrap'>
+        {/* 페이지네이션 */}
+        <div className='flex gap-1 items-center justify-center flex-wrap py-4'>
           <Button
             variant={'outline'}
             size={'icon'}

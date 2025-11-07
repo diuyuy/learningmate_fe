@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { QUERY_KEYS } from '@/constants/querykeys';
 import type { Video } from '@/features/videos/types/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { VideoIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import YouTube from 'react-youtube';
@@ -69,50 +70,70 @@ export default function VideoSection({ keywordId, video }: Props) {
   }, [video, form]);
 
   return (
-    <section>
-      <h2 className='text-2xl font-bold'>Videos</h2>
-      <div className='mt-4 flex flex-wrap md:flex-nowrap gap-8 justify-between'>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='w-xl flex flex-col gap-4 items-start'
-        >
-          <Controller
-            name='videoUrl'
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor='video-url-input' className='font-semibold'>
-                  Video URL:
-                </FieldLabel>
-                <Input
-                  {...field}
-                  id='video-url-input'
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-          <Button
-            type='submit'
-            variant={'primary_semibold'}
-            disabled={!form.formState.isDirty}
-          >
-            비디오 수정
-          </Button>
-        </form>
-        {videoId ? (
-          <div className='w-full max-w-[640px] aspect-video'>
-            <YouTube videoId={videoId} opts={opts} className='w-full h-full' />
-          </div>
-        ) : (
-          <div className='border border-gray-400 rounded-md w-full  max-w-[640px] aspect-video flex items-center justify-center'>
-            선택된 영상이 없습니다.
-          </div>
-        )}
+    <section className='space-y-6'>
+      {/* 헤더 */}
+      <div className='space-y-2'>
+        <h2 className='text-3xl font-bold tracking-tight'>Videos</h2>
+        <p className='text-sm text-muted-foreground'>
+          키워드와 관련된 YouTube 영상을 관리할 수 있습니다
+        </p>
       </div>
+
+      {/* 콘텐츠 영역 */}
+      <div className='flex flex-wrap md:flex-nowrap gap-6'>
+        {/* 폼 영역 */}
+        <div className='w-full md:w-auto md:flex-1 border rounded-lg p-6 bg-card shadow-sm'>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='flex flex-col gap-6'
+          >
+            <Controller
+              name='videoUrl'
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor='video-url-input' className='font-semibold'>
+                    Video URL
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id='video-url-input'
+                    aria-invalid={fieldState.invalid}
+                    placeholder='YouTube URL을 입력하세요'
+                    className='mt-2'
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Button
+              type='submit'
+              variant={'primary_semibold'}
+              disabled={!form.formState.isDirty}
+              className='self-start shadow-sm hover:shadow transition-all duration-200'
+            >
+              비디오 수정
+            </Button>
+          </form>
+        </div>
+
+        {/* 비디오 플레이어 영역 */}
+        <div className='w-full md:flex-1'>
+          {videoId ? (
+            <div className='w-full aspect-video rounded-lg overflow-hidden shadow-md border bg-card'>
+              <YouTube videoId={videoId} opts={opts} className='w-full h-full' />
+            </div>
+          ) : (
+            <div className='w-full aspect-video flex flex-col items-center justify-center border-2 border-dashed border-muted rounded-lg bg-muted/5'>
+              <VideoIcon className='w-16 h-16 text-muted-foreground/40 mb-3' />
+              <p className='text-muted-foreground'>선택된 영상이 없습니다.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       <ActionResultDialog
         isOpen={isDialogOpen}
         handleDialogOpen={handleDialogOpen}
