@@ -8,6 +8,7 @@ import './index.css';
 import { useKstMidnightRollover } from './lib/useKstMidnightRollover';
 import QueryProvider from './providers/QueryProvider';
 import { router } from './router/router';
+import FloatingTopButton from './components/FloatingTopButton';
 
 function GlobalRolloverProvider() {
   useKstMidnightRollover(); // KST 자정마다 키워드/리뷰/캘린더 invalidate
@@ -24,5 +25,6 @@ createRoot(document.getElementById('root')!).render(
       </QueryProvider>
     </IntlProvider>
     <Toaster />
+    <FloatingTopButton threshold={240} />
   </StrictMode>
 );

@@ -7,11 +7,10 @@ type Props = {
 
 export default function ProfileAvartarImage({ imgUrl, ...props }: Props) {
   return (
-    <>
-      <AvatarImage
-        src={!!imgUrl ? imgUrl : 'https://github.com/shadcn.png'}
-        {...props}
-      />
-    </>
+    <AvatarImage
+      src={imgUrl ? imgUrl : 'https://github.com/shadcn.png'}
+      className='rounded-md object-cover'
+      {...props}
+    />
   );
 }
