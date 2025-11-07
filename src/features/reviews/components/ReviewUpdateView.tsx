@@ -1,3 +1,4 @@
+// src/features/reviews/components/ReviewUpdateView.tsx
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -5,17 +6,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+
+import type { ReviewResponse } from '../types/types';
 import {
   useDeleteReviewMutation,
   useUpdateReviewMutation,
 } from '../hooks/useReviewMutation';
-import type { ReviewResponse } from '../types/types';
 
 type Props = {
   articleId: number;
   memberId: number;
   initial: ReviewResponse;
-  onDeleted?: () => void; // ✅ 추가: 삭제 알림 콜백
+  onDeleted?: () => void;
 };
 
 const ReviewSchema = z.object({
@@ -52,7 +54,7 @@ export default function ReviewUpdateView({
   const deleteMutation = useDeleteReviewMutation(articleId, reviewId, {
     onSuccess: () => {
       reset({ content1: '' });
-      onDeleted?.(); // ✅ 부모에 즉시 알림 → 작성 폼으로 전환
+      onDeleted?.(); // 부모가 forceCreate(true)
     },
   });
 
@@ -68,13 +70,16 @@ export default function ReviewUpdateView({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
       <div className='grid gap-2'>
-        <Label htmlFor='content1'>기사에 대한 내 생각</Label>
-        <div className='relative'>
+        <Label htmlFor='content1' className='text-sm text-foreground'>
+          기사에 대한 내 생각
+        </Label>
+
+        <div className='relative group rounded-2xl border border-muted bg-background/70 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/40 transition'>
           <Textarea
             id='content1'
             {...register('content1')}
             wrap='soft'
-            className='resize-none h-48 w-full pr-14 whitespace-pre-wrap break-words'
+            className='resize-none h-56 w-full rounded-2xl border-0 bg-transparent pr-16 whitespace-pre-wrap break-words focus-visible:ring-0'
             style={{ overflowWrap: 'anywhere' }}
             placeholder='기사에 대한 내 생각을 입력해주세요'
             maxLength={2000}
@@ -83,16 +88,17 @@ export default function ReviewUpdateView({
             }
             aria-invalid={!!errors.content1}
           />
-          <span className='absolute right-2 bottom-2 text-xs text-muted-foreground'>
+          <span className='pointer-events-none absolute right-2 bottom-2 rounded-full bg-muted/80 px-2 py-0.5 text-[11px] text-muted-foreground'>
             {content.length}/2000
           </span>
         </div>
+
         {errors.content1 && (
           <p className='text-sm text-red-500'>{errors.content1.message}</p>
         )}
       </div>
 
-      <div className='flex justify-end gap-2'>
+      <div className='mt-3 pt-3 border-t border-dashed border-muted flex justify-end gap-2'>
         {!isEditing ? (
           <>
             <Button
