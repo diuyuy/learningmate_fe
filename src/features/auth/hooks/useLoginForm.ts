@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { LoginFormSchema, type LoginForm } from '../types/types';
+import { LoginFormSchema, type LoginFormData } from '../types/types';
 
 export const useLoginForm = () => {
-  return useForm<LoginForm>({
+  return useForm<LoginFormData>({
     resolver: zodResolver(LoginFormSchema),
     defaultValues: {
       email: '',
