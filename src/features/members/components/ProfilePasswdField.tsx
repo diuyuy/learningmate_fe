@@ -10,7 +10,7 @@ import {
 import PasswordInput from '@/features/auth/components/PasswordInput';
 import {
   PasswordResetSchema,
-  type PasswordResetForm,
+  type PasswordResetFormData,
 } from '@/features/auth/types/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useReducer } from 'react';
@@ -51,12 +51,12 @@ function ProfilePasswordFormField({
   updateMember,
   toggleSetting,
 }: PasswdFieldProps) {
-  const form = useForm<PasswordResetForm>({
+  const form = useForm<PasswordResetFormData>({
     resolver: zodResolver(PasswordResetSchema),
     defaultValues: { password: '', password2: '' },
   });
 
-  const onSubmit = async (data: PasswordResetForm) => {
+  const onSubmit = async (data: PasswordResetFormData) => {
     try {
       const member = await updatePasswd({ password: data.password });
       updateMember(member);
