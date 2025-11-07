@@ -2,22 +2,29 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { nowKstDateKey } from '@/lib/timezone';
 
+export const MISSION_TARGET = 60 as const;
+
 type VideoState = {
+  // day/key
   kstDateKey: string;
   todaysKeywordId: number | null;
 
-  watchedSeconds: number;
-  lastTime: number;
+  // playback progress
+  watchedSeconds: number; // 누적(정수, 초)
+  lastTime: number; // 유튜브 최근 위치(정수, 초)
   duration: number | null;
   isCompleted: boolean;
 
+  // actions
   ensureKstDay: () => void;
   setTodaysKeywordId: (id: number) => void;
 
-  setWatchedSeconds: (inc: number) => void;
-  setLastTime: (time: number) => void;
-  setDuration: (dur: number) => void;
-  setIsCompleted: (result?: boolean) => void;
+  setWatchedSeconds: (inc: number) => void; // +증분
+  setLastTime: (time: number) => void; // 절대치
+  setDuration: (dur: number) => void; // 절대치
+
+  /** 이미 완료면 아무것도 하지 않고 false 반환, 처음 완료되면 true */
+  completeOnce: () => boolean;
 
   resetAll: () => void;
 };
@@ -50,6 +57,7 @@ export const useVideoStore = create<VideoState>()(
       setTodaysKeywordId: (id) => {
         const nowKey = nowKstDateKey();
         const s = get();
+        // 날짜 or 키워드 변경 시에만 초기화
         if (s.kstDateKey !== nowKey || s.todaysKeywordId !== id) {
           set({
             kstDateKey: nowKey,
@@ -59,14 +67,12 @@ export const useVideoStore = create<VideoState>()(
             duration: null,
             isCompleted: false,
           });
-          return;
         }
-        set({ todaysKeywordId: id });
+        // 동일한 경우는 no-op
       },
 
       setWatchedSeconds: (inc) => {
-        const { isCompleted } = get();
-        if (isCompleted) return;
+        if (get().isCompleted) return;
         const add = Math.max(0, Math.floor(inc || 0));
         if (!add) return;
         set((s) => ({ watchedSeconds: s.watchedSeconds + add }));
@@ -80,7 +86,14 @@ export const useVideoStore = create<VideoState>()(
       setDuration: (dur) =>
         set({ duration: Math.max(0, Math.floor(dur || 0)) }),
 
-      setIsCompleted: (result = true) => set({ isCompleted: !!result }),
+      completeOnce: () => {
+        const s = get();
+        if (s.isCompleted) return false;
+        // 목표치로 클램프
+        const clamped = Math.max(s.watchedSeconds, MISSION_TARGET);
+        set({ watchedSeconds: clamped, isCompleted: true });
+        return true;
+      },
 
       resetAll: () =>
         set({
@@ -94,7 +107,7 @@ export const useVideoStore = create<VideoState>()(
     }),
     {
       name: 'watchVideoStatus',
-      version: 2,
+      version: 3, // ⬅️ 스토어 변경에 따라 버전 업
     }
   )
 );

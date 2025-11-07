@@ -30,62 +30,110 @@ export default function HeaderDropDown() {
 
   const handleLogout = async () => {
     await signOut();
-
     navigate(ROUTE_PATHS.LANDING);
     logout();
   };
 
-  if (isPending) {
-    return <Skeleton className='size-8 rounded-md' />;
-  }
+  if (isPending) return <Skeleton className='size-8 rounded-lg' />;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className='size-8 hover:cursor-pointer grid place-items-center'>
-          <MenuIcon />
+        <button
+          className='
+            size-8 grid place-items-center
+            rounded-lg border border-white/55
+            hover:bg-white/15
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70
+            transition-colors text-white
+          '
+          aria-label='메뉴 열기'
+        >
+          <MenuIcon className='size-4' />
+          <span className='sr-only'>메뉴</span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='font-semibold'>
-        <DropdownMenuLabel className='text-md font-semibold'>
-          <MemberProfile />
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
+
+      <DropdownMenuContent
+        align='end'
+        sideOffset={8}
+        className='
+          w-64 md:w-72
+          p-1.5
+          rounded-xl border shadow-lg
+          bg-popover/95 backdrop-blur-sm font-semibold
+        '
+      >
+        {/* 상단 프로필 카드 (여백 축소) */}
+        <div className='rounded-md border bg-card/60 px-2 py-1.5 mb-1.5'>
+          <DropdownMenuLabel className='p-0 text-sm font-medium'>
+            <MemberProfile />
+          </DropdownMenuLabel>
+        </div>
+
+        <DropdownMenuGroup className='space-y-0.5'>
           {todaysKeyword && member?.role === 'ADMIN' && (
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem
+              asChild
+              className='gap-1.5 py-1.5 rounded-md text-sm'
+            >
               <Link
                 to={`${ROUTE_PATHS.ADMIN}?keywordId=${todaysKeyword.keyword.id}`}
+                className='w-full inline-flex items-center'
               >
-                <UserStarIcon color='black' />
+                <UserStarIcon className='size-4 text-muted-foreground' />
                 어드민
               </Link>
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem asChild>
-            <Link to={ROUTE_PATHS.MAIN} className='w-full hover:cursor-pointer'>
-              <HouseIcon color='black' />홈
+
+          <DropdownMenuItem
+            asChild
+            className='gap-1.5 py-1.5 rounded-md text-sm'
+          >
+            <Link
+              to={ROUTE_PATHS.MAIN}
+              className='w-full inline-flex items-center'
+            >
+              <HouseIcon className='size-4 text-muted-foreground' />홈
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
+
+          <DropdownMenuItem
+            asChild
+            className='gap-1.5 py-1.5 rounded-md text-sm'
+          >
             <Link
               to={ROUTE_PATHS.LEARNING}
-              className='w-full hover:cursor-pointer'
+              className='w-full inline-flex items-center'
             >
-              <LightbulbIcon color='black' />
+              <LightbulbIcon className='size-4 text-muted-foreground' />
               오늘의 키워드
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to={ROUTE_PATHS.MY} className='w-full hover:cursor-pointer'>
-              <BookOpenIcon color='black'></BookOpenIcon>마이페이지
+
+          <DropdownMenuItem
+            asChild
+            className='gap-1.5 py-1.5 rounded-md text-sm'
+          >
+            <Link
+              to={ROUTE_PATHS.MY}
+              className='w-full inline-flex items-center'
+            >
+              <BookOpenIcon className='size-4 text-muted-foreground' />
+              마이페이지
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
+
+        <DropdownMenuSeparator className='my-1' />
+
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={handleLogout}>
-            <LogOutIcon color='black' />
+          <DropdownMenuItem
+            onClick={handleLogout}
+            className='gap-1.5 py-1.5 rounded-md text-sm'
+          >
+            <LogOutIcon className='size-4 text-muted-foreground' />
             로그아웃
           </DropdownMenuItem>
         </DropdownMenuGroup>
