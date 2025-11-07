@@ -23,7 +23,14 @@ export default function ArticleList({ keyword }: Props) {
   return (
     <article className='w-full '>
       <aside className='my-3'>
-        <h1 className='lg:text-2xl font-bold'>키워드 관련 기사 목록</h1>
+        <div>
+          <h3 className='text-base font-semibold mb-2 tracking-tight'>
+            키워드 관련 기사 목록
+          </h3>
+          <p className='text-sm text-muted-foreground mb-1.5'>
+            오늘의 키워드와 연관된 최신 이슈와 정보를 빠르게 확인해보세요.
+          </p>
+        </div>
       </aside>
       <section className='flex flex-col gap-3'>
         {isPending

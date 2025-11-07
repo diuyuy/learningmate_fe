@@ -136,7 +136,14 @@ export default function ReviewList({
     <article className='w-full'>
       {!!title && (
         <aside className='mb-2'>
-          <h1 className='text-base lg:text-2xl font-bold'>{title}</h1>
+          <div>
+            <h3 className='text-base font-semibold mb-2 tracking-tight'>
+              {title}
+            </h3>
+            <p className='text-sm text-muted-foreground mb-1.5'>
+              다른 사용자들의 후기를 확인하고 경험을 공유해보세요.
+            </p>
+          </div>
         </aside>
       )}
 

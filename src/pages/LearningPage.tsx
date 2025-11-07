@@ -52,7 +52,7 @@ export default function LearningPage() {
               <Skeleton className='flex flex-col gap-4 w-full lg:w-1/2 aspect-video' />
             ) : canShowVideo ? (
               <VideoPlayer
-                todaysKeywordId={todaysKeyword.keyword.id}
+                todaysKeyword={todaysKeyword.keyword}
                 videoId={videoData.videoId!}
               />
             ) : (
