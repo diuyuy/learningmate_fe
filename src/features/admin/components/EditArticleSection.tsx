@@ -12,7 +12,7 @@ import { QUERY_KEYS } from '@/constants/querykeys';
 import { useArticleQuery } from '@/features/articles/hooks/useArticleQuery';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertCircleIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import TextareaAutosize from 'react-textarea-autosize';
 import { updateArticle } from '../api/api';
@@ -34,7 +34,6 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
   } = useArticleQuery(articleId);
 
   const form = useArticleForm(article);
-  const contentRef = useRef<HTMLTextAreaElement>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleDialogOpen = (open: boolean) => setIsDialogOpen(open);
@@ -64,13 +63,6 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
   const onSubmit = (formData: ArticleForm) => {
     mutation.mutate(formData);
   };
-
-  useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.style.height = 'auto';
-      contentRef.current.style.height = `${contentRef.current.scrollHeight}px`;
-    }
-  }, []);
 
   useEffect(() => {
     form.reset({
@@ -164,14 +156,10 @@ export default function EditArticleSection({ keywordId, articleId }: Props) {
                 <Controller
                   control={form.control}
                   name='content'
-                  render={({ field: { ref, ...rest }, fieldState }) => (
+                  render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <TextareaAutosize
-                        {...rest}
-                        ref={(e) => {
-                          ref(e);
-                          contentRef.current = e;
-                        }}
+                        {...field}
                         placeholder='Article Content...'
                         className='w-full resize-none border border-input bg-background p-3 rounded-md focus-visible:outline-none'
                       />
