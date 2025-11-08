@@ -1,13 +1,9 @@
-import { ROUTE_PATHS } from '@/constants/routepaths';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
 import {
   checkEmailExists,
   requestAuthCode,
-  signUp,
   validateAuthCode,
 } from '../api/api';
-import type { SignUpForm } from '../types/types';
 import { useSignUpForm } from './useSignUpForm';
 
 type checkEmail =
@@ -34,8 +30,6 @@ export const useSignUpActions = (
   form: ReturnType<typeof useSignUpForm>,
   startTimer: () => void
 ) => {
-  const navigate = useNavigate();
-
   const [checkEmail, setCheckEmail] = useState<checkEmail>({
     unknown: true,
     isPending: false,
@@ -105,17 +99,6 @@ export const useSignUpActions = (
     setValidateCode({ isValid, unknown: false, isPending: false });
   };
 
-  const onSubmit = async (data: SignUpForm) => {
-    try {
-      await signUp(data);
-
-      alert('회원가입이 완료되었습니다!');
-      navigate(ROUTE_PATHS.LOGIN);
-    } catch (error) {
-      alert('회원가입을 실패했습니다.');
-    }
-  };
-
   const submitIsAbled = !(
     checkEmail.isPending === true ||
     checkEmail.unknown === true ||
@@ -135,6 +118,6 @@ export const useSignUpActions = (
     checkEmailExistsAction,
     requestAuthCodeAction,
     validateAuthCodeAction,
-    onSubmit,
+    // onSubmit,
   };
 };

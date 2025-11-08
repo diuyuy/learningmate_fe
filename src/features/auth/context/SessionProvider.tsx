@@ -2,7 +2,12 @@ import { fetchMember } from '@/features/members/api/api';
 import type { Member } from '@/features/members/types/types';
 import { setInterceptors } from '@/lib/axios';
 import { AxiosError } from 'axios';
-import { useEffect, useState, type PropsWithChildren } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 import { SessionContext } from './SessionContext';
 
 export default function SessionProvider({ children }: PropsWithChildren) {
@@ -32,7 +37,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     setMember(member);
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setInterceptors(logout);
   }, []);
 
@@ -41,6 +46,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
       try {
         const member = await fetchMember();
         if (member) provideSession(member);
+        // else logout();
       } catch (error) {
         if (error instanceof AxiosError && error.status === 401) {
           logout();

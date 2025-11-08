@@ -9,7 +9,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AvatarImage } from '@radix-ui/react-avatar';
 import { useEffect, useReducer, useState, type ChangeEvent } from 'react';
@@ -25,43 +24,39 @@ type Props = {
 export default function ProfileImageField({ imgUrl, updateMember }: Props) {
   const [isForm, toggleSetting] = useReducer((pre) => !pre, false);
 
-  return (
-    <>
-      <div className='flex items-start'>
-        <div className='w-28 font-semibold'>이미지: </div>
-        {isForm ? (
-          <ProfileImageFormFiled
-            imgUrl={imgUrl}
-            toggleSetting={toggleSetting}
-            updateMember={updateMember}
-          />
-        ) : (
-          <div className='flex w-full justify-between items-start'>
-            <Avatar className='w-28 h-28'>
-              <ProfileAvartarImage imgUrl={imgUrl} />
-            </Avatar>
-            <Button variant={'primary_semibold'} onClick={toggleSetting}>
-              설정
-            </Button>
-          </div>
-        )}
-      </div>
-    </>
+  return isForm ? (
+    <ProfileImageFormField
+      imgUrl={imgUrl}
+      toggleSetting={toggleSetting}
+      updateMember={updateMember}
+    />
+  ) : (
+    <div className='flex flex-col items-center text-center w-full gap-3'>
+      <Avatar className='h-28 w-28 ring-2 ring-yellow-400 ring-offset-2 ring-offset-white'>
+        <ProfileAvartarImage imgUrl={imgUrl} />
+      </Avatar>
+      <Button
+        variant='outline_semibold'
+        size='sm'
+        onClick={toggleSetting}
+        className='rounded-lg'
+      >
+        변경
+      </Button>
+    </div>
   );
 }
 
 type ProfileImgFieldProps = Props & { toggleSetting: () => void };
 
-function ProfileImageFormFiled({
+function ProfileImageFormField({
   imgUrl,
   toggleSetting,
   updateMember,
 }: ProfileImgFieldProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const form = useForm<ImageForm>({
-    resolver: zodResolver(ImageFormSchema),
-  });
+  const form = useForm<ImageForm>({ resolver: zodResolver(ImageFormSchema) });
 
   const onSubmit = async (data: ImageForm) => {
     try {
@@ -72,33 +67,29 @@ function ProfileImageFormFiled({
       const updatedMember = await updateProfileImage(formData);
       updateMember(updatedMember);
       toggleSetting();
-    } catch (error) {}
+    } catch {
+      form.setError('image', {
+        message: '이미지 업로드에 실패했습니다. 다시 시도해주세요.',
+      });
+    }
   };
 
-  const onImageChange = (
-    e: ChangeEvent<HTMLInputElement>,
-    onChange: (...event: any[]) => void
-  ) => {
+  const onImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const imgFile = e.target.files?.[0];
-    if (imgFile) {
-      const newUrl = URL.createObjectURL(imgFile);
-      setPreviewUrl(newUrl);
-    }
-    onChange(e.target.files);
+    if (!imgFile) return;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(imgFile));
   };
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl(null);
-      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
   return (
-    <div className='flex w-full gap-2 items-start'>
-      <Avatar className='w-28 h-28'>
+    <div className='flex flex-col items-center text-center w-full gap-3'>
+      <Avatar className='h-28 w-28 ring-2 ring-yellow-400 ring-offset-2 ring-offset-white'>
         {!previewUrl ? (
           <ProfileAvartarImage imgUrl={imgUrl} />
         ) : (
@@ -109,48 +100,53 @@ function ProfileImageFormFiled({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className='flex w-full justify-between items-start'
+          className='flex flex-col items-center gap-2'
         >
           <FormField
             control={form.control}
             name='image'
-            render={({ field: { onChange, ...fieldRest } }) => (
-              <FormItem>
-                <div>
-                  <Button variant={'outline_semibold'} asChild>
-                    <FormLabel>변경</FormLabel>
-                  </Button>
-                </div>
-
+            render={({ field: { onChange, ...rest } }) => (
+              <FormItem className='flex flex-col items-center gap-1'>
+                <Button
+                  variant='outline_semibold'
+                  size='sm'
+                  asChild
+                  className='rounded-lg'
+                >
+                  <FormLabel>파일 선택</FormLabel>
+                </Button>
                 <FormControl>
-                  <Input
+                  <input
                     type='file'
-                    accept='image/*'
+                    accept='image/png, image/jpeg, image/jpg'
                     onChange={(e) => {
-                      onImageChange(e, onChange);
+                      onImageChange(e);
+                      onChange(e.target.files);
                     }}
-                    {...fieldRest}
+                    {...rest}
                     value={undefined}
                     className='hidden'
                   />
                 </FormControl>
                 <FormMessage />
-                <div className='text-gray-500'>
-                  <p>* png, jpg, jpeg의 확장자</p>
-                  <p>* 1MB 이하의 이미지 </p>
+                <div className='text-xs text-neutral-500 leading-4'>
+                  <p>* png, jpg, jpeg</p>
+                  <p>* 1MB 이하</p>
                 </div>
               </FormItem>
             )}
           />
-          <div className='flex items-start gap-2'>
+
+          <div className='flex gap-2 mt-1'>
             <Button
               type='button'
-              variant={'ghost_semibold'}
+              variant='ghost_semibold'
+              size='sm'
               onClick={toggleSetting}
             >
               취소
             </Button>
-            <Button type='submit' variant={'secondary_semibold'}>
+            <Button type='submit' variant='secondary_semibold' size='sm'>
               저장
             </Button>
           </div>

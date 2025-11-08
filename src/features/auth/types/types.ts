@@ -16,7 +16,7 @@ export const LoginFormSchema = z.object({
   password: passwordSchema,
 });
 
-export type LoginForm = z.infer<typeof LoginFormSchema>;
+export type LoginFormData = z.infer<typeof LoginFormSchema>;
 
 export const SignUpFromSchema = z
   .object({
@@ -33,13 +33,13 @@ export const SignUpFromSchema = z
     error: '비밀번호가 일치하지 않습니다.',
   });
 
-export type SignUpForm = z.infer<typeof SignUpFromSchema>;
+export type SignUpFormData = z.infer<typeof SignUpFromSchema>;
 
 export const EmailFormSchema = z.object({
   email: emailSchema,
 });
 
-export type EmailForm = z.infer<typeof EmailFormSchema>;
+export type EmailFormData = z.infer<typeof EmailFormSchema>;
 
 export const PasswordResetSchema = z
   .object({
@@ -51,7 +51,7 @@ export const PasswordResetSchema = z
     error: '비밀번호가 일치하지 않습니다.',
   });
 
-export type PasswordResetForm = z.infer<typeof PasswordResetSchema>;
+export type PasswordResetFormData = z.infer<typeof PasswordResetSchema>;
 
 export type PasswdResetRequest = {
   password: string;

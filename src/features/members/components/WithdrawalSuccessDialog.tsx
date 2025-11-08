@@ -39,8 +39,12 @@ export default function WithdrawalSuccessDialog({
           이용해주셔서 감사합니다!
         </p>
         <DialogFooter>
-          <Button variant={'primary_semibold'} onClick={toLandingPage}>
-            로그인 화면으로 이동
+          <Button
+            variant={'primary_semibold'}
+            onClick={toLandingPage}
+            className='w-full'
+          >
+            랜딩 페이지로 이동
           </Button>
         </DialogFooter>
       </DialogContent>

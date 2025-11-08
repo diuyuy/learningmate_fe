@@ -1,10 +1,14 @@
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { FaSearch } from 'react-icons/fa';
+import { Badge } from '@/components/ui/badge';
+import { Search, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import * as React from 'react';
 
 export default function TodaysKeywordCard({
   keywordName,
@@ -14,21 +18,61 @@ export default function TodaysKeywordCard({
   keywordDesc: string;
 }) {
   return (
-    <Card className='w-[90vw] sm:w-full max-w-3xl mx-auto my-5 border-2 px-4 sm:px-6 lg:px-8'>
-      <CardHeader className='text-center'>
-        <CardTitle className='text-xl sm:text-2xl font-extrabold flex gap-3 items-center justify-center'>
-          <FaSearch />
-          <div>오늘의 키워드</div>
-        </CardTitle>
-        <CardDescription>
-          <div className='my-3 text-2xl sm:text-3xl font-extrabold text-primary'>
-            {keywordName}
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
+      className='mx-auto my-3 w-full max-w-3xl'
+    >
+      <Card
+        role='region'
+        aria-label='오늘의 키워드'
+        className='relative overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md'
+      >
+        {/* 아주 은은한 배경 악센트 (색상 변화 없음) */}
+        <div aria-hidden className='pointer-events-none absolute inset-0'>
+          <div className='absolute -top-10 right-0 h-24 w-24 rounded-full bg-primary/5 blur-2xl' />
+          <div className='absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-muted/20 blur-3xl' />
+        </div>
+
+        {/* 컴팩트 헤더: 아이콘 + 제목 (테두리/배경 없음) */}
+        <CardHeader className='px-4 py-0'>
+          <div className='flex items-center justify-center gap-2'>
+            <Search className='h-4 w-4' aria-hidden='true' />
+            <CardTitle className='text-sm sm:text-base font-extrabold tracking-tight'>
+              오늘의 키워드
+            </CardTitle>
+            <Sparkles className='h-4 w-4 opacity-25' aria-hidden='true' />
           </div>
-          <div className='text-sm sm:text-md font-extrabold text-left'>
-            {keywordDesc}
+          <CardDescription className='sr-only'>
+            오늘의 핵심 키워드 정보를 제공합니다
+          </CardDescription>
+        </CardHeader>
+
+        {/* 얇은 그래디언트 디바이더 */}
+        <div className='mx-4 my-0 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent' />
+
+        <CardContent className='px-4 py-1'>
+          <div className='flex flex-col gap-2'>
+            <div className='flex flex-col items-center justify-center gap-2 text-center'>
+              <Badge
+                variant='secondary'
+                className='rounded-full px-3 py-0.5 text-[10px] sm:text-xs font-semibold'
+              >
+                KEYWORD
+              </Badge>
+              <h2 className='text-xl sm:text-2xl font-extrabold leading-tight text-primary'>
+                {keywordName}
+              </h2>
+              <Sparkles className='h-3.5 w-3.5 opacity-50' aria-hidden='true' />
+            </div>
+
+            <p className='text-sm leading-relaxed font-medium text-pretty'>
+              {keywordDesc}
+            </p>
           </div>
-        </CardDescription>
-      </CardHeader>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

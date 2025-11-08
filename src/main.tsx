@@ -2,11 +2,13 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { IntlProvider } from 'react-intl';
 import { RouterProvider } from 'react-router';
+import { Toaster } from 'sonner';
 import SessionProvider from './features/auth/context/SessionProvider';
 import './index.css';
+import { useKstMidnightRollover } from './lib/useKstMidnightRollover';
 import QueryProvider from './providers/QueryProvider';
 import { router } from './router/router';
-import { useKstMidnightRollover } from './lib/useKstMidnightRollover';
+import FloatingTopButton from './components/FloatingTopButton';
 
 function GlobalRolloverProvider() {
   useKstMidnightRollover(); // KST 자정마다 키워드/리뷰/캘린더 invalidate
@@ -22,5 +24,7 @@ createRoot(document.getElementById('root')!).render(
         </SessionProvider>
       </QueryProvider>
     </IntlProvider>
+    <Toaster />
+    <FloatingTopButton threshold={240} />
   </StrictMode>
 );

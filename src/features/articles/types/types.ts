@@ -1,22 +1,19 @@
-import type { Keyword } from '@/features/keywords/types/types';
-
 export type Article = {
   id: number;
-  keyword: Keyword;
   title: string;
   content: string;
-  link: string;
-  reporter: string;
   publishedAt: string;
-  press: string;
   summary: string;
-  views: number;
   scrapCount: number;
-  createdAt: string;
-  updatedAt: string;
+  views: number;
+  keyword: {
+    id: number;
+    name: string;
+  };
+  scrappedByMe: boolean;
 };
 
 export type ArticlePreview = Pick<
   Article,
-  'id' | 'title' | 'content' | 'publishedAt' | 'press'
+  'id' | 'title' | 'content' | 'publishedAt'
 >;

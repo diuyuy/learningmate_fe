@@ -20,6 +20,7 @@ export type ReviewListItem = {
   content1: string;
   memberId: number;
   nickname: string;
+  imageUrl: string | null;
   title: string;
   likeCount: number;
   likedByMe: boolean;
@@ -57,14 +58,9 @@ export type ArticleReviewsProp = {
 export type ReviewForm = {
   memberId: number;
   content1: string;
-  content2: string;
-  content3: string;
 };
 
-export type ReviewResponse = Pick<
-  Review,
-  'id' | 'content1' | 'content2' | 'content3'
->;
+export type ReviewResponse = Pick<Review, 'id' | 'content1'>;
 
 export type HotReviewsResponse = {
   status: number;

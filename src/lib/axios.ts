@@ -1,8 +1,11 @@
 import axios, { AxiosError } from 'axios';
 
-// TODO: 인터셉터 설정 필요.
-
 const baseUrl = import.meta.env.VITE_BASE_URL;
+
+export const publicApi = axios.create({
+  baseURL: baseUrl,
+  withCredentials: true,
+});
 
 export const api = axios.create({
   baseURL: baseUrl,
@@ -37,7 +40,10 @@ export const setInterceptors = (logout: () => void) => {
     },
     async (error: AxiosError) => {
       // 2xx 외의 범위에 있는 상태 코드는 이 함수를 트리거 합니다.
-      const originalRequest = error.config!;
+      const originalRequest = error.config;
+      if (!originalRequest) {
+        return Promise.reject(error);
+      }
 
       // 401 에러이고, 재시도한 요청이 아닐 경우
       if (error.response?.status === 401 && !originalRequest._retry) {

@@ -63,28 +63,21 @@ export const fetchReview = async (articleId: number) => {
   return response.data.result as ReviewResponse;
 };
 
-export const updateReview = async (
-  payload: ReviewForm,
-  articleId: number,
-  reviewId: number
-) => {
-  const response = await api.patch(
-    `/articles/${articleId}/reviews/${reviewId}`,
-    payload
-  );
+export const updateReview = async (payload: ReviewForm, reviewId: number) => {
+  const response = await api.patch(`reviews/${reviewId}`, payload);
   return response.data.result as ReviewResponse;
 };
 
-export const deleteReview = async (articleId: number, reviewId: number) => {
-  const response = await api.delete(
-    `/articles/${articleId}/reviews/${reviewId}`
-  );
+export const deleteReview = async (reviewId: number) => {
+  const response = await api.delete(`/reviews/${reviewId}`);
   return response.data;
 };
 
 export async function fetchHotReviewsByDate(
   dateISO: string
 ): Promise<ReviewListItem[]> {
-  const res = await api.get<HotReviewsResponse>(`/hot-reviews?date=${dateISO}`);
+  const res = await api.get<HotReviewsResponse>(
+    `reviews/hot-reviews?date=${dateISO}`
+  );
   return res.data.result ?? [];
 }

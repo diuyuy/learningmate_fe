@@ -4,11 +4,11 @@ import { fetchArticlePreviews } from '../api/api';
 
 export const useArticlePreviewsQuery = (keywordId: number) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.ARTICLE_PREVIEWS],
+    queryKey: [QUERY_KEYS.ARTICLE_PREVIEWS, keywordId],
     queryFn: async () => {
       return await fetchArticlePreviews(keywordId);
     },
-    staleTime: 24 * 60 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
+    staleTime: 60 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 };

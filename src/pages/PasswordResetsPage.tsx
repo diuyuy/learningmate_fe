@@ -1,30 +1,23 @@
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { ROUTE_PATHS } from '@/constants/routepaths';
 import { resetPassword } from '@/features/auth/api/api';
 import PasswdResetSuccessDialog from '@/features/auth/components/PasswdResetSucessDialog';
 import PasswordInput from '@/features/auth/components/PasswordInput';
 import {
   PasswordResetSchema,
-  type PasswordResetForm,
+  type PasswordResetFormData,
 } from '@/features/auth/types/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router';
 
 export default function PasswordResetsPage() {
   const [serachParams] = useSearchParams();
   const navigate = useNavigate();
   const [isDialogOpen, setDialogOpen] = useState(false);
-  const form = useForm<PasswordResetForm>({
+  const form = useForm<PasswordResetFormData>({
     resolver: zodResolver(PasswordResetSchema),
     defaultValues: {
       password: '',
@@ -34,7 +27,7 @@ export default function PasswordResetsPage() {
 
   const authToken = serachParams.get('authToken');
 
-  const onSubmit = async (data: PasswordResetForm) => {
+  const onSubmit = async (data: PasswordResetFormData) => {
     if (!authToken) {
       navigate('/error');
       return;
@@ -43,6 +36,7 @@ export default function PasswordResetsPage() {
       await resetPassword({ password: data.password, authToken });
       setDialogOpen(true);
     } catch (error) {
+      console.error(error);
       alert('예상치 못한 에러가 발생했습니다. 다시 시도해 주세요.');
       navigate(ROUTE_PATHS.PASSWORD_RESETS);
     }
@@ -59,58 +53,60 @@ export default function PasswordResetsPage() {
       <h1 className='text-2xl font-bold'>비밀번호 변경</h1>
       <h2>변경할 비밀번호를 입력해 주세요.</h2>
 
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='w-full mt-2 flex flex-col gap-2'
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className='w-full mt-2 flex flex-col gap-2'
+      >
+        <Controller
+          control={form.control}
+          name='password'
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel
+                htmlFor='form-input-passwd1'
+                className='text-md font-semibold'
+              >
+                비밀번호
+              </FieldLabel>
+              <PasswordInput
+                id='form-input-passwd1'
+                autoComplete='password'
+                placeholder='비밀번호를 입력하세요...'
+                {...field}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          control={form.control}
+          name='password2'
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel
+                htmlFor='form-input-passwd2'
+                className='text-md font-semibold mt-2'
+              >
+                비밀번호 확인
+              </FieldLabel>
+              <PasswordInput
+                id='form-input-passwd2'
+                autoComplete='password'
+                placeholder='비밀번호를 입력하세요...'
+                {...field}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Button
+          type='submit'
+          size={'lg'}
+          className='w-full mt-4 mb-2 font-semibold'
         >
-          <FormField
-            control={form.control}
-            name='password'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='text-md font-semibold'>
-                  비밀번호
-                </FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    autoComplete='password'
-                    placeholder='비밀번호를 입력하세요...'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='password2'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='text-md font-semibold mt-2'>
-                  비밀번호 확인
-                </FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    autoComplete='password'
-                    placeholder='비밀번호를 입력하세요...'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            type='submit'
-            size={'lg'}
-            className='w-full mt-4 mb-2 font-semibold'
-          >
-            비밀번호 변경
-          </Button>
-        </form>
-      </Form>
+          비밀번호 변경
+        </Button>
+      </form>
       <PasswdResetSuccessDialog isOpen={isDialogOpen} />
     </div>
   );
