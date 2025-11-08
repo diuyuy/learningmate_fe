@@ -82,7 +82,7 @@ export default function SignUpForm() {
                       <Mail className='w-4 h-4' />
                       이메일
                     </FieldLabel>
-                    <div className='flex items-center gap-2'>
+                    <div className='flex items-center gap-2 flex-wrap md:flex-nowrap'>
                       <Input
                         id='form-input-email'
                         autoComplete='email'
