@@ -71,12 +71,18 @@ export default function KeywordSection({
 }: KeywordSectionProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const keywordId = Number(searchParams.get('keywordId') ?? '1');
+
   // useState로 상태 관리
   const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
+    pageIndex: Math.floor((keywordId - 1) / PAGE_SIZE),
+    pageSize: PAGE_SIZE,
   });
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({
+    [String((keywordId - 1) % PAGE_SIZE)]: true,
+  });
+
   const [filteringQuery, setFilteringQuery] = useState('');
   const [filteringCategory, setFilteringCategory] =
     useState<KeywordCategory | null>(null);
@@ -192,13 +198,6 @@ export default function KeywordSection({
     data &&
     Math.floor(pagination.pageIndex / 10) ===
       Math.floor((data.totalPages - 1) / 10);
-
-  useEffect(() => {
-    setRowSelection({
-      [String((Number(searchParams.get('keywordId') ?? '0') % PAGE_SIZE) - 1)]:
-        true,
-    });
-  }, []);
 
   useEffect(() => {
     const keyword = table.getSelectedRowModel().rows.at(0)?.original;
