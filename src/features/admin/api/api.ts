@@ -1,4 +1,4 @@
-import type { Article } from '@/features/articles/types/types';
+import type { Article, ArticlePreview } from '@/features/articles/types/types';
 import type { KeywordWithVideo } from '@/features/keywords/types/types';
 import type { Quiz, QuizDetail } from '@/features/quizzes/types/types';
 import type { Video } from '@/features/videos/types/types';
@@ -39,6 +39,14 @@ export const fetchKeywordsByPage = async ({
     console.error('error:', error);
     throw Error('Failed to fetch keywords');
   }
+};
+
+export const fetchArtilcesByKeyword = async (
+  keywordId: number
+): Promise<ArticlePreview[]> => {
+  const response = await api.get(`/admin/keywords/${keywordId}/articles`);
+
+  return response.data.result;
 };
 
 export const fetchQuizDetails = async (

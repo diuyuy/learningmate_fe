@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QUERY_KEYS } from '@/constants/querykeys';
-import { useArticlePreviewsQuery } from '@/features/articles/hooks/useArticlePreviewsQuery';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, PlusIcon, RotateCcwIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createArticle, fetchBatchJobState } from '../api/api';
+import { useArticleListQuery } from '../hooks/useArticleListQuery';
 import type { JobState } from '../types/types';
 import ArticleItem from './ArticleItem';
 
@@ -17,7 +17,7 @@ const getBatchJobKey = (keywordId: number) => `BATCH_JOBS:${keywordId}`;
 
 export default function ArticleSection({ keywordId }: Props) {
   const queryClient = useQueryClient();
-  const { isPending, isError, data } = useArticlePreviewsQuery(keywordId);
+  const { isPending, isError, data } = useArticleListQuery(keywordId);
   const [jobState, setJobState] = useState<JobState>('unknown');
   const [pollingError, setPollingError] = useState<string | null>(null);
 
@@ -38,6 +38,7 @@ export default function ArticleSection({ keywordId }: Props) {
   const handleRetryPolling = () => {
     setPollingError(null);
     setJobState('active');
+    mutation.mutate(keywordId);
   };
 
   useEffect(() => {
@@ -67,14 +68,14 @@ export default function ArticleSection({ keywordId }: Props) {
 
         try {
           const { state: currJobState } = await fetchBatchJobState(jobId);
-          console.log('🚀 ~ ArticleSection ~ currJobState:', currJobState);
 
           if (currJobState === 'completed') {
             localStorage.removeItem(batchJobKey);
             queryClient.invalidateQueries({
-              queryKey: [QUERY_KEYS.ARTICLE_PREVIEWS],
+              queryKey: [QUERY_KEYS.ARTICLE],
             });
             setJobState(currJobState);
+            if (intervalId) clearInterval(intervalId);
             return;
           }
 
@@ -84,6 +85,7 @@ export default function ArticleSection({ keywordId }: Props) {
             setPollingError(
               'Article 생성 상태를 확인하는 중 오류가 발생했습니다.'
             );
+            if (intervalId) clearInterval(intervalId);
             return;
           }
         } catch (error) {
@@ -92,6 +94,7 @@ export default function ArticleSection({ keywordId }: Props) {
             'Article 생성 상태를 확인하는 중 오류가 발생했습니다.'
           );
           setJobState('unknown');
+          if (intervalId) clearInterval(intervalId);
         }
       }, 10000); // 10초마다 폴링
     }
